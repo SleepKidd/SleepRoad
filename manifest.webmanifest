@@ -1,0 +1,13 @@
+{
+  "name": "Sleep Road",
+  "short_name": "Sleep Road",
+  "description": "Dreamy crowd runner game",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080a1c",
+  "theme_color": "#090b1f",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
