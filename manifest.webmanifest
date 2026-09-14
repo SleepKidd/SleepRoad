@@ -4,8 +4,8 @@
   "description": "Dreamy crowd runner by Sleepkidd Studio",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#080b1d",
-  "theme_color": "#0b1028",
+  "background_color": "#ead8aa",
+  "theme_color": "#dcbf79",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }

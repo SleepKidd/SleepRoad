@@ -1,5 +1,5 @@
-const CACHE = 'sleep-road-v4';
-const ASSETS = ['./', './index.html', './style.css', './game.js', './icon.svg', './manifest.webmanifest'];
+const CACHE = 'sleep-road-v6';
+const ASSETS = ['./', './index.html', './style.css', './refinement.css', './game.js', './gameplay-v3.js', './render-v3.js', './icon.svg', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
