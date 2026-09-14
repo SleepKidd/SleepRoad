@@ -1,5 +1,5 @@
-const CACHE = 'sleep-road-v1';
-const ASSETS = ['./', './index.html', './style.css', './game.js', './icon.svg', './manifest.webmanifest'];
+const CACHE = 'sleep-road-v3';
+const ASSETS = ['./', './index.html', './style.css', './game-core.js', './game-level.js', './game-update.js', './game-render-main.js', './game-render-sky.js', './game-render-road.js', './game-render-world.js', './game-render-b.js', './icon.svg', './manifest.webmanifest'];
 self.addEventListener('install', (event) => event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS))));
 self.addEventListener('activate', (event) => event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))));
 self.addEventListener('fetch', (event) => {

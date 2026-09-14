@@ -32,7 +32,7 @@ python -m http.server 8080
 
 - `index.html` — интерфейс и HUD;
 - `style.css` — адаптивный UI;
-- `game.js` — игровой цикл, рендер, физика и генерация уровней;
+- `game-*.js` — игровой цикл, генерация уровней, логика и Canvas-рендер;
 - `manifest.webmanifest` — PWA;
 - `sw.js` — офлайн-кэш;
 - `icon.svg` — иконка.
@@ -40,3 +40,7 @@ python -m http.server 8080
 ## Автор
 
 Sleepkidd Studio
+
+## GitHub Pages
+
+Публикация рассчитана на `main` → `/(root)`.
