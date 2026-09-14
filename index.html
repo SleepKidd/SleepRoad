@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#090b1f" />
+  <meta name="description" content="Sleep Road — атмосферная браузерная crowd-runner игра: собирай толпу, выбирай лучшие ворота и прорывайся к финишу." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Sleep Road</title>
+</head>
+<body>
+  <main id="app" aria-label="Sleep Road">
+    <canvas id="game" aria-label="Игровое поле Sleep Road"></canvas>
+
+    <section id="hud" class="hud hidden" aria-live="polite">
+      <div class="hud__left">
+        <div class="pill pill--level"><span>Уровень</span><strong id="levelValue">1</strong></div>
+        <div class="progress" aria-label="Прогресс уровня"><i id="progressFill"></i></div>
+      </div>
+      <div class="hud__right">
+        <div class="pill"><span>☾</span><strong id="coinValue">0</strong></div>
+        <button id="soundBtn" class="icon-btn" type="button" aria-label="Переключить звук">🔊</button>
+      </div>
+      <div id="countBadge" class="count-badge"><span id="countValue">12</span></div>
+      <div id="comboBadge" class="combo hidden">Серия <b id="comboValue">x2</b></div>
+    </section>
+
+    <section id="menu" class="overlay overlay--menu">
+      <div class="brand">
+        <div class="brand__moon">☾</div>
+        <p class="eyebrow">SLEEPKIDD STUDIO</p>
+        <h1>Sleep <span>Road</span></h1>
+        <p class="subtitle">Собирай толпу. Выбирай правильные ворота. Не дай дороге тебя разбудить.</p>
+      </div>
+      <div class="menu-card glass">
+        <button id="playBtn" class="primary-btn" type="button">Играть</button>
+        <div class="stats-row">
+          <div><span>Рекорд</span><b id="bestLevel">1 ур.</b></div>
+          <div><span>Лун</span><b id="bestCoins">0</b></div>
+        </div>
+        <div class="tips">
+          <span>↔️ Свайп / мышь</span>
+          <span>⌨️ A D / ← →</span>
+        </div>
+      </div>
+      <p class="menu-foot">Работает на телефоне и ПК · без установки</p>
+    </section>
+
+    <section id="result" class="overlay hidden">
+      <div class="result-card glass">
+        <p id="resultKicker" class="eyebrow">СОН ПРОДОЛЖАЕТСЯ</p>
+        <h2 id="resultTitle">Уровень пройден</h2>
+        <div class="result-score">
+          <span id="resultCount">0</span>
+          <small>дошли до финиша</small>
+        </div>
+        <div class="result-grid">
+          <div><span>Луны</span><b id="resultCoins">+0</b></div>
+          <div><span>Лучший комбо</span><b id="resultCombo">x1</b></div>
+        </div>
+        <button id="nextBtn" class="primary-btn" type="button">Дальше</button>
+        <button id="retryBtn" class="secondary-btn hidden" type="button">Ещё раз</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+  </main>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
