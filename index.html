@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-  <meta name="theme-color" content="#090b1f" />
-  <meta name="description" content="Sleep Road — атмосферная браузерная crowd-runner игра: собирай толпу, выбирай лучшие ворота и прорывайся к финишу." />
+  <meta name="theme-color" content="#0b1028" />
+  <meta name="description" content="Sleep Road — браузерная crowd-runner игра. Собирай толпу, проходи через математические ворота, собирай луны, прокачивай команду и добирайся до финиша." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./style.css" />
@@ -15,65 +15,80 @@
     <canvas id="game" aria-label="Игровое поле Sleep Road"></canvas>
 
     <section id="hud" class="hud hidden" aria-live="polite">
-      <div class="hud__left">
-        <div class="pill pill--level"><span>Уровень</span><strong id="levelValue">1</strong></div>
+      <div class="hud-side hud-side--left">
+        <div class="pill level-pill"><span>Уровень</span><strong id="levelValue">1</strong></div>
         <div class="progress" aria-label="Прогресс уровня"><i id="progressFill"></i></div>
       </div>
-      <div class="hud__right">
-        <div class="pill"><span>☾</span><strong id="coinValue">0</strong></div>
+      <div class="hud-side hud-side--right">
+        <div class="pill moon-pill"><span class="moon-icon">☾</span><strong id="moonValue">0</strong></div>
         <button id="soundBtn" class="icon-btn" type="button" aria-label="Переключить звук">🔊</button>
       </div>
-      <div id="countBadge" class="count-badge"><span id="countValue">12</span></div>
-      <div id="comboBadge" class="combo hidden">Серия <b id="comboValue">x2</b></div>
+      <div id="countBadge" class="count-badge"><span id="countValue">8</span></div>
     </section>
 
-    <section id="menu" class="overlay overlay--menu">
-      <div class="brand">
-        <div class="brand__moon">☾</div>
-        <p class="eyebrow">SLEEPKIDD STUDIO</p>
-        <h1>Sleep <span>Road</span></h1>
-        <p class="subtitle">Собирай толпу. Выбирай правильные ворота. Не дай дороге тебя разбудить.</p>
+    <section id="menu" class="menu-screen">
+      <div class="menu-topbar">
+        <div class="mini-brand"><span class="mini-brand__moon">☾</span><b>Sleep Road</b></div>
+        <div class="menu-wallet"><span>☾</span><strong id="menuMoonValue">0</strong></div>
       </div>
-      <div class="menu-card glass">
-        <button id="playBtn" class="primary-btn" type="button">Играть</button>
-        <div class="stats-row">
-          <div><span>Рекорд</span><b id="bestLevel">1 ур.</b></div>
-          <div><span>Лун</span><b id="bestCoins">0</b></div>
+
+      <div class="menu-center">
+        <div class="brand-lockup">
+          <p class="eyebrow">SLEEPKIDD STUDIO</p>
+          <h1>Sleep <span>Road</span></h1>
+          <p>Собери самую большую команду и пройди дорогу сна.</p>
         </div>
-        <div class="tips">
-          <span>↔️ Свайп / мышь</span>
-          <span>⌨️ A D / ← →</span>
+        <button id="playBtn" class="tap-start" type="button">
+          <span>Нажми, чтобы начать</span>
+          <small>свайп влево и вправо</small>
+        </button>
+      </div>
+
+      <div class="shop-panel" aria-label="Магазин улучшений">
+        <div class="shop-heading">
+          <div>
+            <span>Магазин</span>
+            <strong>Улучшения перед забегом</strong>
+          </div>
+          <div class="shop-level">LVL <b id="menuLevelValue">1</b></div>
+        </div>
+        <div class="shop-grid">
+          <button id="upgradeCrowd" class="upgrade-card" type="button">
+            <span class="upgrade-art upgrade-art--crowd">●●●</span>
+            <span class="upgrade-copy"><b>Толпа</b><small id="crowdUpgradeText">Старт: 8</small></span>
+            <span class="upgrade-price"><i>☾</i><b id="crowdUpgradeCost">40</b></span>
+          </button>
+          <button id="upgradeMagnet" class="upgrade-card" type="button">
+            <span class="upgrade-art upgrade-art--magnet">∩</span>
+            <span class="upgrade-copy"><b>Магнит</b><small id="magnetUpgradeText">Радиус: 1.0×</small></span>
+            <span class="upgrade-price"><i>☾</i><b id="magnetUpgradeCost">55</b></span>
+          </button>
+          <button id="upgradeIncome" class="upgrade-card" type="button">
+            <span class="upgrade-art upgrade-art--moon">☾</span>
+            <span class="upgrade-copy"><b>Лунный бонус</b><small id="incomeUpgradeText">Доход: +0%</small></span>
+            <span class="upgrade-price"><i>☾</i><b id="incomeUpgradeCost">70</b></span>
+          </button>
         </div>
       </div>
-      <p class="menu-foot">Работает на телефоне и ПК · без установки</p>
     </section>
 
-    <section id="result" class="overlay hidden">
-      <div class="result-card glass">
+    <section id="result" class="result-screen hidden" aria-live="polite">
+      <div class="result-card">
+        <div class="result-moon">☾</div>
         <p id="resultKicker" class="eyebrow">СОН ПРОДОЛЖАЕТСЯ</p>
-        <h2 id="resultTitle">Уровень пройден</h2>
-        <div class="result-score">
-          <span id="resultCount">0</span>
-          <small>дошли до финиша</small>
+        <h2 id="resultTitle">Уровень пройден!</h2>
+        <div class="result-stats">
+          <div><span>На финише</span><b id="resultCount">0</b></div>
+          <div><span>Собрано лун</span><b id="resultMoons">+0</b></div>
+          <div><span>Финиш-бонус</span><b id="resultMultiplier">×1.0</b></div>
         </div>
-        <div class="result-grid">
-          <div><span>Луны</span><b id="resultCoins">+0</b></div>
-          <div><span>Лучший комбо</span><b id="resultCombo">x1</b></div>
-        </div>
-        <button id="nextBtn" class="primary-btn" type="button">Дальше</button>
-        <button id="retryBtn" class="secondary-btn hidden" type="button">Ещё раз</button>
+        <button id="nextBtn" class="primary-btn" type="button">Продолжить</button>
+        <button id="retryBtn" class="secondary-btn hidden" type="button">Попробовать снова</button>
       </div>
     </section>
 
     <div id="toast" class="toast hidden"></div>
   </main>
-  <script src="./game-core.js"></script>
-  <script src="./game-level.js"></script>
-  <script src="./game-update.js"></script>
-  <script src="./game-render-main.js"></script>
-  <script src="./game-render-sky.js"></script>
-  <script src="./game-render-road.js"></script>
-  <script src="./game-render-world.js"></script>
-  <script src="./game-render-b.js"></script>
+  <script src="./game.js"></script>
 </body>
 </html>
