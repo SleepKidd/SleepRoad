@@ -25,6 +25,11 @@
       </div>
       <div class="hud-wallet"><span class="moon-mark">☾</span><strong id="moonValue">0</strong></div>
       <button id="soundBtn" class="sound-btn" type="button" aria-label="Звук">🔊</button>
+      <div id="missionHud" class="mission-hud">
+        <span>ЗАДАНИЕ</span><b id="missionHudText">0 / 0</b>
+        <i><em id="missionFill"></em></i>
+      </div>
+      <div id="shieldHud" class="shield-hud hidden">◆ ЩИТ</div>
       <div id="crowdCount" class="crowd-count">8</div>
     </section>
 
@@ -37,6 +42,12 @@
       <div class="level-card">
         <span>УРОВЕНЬ</span>
         <strong id="menuLevelValue">1</strong>
+      </div>
+
+      <div class="mission-card">
+        <span>МИССИЯ УРОВНЯ</span>
+        <b id="menuMissionText">Собери луны</b>
+        <small id="menuMissionReward">Награда: ☾ 25</small>
       </div>
 
       <button id="playBtn" class="tap-to-play" type="button">
@@ -76,6 +87,7 @@
           <div><span>Луны</span><b id="resultMoons">+0</b></div>
           <div><span>Бонус</span><b id="resultMultiplier">×1.0</b></div>
         </div>
+        <div id="resultMission" class="result-mission">Задание выполнено</div>
         <button id="nextBtn" class="primary-btn" type="button">ПРОДОЛЖИТЬ</button>
         <button id="retryBtn" class="primary-btn primary-btn--danger hidden" type="button">ЕЩЁ РАЗ</button>
         <button id="resultMenuBtn" class="secondary-btn" type="button">В МЕНЮ</button>
