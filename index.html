@@ -16,6 +16,9 @@
     <div id="worldLabels" class="world-labels" aria-hidden="true"></div>
 
     <section id="hud" class="hud hidden">
+      <button id="exitBtn" class="exit-btn" type="button" aria-label="Выйти в меню">
+        <span aria-hidden="true">‹</span><b>МЕНЮ</b>
+      </button>
       <div class="progress-wrap">
         <div class="progress"><i id="progressFill"></i></div>
         <div class="finish-icon">▦</div>
@@ -75,11 +78,12 @@
         </div>
         <button id="nextBtn" class="primary-btn" type="button">ПРОДОЛЖИТЬ</button>
         <button id="retryBtn" class="primary-btn primary-btn--danger hidden" type="button">ЕЩЁ РАЗ</button>
+        <button id="resultMenuBtn" class="secondary-btn" type="button">В МЕНЮ</button>
       </div>
     </section>
 
     <div id="toast" class="toast hidden"></div>
-    <div id="fatal" class="fatal hidden"><strong>Sleep Road</strong><span>WebGL недоступен в этом браузере.</span></div>
+    <div id="fatal" class="fatal hidden"><strong>Sleep Road</strong><span>Не удалось запустить 3D-графику. Обнови браузер или включи аппаратное ускорение.</span><button type="button" onclick="location.reload()">ПОВТОРИТЬ</button></div>
   </main>
 
   <script src="./engine.js"></script>
