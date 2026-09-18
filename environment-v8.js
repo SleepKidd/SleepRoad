@@ -75,15 +75,41 @@
     }
   }
 
+  const MEADOW_BOUNDS={roadEdge:6.55,grassOuter:19.5,grassLength:232,farTerrainStart:21.5};
+
+  function drawMeadowGround(g,p){
+    const r=g.renderer,m=g.meshes;
+    const grassWidth=MEADOW_BOUNDS.grassOuter-MEADOW_BOUNDS.roadEdge;
+    const grassCenter=(MEADOW_BOUNDS.grassOuter+MEADOW_BOUNDS.roadEdge)*.5;
+    const grassZ=-108;
+
+    // Finite grass banks: only the playable roadside area is grass.
+    r.draw(m.box,compose(-grassCenter,-.78,grassZ,0,0,0,grassWidth,1.0,MEADOW_BOUNDS.grassLength),p.ground);
+    r.draw(m.box,compose( grassCenter,-.78,grassZ,0,0,0,grassWidth,1.0,MEADOW_BOUNDS.grassLength),p.ground);
+
+    // Slightly darker inner verge makes the road-to-grass transition natural.
+    const verge=mix(p.ground,p.groundDark,.13);
+    r.draw(m.box,compose(-7.45,-.755,grassZ,0,0,0,1.8,.94,MEADOW_BOUNDS.grassLength),verge,.96);
+    r.draw(m.box,compose( 7.45,-.755,grassZ,0,0,0,1.8,.94,MEADOW_BOUNDS.grassLength),verge,.96);
+
+    // Earth bank marks a real end to the grass instead of another green plane.
+    const earth=[.34,.25,.16],earthTop=mix(earth,p.groundDark,.18);
+    for(const side of[-1,1]){
+      const edgeX=side*(MEADOW_BOUNDS.grassOuter+.75);
+      r.draw(m.box,compose(edgeX,-1.02,grassZ,0,0,0,1.45,.62,MEADOW_BOUNDS.grassLength),earth,.98);
+      r.draw(m.box,compose(side*(MEADOW_BOUNDS.grassOuter+.20),-.67,grassZ,0,0,0,.55,.14,MEADOW_BOUNDS.grassLength),earthTop,.96);
+    }
+  }
+
   function drawMeadowBackdrop(g,p,cfg){
     const r=g.renderer,m=g.meshes;
     for(let i=0;i<9;i++){
-      const side=i%2?-1:1,x=side*(16+i%4*7),z=-104-(i%5)*17,s=8+(i%3)*3;
+      const side=i%2?-1:1,x=side*(27+i%4*7.5),z=-104-(i%5)*17,s=8+(i%3)*3;
       r.draw(m.cone,compose(x,1.1,z,0,0,0,s,s*.62,s),i%2?mix(p.groundDark,p.sky,.22):mix(p.ground,p.sky,.30));
     }
     const forest=Math.round(12*cfg.density);
     for(let i=0;i<forest;i++){
-      const side=i%2?-1:1,x=side*(11+hash(i*7.1)*27),z=-72-hash(i*3.9)*72,s=.7+hash(i*8.3)*1.15;
+      const side=i%2?-1:1,x=side*(21.5+hash(i*7.1)*16.5),z=-72-hash(i*3.9)*72,s=.7+hash(i*8.3)*1.15;
       tree(g,x,z,s,1,i);
     }
   }
@@ -109,14 +135,14 @@
     const r=g.renderer,m=g.meshes,span=310;
     for(let i=0;i<18;i++){const z=7-wrap(i*17.9-g.travel*.975,span),side=i%2?-1:1,x=side*(7.0+hash(i*2.7)*4.3),w=1.6+hash(i*6.2)*3.0,l=3+hash(i*4.1)*6.5,col=i%3===0?mix(p.ground,p.stripe,.06):i%3===1?mix(p.ground,p.groundDark,.20):mix(p.ground,p.good,.06);patch(g,x,z,w,l,col,hash(i)*.4-.2,.88);}
     const grassCount=Math.round(42*cfg.density);
-    for(let i=0;i<grassCount;i++){const z=9-wrap(i*(310/Math.max(1,grassCount))-g.travel*.985+hash(i*2.3)*7,310),side=i%2?-1:1,x=side*(6.45+hash(i*7.7)*8.7),s=.55+hash(i*11.2)*.75;grassTuft(g,x,z,s,i,i*.77);}
+    for(let i=0;i<grassCount;i++){const z=9-wrap(i*(310/Math.max(1,grassCount))-g.travel*.985+hash(i*2.3)*7,310),side=i%2?-1:1,x=side*(6.35+hash(i*7.7)*4.45),s=.55+hash(i*11.2)*.75;grassTuft(g,x,z,s,i,i*.77);}
     const bushCount=Math.round(12*cfg.density);
-    for(let i=0;i<bushCount;i++){const z=7-wrap(i*(307/Math.max(1,bushCount))-g.travel*.97+hash(i*5.2)*10,307),side=i%2?-1:1,x=side*(8+hash(i*9.7)*9),s=.55+hash(i*3.4)*.75;bush(g,x,z,s,i);}
+    for(let i=0;i<bushCount;i++){const z=7-wrap(i*(307/Math.max(1,bushCount))-g.travel*.97+hash(i*5.2)*10,307),side=i%2?-1:1,x=side*(7.9+hash(i*9.7)*5.15),s=.55+hash(i*3.4)*.75;bush(g,x,z,s,i);}
     const treeCount=Math.round(12*cfg.density);
-    for(let i=0;i<treeCount;i++){const z=8-wrap(i*(300/Math.max(1,treeCount))-g.travel*.956+hash(i*5.6)*11,300),side=i%2?-1:1,x=side*(10.5+hash(i*8.8)*13.5),s=.66+hash(i*2.1)*.72;tree(g,x,z,s,i%5,i);}
+    for(let i=0;i<treeCount;i++){const z=8-wrap(i*(300/Math.max(1,treeCount))-g.travel*.956+hash(i*5.6)*11,300),side=i%2?-1:1,x=side*(10.4+hash(i*8.8)*6.7),s=.66+hash(i*2.1)*.72;tree(g,x,z,s,i%5,i);}
     if(cfg.detail>0){
-      const flowerCount=Math.round(16*cfg.density);for(let i=0;i<flowerCount;i++){const z=7-wrap(i*(300/flowerCount)-g.travel*.986+hash(i*7.1)*8,300),side=i%2?-1:1,x=side*(6.7+hash(i*4.5)*5.5);flower(g,x,z,.65+hash(i)*.5,i);}
-      const rockCount=Math.round(8*cfg.density);for(let i=0;i<rockCount;i++){const z=5-wrap(i*(304/rockCount)-g.travel*.97+hash(i*8.1)*13,304),side=i%2?-1:1,x=side*(8+hash(i*3.2)*12);rock(g,x,z,.5+hash(i*6.1)*.55,i);}
+      const flowerCount=Math.round(16*cfg.density);for(let i=0;i<flowerCount;i++){const z=7-wrap(i*(300/flowerCount)-g.travel*.986+hash(i*7.1)*8,300),side=i%2?-1:1,x=side*(6.5+hash(i*4.5)*3.85);flower(g,x,z,.65+hash(i)*.5,i);}
+      const rockCount=Math.round(8*cfg.density);for(let i=0;i<rockCount;i++){const z=5-wrap(i*(304/rockCount)-g.travel*.97+hash(i*8.1)*13,304),side=i%2?-1:1,x=side*(7.9+hash(i*3.2)*6.0);rock(g,x,z,.5+hash(i*6.1)*.55,i);}
     }
   }
 
@@ -142,7 +168,7 @@
 
   P.drawEnvironment=function(){
     const r=this.renderer,m=this.meshes,b=this.biome,p=b.palette,cfg=envCfg(this),span=310;
-    r.draw(m.box,compose(0,-.78,-132,0,0,0,92,1.0,316),p.ground);
+    if(b.id==='meadow')drawMeadowGround(this,p);else r.draw(m.box,compose(0,-.78,-132,0,0,0,92,1.0,316),p.ground);
     drawSkyDecor(this,b,p,cfg);
     if(b.id==='meadow')drawMeadowDetails(this,p,cfg);
     else if(b.id==='desert')drawDesertBackdrop(this,p,cfg);
@@ -220,5 +246,5 @@
     oldRender.call(this);
   };
 
-  window.SleepRoadEnvironmentV8={envCfg,hash,tree,bush,grassTuft,flower,rock};
+  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock};
 })();
