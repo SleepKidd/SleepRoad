@@ -17,7 +17,13 @@
     {id:'stormRun',name:'STORM RUN',desc:'Усиленная динамическая погода'},
     {id:'speedRun',name:'SPEED RUN',desc:'Скорость уровня увеличена'},
     {id:'obstacleRush',name:'OBSTACLE RUSH',desc:'Дополнительная комбинация препятствий'},
-    {id:'luckyRun',name:'LUCKY RUN',desc:'Первые ворота становятся выгоднее'}
+    {id:'luckyRun',name:'LUCKY RUN',desc:'Первые ворота становятся выгоднее'},
+    {id:'doubleBoss',name:'DOUBLE BOSS',desc:'Два гиганта в финальной части'},
+    {id:'nightRun',name:'NIGHT RUN',desc:'Ночной свет и яркие отражения'},
+    {id:'noGates',name:'NO GATES',desc:'Без обычных ворот — только маршрут'},
+    {id:'moonStorm',name:'MOON STORM',desc:'Лунный шторм над всей трассой'},
+    {id:'giantObstacles',name:'GIANT OBSTACLES',desc:'Увеличенные препятствия'},
+    {id:'lowGravity',name:'LOW GRAVITY',desc:'Долгие прыжки и лёгкая толпа'}
   ];
   const WEATHER_PHASES={
     meadow:['clear','pollen','breeze','drizzle'],
