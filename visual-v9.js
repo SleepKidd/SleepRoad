@@ -166,24 +166,27 @@
   }
 
   function drawBossArena(g){
-    if(!g.profile?.bossLevel)return;const r=g.renderer,m=g.meshes,p=g.biome.palette,theme=BOSS_THEMES[clamp(g.profile.chapter||0,0,4)];
+    if(!g.profile?.finalBoss)return;
+    const boss=g.battleEnemy?.boss?g.battleEnemy:g.objects?.find(o=>o.boss&&!o.processed);
+    if(!boss)return;
+    const centerZ=g.state==='battle'&&boss===g.battleEnemy?boss.battleZ:g.objectZ(boss);
+    if(centerZ<-112||centerZ>22)return;
+    const r=g.renderer,m=g.meshes,p=g.biome.palette,theme=BOSS_THEMES[clamp(g.profile.chapter||0,0,4)],major=!!boss.majorBoss;
     for(let i=0;i<4;i++){
-      const z=-18-i*20;
-      r.draw(m.box,compose(0,.035,z,0,0,0,11.6,.055,6.5),mix(p.road,theme.color,.08),.92);
+      const z=centerZ+8-i*5.2;
+      r.draw(m.box,compose(0,.035,z,0,0,0,11.7,.055,5.0),mix(p.road,theme.color,major?.12:.07),.92);
       for(const side of[-1,1]){
-        const x=side*7.55;
-        r.draw(m.box,compose(x,.12,z,0,0,0,2.6,.22,6.4),mix(p.groundDark,theme.alt,.12),.96);
-        r.draw(m.cylinder,compose(x,1.2,z,0,0,0,.11,2.4,.11),p.structure);
-        r.draw(m.box,compose(x,2.18,z,0,0,side*.10,.78,.52,.08),i%2?theme.color:theme.alt,.92);
-        r.draw(m.sphere,compose(x,2.65,z-.2,0,0,0,.12,.12,.12),theme.color,.92);
+        const x=side*7.35;
+        r.draw(m.box,compose(x,.12,z,0,0,0,2.25,.22,4.9),mix(p.groundDark,theme.alt,.12),.96);
+        r.draw(m.cylinder,compose(x,1.18,z,0,0,0,.10,2.36,.10),p.structure);
+        r.draw(m.box,compose(x,2.12,z,0,0,side*.10,.72,.48,.08),i%2?theme.color:theme.alt,.92);
+        r.draw(m.sphere,compose(x,2.57,z-.18,0,0,0,major?.15:.11,major?.15:.11,major?.15:.11),theme.color,.94);
       }
     }
-    if(g.profile.chapter===2){
-      for(const side of[-1,1])for(let i=0;i<3;i++)r.draw(m.cylinder,compose(side*(8.4+i*.7),1.2,-50-i*5,0,0,0,.24,2.5,.24),[.26,.28,.30]);
-    }else if(g.profile.chapter===3){
-      for(const side of[-1,1])for(let i=0;i<3;i++)r.draw(m.box,compose(side*(8.3+i*.9),2.1,-42-i*8,0,0,0,1.1,3.9,.42),i%2?theme.color:theme.alt,.55);
-    }else if(g.profile.chapter===4){
-      for(const side of[-1,1])for(let i=0;i<4;i++){const x=side*(8.2+i*.55),z=-35-i*9;r.draw(m.cylinder,compose(x,1.4,z,0,0,0,.10,2.8,.10),theme.color);r.draw(m.sphere,compose(x,2.85,z,0,0,0,.22,.22,.22),i%2?theme.color:theme.alt,.88);}
+    for(const side of[-1,1]){
+      const x=side*6.35;
+      r.draw(m.box,compose(x,.52,centerZ-2.0,0,0,0,.16,1.04,13),p.structure,.88);
+      for(let i=0;i<5;i++)r.draw(m.sphere,compose(x,.90,centerZ+7-i*3.1,0,0,0,.08,.08,.08),i%2?theme.color:theme.alt,.94);
     }
   }
 
@@ -275,7 +278,7 @@
     const aspect=this.w/this.h,s=cameraState(this),shakeX=this.shake?(Math.random()-.5)*.065*this.shake:0,shakeY=this.shake?(Math.random()-.5)*.026*this.shake:0;
     if(this.state==='menu'){const orbit=Math.sin(this.time*.25)*.85;this.renderer.setCamera([orbit,8.75,14.7],[0,.45,-12.2],aspect,(s.mobile?48:44)*DEG);return;}
     if(this.state==='finish'||this.state==='complete'){const p=this.finishProgress||0,orbit=this.profile?.bossLevel?Math.sin(p*Math.PI)*.70:0;this.renderer.setCamera([lerp(0,5.4,p)+orbit,lerp(8.8,6.7,p)+s.pullback*.22,lerp(15.2,13.3,p)+s.pullback],[0,lerp(.35,1.25,p),lerp(-13,-3.8,p)],aspect,(47+(this.profile?.bossLevel?2:0))*DEG);return;}
-    const battle=this.state==='battle',boss=battle&&this.battleEnemy?.boss,camX=shakeX+(battle?Math.sin(this.time*1.25)*(boss ? .48 : .25):0)-s.a.strafe*.13+this.playerX*.020,camY=(s.mobile?9.25:8.35)+s.pullback*.38+shakeY+s.jump.y*.08,camZ=15.1+s.pullback+(s.boost ? -.28 : s.slow ? .16 : 0),targetY=.28+s.jump.y*.025,targetZ=boss?-10.2:-12.3+s.pullback*.15,fov=(s.mobile?48.5:44.5)+(s.boost?2.2:0)+(s.slow?-.8:0)+Math.max(0,s.speedRatio-1)*.8;
+    const battle=this.state==='battle',boss=battle&&this.battleEnemy?.boss,camX=shakeX+(battle?Math.sin(this.time*1.25)*(boss ? .58 : .25):0)-s.a.strafe*.13+this.playerX*.020,camY=(s.mobile?9.25:8.35)+s.pullback*.38+shakeY+s.jump.y*.08+(boss?.75:0),camZ=15.1+s.pullback+(s.boost ? -.28 : s.slow ? .16 : 0)+(boss?1.2:0),targetY=(boss?1.65:.28)+s.jump.y*.025,targetZ=boss?-1.8:-12.3+s.pullback*.15,fov=(s.mobile?48.5:44.5)+(s.boost?2.2:0)+(s.slow?-.8:0)+Math.max(0,s.speedRatio-1)*.8+(boss?2.2:0);
     this.renderer.setCamera([camX,camY,camZ],[this.playerX*.028,targetY,targetZ],aspect,fov*DEG);
   };
 
