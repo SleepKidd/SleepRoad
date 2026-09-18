@@ -21,7 +21,6 @@
     {height:1.06,width:1.01,head:[1.00,1.03,1.00],body:[1.01,1.06,1.01],leg:[1.00,1.06,1.00],arm:[1.00,1.04,1.00],hair:3}
   ];
   const HAIR=[[.09,.06,.04],[.18,.10,.05],[.05,.04,.03],[.26,.15,.07],[.08,.05,.12]];
-  const SHOES=[[.05,.06,.09],[.10,.08,.07],[.92,.92,.94],[.12,.16,.22]];
   const TORSO_STYLES=[
     {id:'tee',body:[1,1,1],hood:false,pocket:false,band:false},
     {id:'hoodie',body:[1.08,1.04,1.08],hood:true,pocket:true,band:false},
@@ -48,7 +47,7 @@
   C.draw=function(count,rootX,rootZ,color,time,opts={}){
     const game=window.__sleepRoad,q=qFor(game),renderCount=Math.min(Math.max(1,Math.round(count)),q.maxCrowd||420),f=this.formation(renderCount),scale0=opts.scale||1,direction=opts.direction||1,enemy=opts.enemy===true,motion=(enemy?this.enemyMotion:this.playerMotion)||opts.motion||{},mode=motion.mode||'run',baseY=(motion.jumpY!=null&&!enemy?motion.jumpY:(opts.baseY||0)),runSpeed=clamp(motion.runSpeed==null?1:motion.runSpeed,.42,1.7),strafe=clamp(motion.strafe||0,-1,1),landing=clamp(motion.landing||0,0,1),takeoff=clamp(motion.takeoff||0,0,1),finish=clamp(motion.finishProgress||0,0,1),boss=motion.boss===true;
     const names=['head','body','leftArm','rightArm','leftLeg','rightLeg'],parts={},colors={};for(const n of names){parts[n]=[];colors[n]=[];}
-    const shadows=[],shadowColors=[],hairs=[],hairColors=[],shoes=[],shoeColors=[],belts=[],beltColors=[],hoods=[],hoodColors=[],pockets=[],pocketColors=[],torsoBands=[],torsoBandColors=[],detail=Math.min(f.length,q.characterDetail||detailLimit()),palette=this.skinPalette||{},shirts=enemy?[[.95,.19,.27],[1,.31,.16],[.74,.09,.20],[.92,.27,.39]]:(palette.shirts||[[.14,.52,.98],[.08,.67,.91],[.24,.42,.91],[.18,.72,.73],[.37,.49,.98]]),skins=[[1,.70,.49],[.72,.43,.28],[.94,.59,.40],[.48,.29,.21],[.84,.50,.32],[.62,.36,.24]],trousers=enemy?[[.30,.06,.09],[.40,.08,.10]]:[[.05,.12,.28],[.10,.10,.22],[.07,.22,.38],[.15,.12,.20]];
+    const shadows=[],shadowColors=[],hairs=[],hairColors=[],belts=[],beltColors=[],hoods=[],hoodColors=[],pockets=[],pocketColors=[],torsoBands=[],torsoBandColors=[],detail=Math.min(f.length,q.characterDetail||detailLimit()),palette=this.skinPalette||{},shirts=enemy?[[.95,.19,.27],[1,.31,.16],[.74,.09,.20],[.92,.27,.39]]:(palette.shirts||[[.14,.52,.98],[.08,.67,.91],[.24,.42,.91],[.18,.72,.73],[.37,.49,.98]]),skins=[[1,.70,.49],[.72,.43,.28],[.94,.59,.40],[.48,.29,.21],[.84,.50,.32],[.62,.36,.24]],trousers=enemy?[[.30,.06,.09],[.40,.08,.10]]:[[.05,.12,.28],[.10,.10,.22],[.07,.22,.38],[.15,.12,.20]];
     const metrics=this.metrics(renderCount),groundY=opts.groundY==null ? .012 : opts.groundY;
     for(const qf of f){
       const ap=APPEARANCES[qf.index%APPEARANCES.length],torso=TORSO_STYLES[qf.index%TORSO_STYLES.length],jitter=enemy?{x:0,z:0}:crowdOffset(qf.index),row=Math.floor(qf.index/Math.max(1,metrics.cols)),phase=time*(6.25+runSpeed*2.05)+qf.index*.57+row*.13,wave=Math.sin(phase),counter=Math.cos(phase),runAmount=mode==='idle' ? .20 : mode==='finish' ? .50 : mode==='battle' ? .37 : 1,bob=Math.abs(wave)*.050*runAmount,scale=scale0,follow=(motion.strafe||0)*clamp(qf.z/Math.max(1,metrics.depth),0,1),massSway=enemy?0:Math.sin(time*1.28+row*.23+qf.index*.09)*.035*(mode==='run'?1:.45),x=rootX+(qf.x+jitter.x-follow*.58+massSway)*scale,z=rootZ+(qf.z+jitter.z)*direction*scale;
@@ -70,13 +69,11 @@
         matrixPush(parts[n],colors[n],multiply(root,local),tint.map(v=>Math.min(1,v*sv)));
       }
       if(qf.index<detail){
-        const hair=HAIR[(qf.index+ap.hair)%HAIR.length],shoe=SHOES[(qf.index*3)%SHOES.length],hairY=1.43+(ap.head[1]-1)*.05;
+        const hair=HAIR[(qf.index+ap.hair)%HAIR.length],hairY=1.43+(ap.head[1]-1)*.05;
         if(ap.hair===0)matrixPush(hairs,hairColors,multiply(root,compose(0,hairY,.01,0,0,0,.37,.13,.34)),hair);
         else if(ap.hair===1){matrixPush(hairs,hairColors,multiply(root,compose(-.10,hairY,.02,0,0,-.14,.25,.16,.29)),hair);matrixPush(hairs,hairColors,multiply(root,compose(.13,hairY-.01,.01,0,0,.12,.24,.15,.28)),hair);}
         else if(ap.hair===2)matrixPush(hairs,hairColors,multiply(root,compose(0,hairY+.02,.01,0,0,0,.34,.19,.36)),hair);
         else{matrixPush(hairs,hairColors,multiply(root,compose(0,hairY+.03,.01,0,0,0,.31,.23,.33)),hair);matrixPush(hairs,hairColors,multiply(root,compose(0,hairY+.17,.02,0,0,0,.15,.13,.16)),hair);}
-        matrixPush(shoes,shoeColors,multiply(root,compose(-.09,.12+leftLift*.22,.045+leftZ,legL*.55,0,0,.16,.09,.24)),shoe);
-        matrixPush(shoes,shoeColors,multiply(root,compose(.09,.12+rightLift*.22,.045+rightZ,legR*.55,0,0,.16,.09,.24)),shoe);
         matrixPush(belts,beltColors,multiply(root,compose(0,.70,0,0,0,0,.31,.055,.18)),shade(trouser,.62));
         if(torso.hood){
           matrixPush(hoods,hoodColors,multiply(root,compose(0,1.10,.10,.10,0,0,.34,.22,.28)),shade(shirt,.86));
@@ -94,7 +91,6 @@
     this.r.drawInstances(this.meshes.cylinder,flatten(shadows),new Float32Array(shadowColors),shadows.length);
     for(const n of names)this.r.drawInstances(this.meshes.characterParts[n],flatten(parts[n]),new Float32Array(colors[n]),parts[n].length);
     if(hairs.length)this.r.drawInstances(this.meshes.sphere,flatten(hairs),new Float32Array(hairColors),hairs.length);
-    if(shoes.length)this.r.drawInstances(this.meshes.box,flatten(shoes),new Float32Array(shoeColors),shoes.length);
     if(belts.length)this.r.drawInstances(this.meshes.box,flatten(belts),new Float32Array(beltColors),belts.length);
     if(hoods.length)this.r.drawInstances(this.meshes.sphere,flatten(hoods),new Float32Array(hoodColors),hoods.length);
     if(pockets.length)this.r.drawInstances(this.meshes.box,flatten(pockets),new Float32Array(pocketColors),pockets.length);
@@ -319,7 +315,7 @@
       r.draw(m.cylinder,compose(k.x,.018,k.z,0,0,0,.42*s,.018,.28*s),[.08,.10,.14],.38*fade);
       r.draw(m.box,compose(k.x,k.y+.26,k.z,rot*.35,roll,rot*.20,.38*s,.48*s,.25*s),shirt,fade);
       r.draw(m.sphere,compose(k.x+.16*Math.sin(roll),k.y+.68,k.z-.10*Math.cos(roll),rot*.18,roll*.35,0,.30*s,.34*s,.30*s),skin,fade);
-      for(const side of[-1,1]){r.draw(m.cylinder,compose(k.x+side*.20,k.y+.28,k.z,rot*.6,0,side*1.05+roll,.07*s,.48*s,.07*s),skin,fade);r.draw(m.cylinder,compose(k.x+side*.11,k.y-.05,k.z,rot*.5,0,side*.38+roll,.08*s,.50*s,.08*s),tr,fade);r.draw(m.box,compose(k.x+side*.18,k.y-.26,k.z+.05,rot*.6,roll,0,.15*s,.08*s,.23*s),[.05,.06,.09],fade);}
+      for(const side of[-1,1]){r.draw(m.cylinder,compose(k.x+side*.20,k.y+.28,k.z,rot*.6,0,side*1.05+roll,.07*s,.48*s,.07*s),skin,fade);r.draw(m.cylinder,compose(k.x+side*.11,k.y-.05,k.z,rot*.5,0,side*.38+roll,.08*s,.50*s,.08*s),tr,fade);}
     }
   };
 
