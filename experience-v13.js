@@ -256,9 +256,9 @@
   const oldBattle=P.updateBattle;
   P.updateBattle=function(dt){
     const e=this.battleEnemy,before=e?.battleTicks||0;if(e?.boss)syncBossAI(this,e);
-    oldBattle.call(this,e?.boss?dt*bossSpeed(e):dt);
+    oldBattle.call(this,dt);
     if(e?.boss){
-      if(this.battleEnemy===e){syncBossAI(this,e);for(let tick=before+1;tick<=(e.battleTicks||0);tick++)if(tick%18===8)ensure(this).crowd.shock=Math.max(ensure(this).crowd.shock,.72);}
+      if(this.battleEnemy===e){syncBossAI(this,e);const cycle=e.v13Phase>=3?13:e.v13Phase>=2?15:18,impact=Math.max(5,Math.round(cycle*.44));for(let tick=before+1;tick<=(e.battleTicks||0);tick++)if(tick%cycle===impact)ensure(this).crowd.shock=Math.max(ensure(this).crowd.shock,.72);}
       else if(e.count<=0&&!e.__v13Death){e.__v13Death=true;startBossDeath(this,e);}
     }
   };
