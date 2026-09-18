@@ -91,7 +91,7 @@
   const oldReturn=P.returnToMenu;
   P.returnToMenu=function(){oldReturn.call(this);renderUI(this);};
   const oldCollectMoon=P.collectMoon;
-  P.collectMoon=function(o){const before=this.save.moons;oldCollectMoon.call(this,o);const gain=Math.max(0,this.save.moons-before),state=ensureState(this);state.totalMoons+=gain;save(state);if(state.totalMoons>=1000)unlockAchievement(this,'moons');};
+  P.collectMoon=function(o){const before=this.save.moons;oldCollectMoon.call(this,o);const gain=Math.max(0,this.save.moons-before),state=ensureState(this);state.totalMoons+=gain;save(state);if(state.totalMoons>=1000||this.save.moons>=1000)unlockAchievement(this,'moons');};
   const oldSetCount=P.setCrowdCount;
   P.setCrowdCount=function(v,pop){oldSetCount.call(this,v,pop);const state=ensureState(this),n=Math.max(0,Math.round(v));if(n>state.bestCrowd){state.bestCrowd=n;save(state);}if(n>=100)unlockAchievement(this,'crowd');};
   const oldGate=P.applyGate;
