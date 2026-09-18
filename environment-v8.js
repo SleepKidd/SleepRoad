@@ -84,17 +84,60 @@
     g.__decorCarMeshes=groups.map(group=>({mesh:g.renderer.createMesh({positions,normals,indices:group.indices}),color:group.color,name:group.name,tris:group.tris}));
     return g.__decorCarMeshes;
   }
-  function drawDecorCar(g,x,z,index=0){
-    const r=g.renderer,m=g.meshes,parts=buildDecorCarMeshes(g);
-    if(!parts.length)return;
-    const side=x<0?-1:1,scale=.305,y=-.205,yaw=side<0?.035:-.035;
-    shadow(g,x,z,1.00,.64,.16);
+  function decodeDeltaIndices(b64,expected){
+    const bytes=decodeModelBytes(b64),out=new Uint16Array(expected);let p=0,prev=0;
+    for(let i=0;i<expected;i++){
+      let shift=0,value=0,b;
+      do{if(p>=bytes.length)throw new Error('Truncated SuperSport wheel index stream');b=bytes[p++];value|=(b&127)<<shift;shift+=7;}while(b&128);
+      const delta=(value>>>1)^-(value&1);prev+=delta;
+      if(prev<0||prev>65535)throw new Error('Invalid SuperSport wheel index');
+      out[i]=prev;
+    }
+    if(p!==bytes.length)throw new Error('Unexpected SuperSport wheel index data');
+    return out;
+  }
+  function buildDecorWheelMeshes(g){
+    if(g.__decorWheelMeshes)return g.__decorWheelMeshes;
+    const model=window.__SleepRoadDecorWheelModel;
+    if(!model?.meta||!model.p||!model.groups?.length)return[];
+    const q=decodeModelU16(model.p),lo=model.bounds.min,hi=model.bounds.max,total=model.meta.verts|0,positions=new Float32Array(total*3);
+    if(q.length!==total*3)throw new Error('Invalid SuperSport wheel position buffer');
+    for(let i=0;i<q.length;i++){const axis=i%3;positions[i]=lo[axis]+q[i]/65535*(hi[axis]-lo[axis]);}
+    const decoded=model.groups.map(group=>({group,indices:decodeDeltaIndices(group.di,(group.tris|0)*3)}));
+    const normals=new Float32Array(positions.length);
+    for(const entry of decoded){
+      const ii=entry.indices;
+      for(let k=0;k<ii.length;k+=3){
+        const ia=ii[k]*3,ib=ii[k+1]*3,ic=ii[k+2]*3;
+        const abx=positions[ib]-positions[ia],aby=positions[ib+1]-positions[ia+1],abz=positions[ib+2]-positions[ia+2];
+        const acx=positions[ic]-positions[ia],acy=positions[ic+1]-positions[ia+1],acz=positions[ic+2]-positions[ia+2];
+        const nx=aby*acz-abz*acy,ny=abz*acx-abx*acz,nz=abx*acy-aby*acx;
+        for(const o of[ia,ib,ic]){normals[o]+=nx;normals[o+1]+=ny;normals[o+2]+=nz;}
+      }
+    }
+    for(let i=0;i<total;i++){const o=i*3,len=Math.hypot(normals[o],normals[o+1],normals[o+2])||1;normals[o]/=len;normals[o+1]/=len;normals[o+2]/=len;}
+    g.__decorWheelMeshes=decoded.map(({group,indices})=>({mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,alpha:group.alpha??1,tris:group.tris,name:group.name}));
+    return g.__decorWheelMeshes;
+  }
+  function drawDecorCar(g,x,z,index=0,opts={}){
+    const r=g.renderer,m=g.meshes,body=buildDecorCarMeshes(g),wheels=buildDecorWheelMeshes(g),wheelModel=window.__SleepRoadDecorWheelModel;
+    if(!body.length)return;
+    const side=x<0?-1:1,scale=opts.scale??.42,y=opts.groundY??-.205,yaw=opts.yaw??(side<0?.035:-.035);
+    if(opts.shadow!==false)shadow(g,x,z,1.28*scale/.42,.78*scale/.42,.16);
     const model=compose(x,y,z,0,yaw,0,scale,scale,scale);
-    for(const part of parts)r.draw(part.mesh,model,part.color,1);
+    for(const part of body)r.draw(part.mesh,model,part.color,1);
+    if(wheels.length&&wheelModel?.meta?.wheelPlacements){
+      const ws=wheelModel.meta.wheelScale||1,c=Math.cos(yaw),sn=Math.sin(yaw);
+      for(const p of wheelModel.meta.wheelPlacements){
+        const ox=(p[0]*c+p[2]*sn)*scale,oz=(-p[0]*sn+p[2]*c)*scale,wy=y+p[1]*scale;
+        const wm=compose(x+ox,wy,z+oz,0,yaw,0,scale*ws,scale*ws,scale*ws);
+        for(const part of wheels)r.draw(part.mesh,wm,part.color,part.alpha);
+      }
+    }
     if(envCfg(g).detail>0){
-      const lamp=[1,.72,.24],front=z-1.72;
-      r.draw(m.sphere,compose(x-side*.34,y+.34,front,0,0,0,.055,.035,.10),lamp,.82);
-      r.draw(m.sphere,compose(x+side*.34,y+.34,front,0,0,0,.055,.035,.10),lamp,.82);
+      const lamp=[1,.72,.24],front=z-2.15*scale/.42;
+      r.draw(m.sphere,compose(x-side*.46*scale/.42,y+.54*scale/.42,front,0,0,0,.065,.040,.11),lamp,.82);
+      r.draw(m.sphere,compose(x+side*.46*scale/.42,y+.54*scale/.42,front,0,0,0,.065,.040,.11),lamp,.82);
     }
   }
   function bush(g,x,z,s=1,tone=0){
@@ -330,5 +373,5 @@
     oldRender.call(this);
   };
 
-  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock};
+  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock,buildDecorCarMeshes,buildDecorWheelMeshes,drawDecorCar};
 })();
