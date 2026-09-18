@@ -73,4 +73,27 @@ assert(sawTimed&&sawNoHit&&sawBonus,'special level profiles did not appear');
 for(const required of ['movingWall','fallingBlock','fireline','laser','pendulum','crusher','hammer','roller','saw','mines'])assert(seenKinds.has(required),`missing ${required}`);
 for(const level of [10,20,30,40,50,60,100]){const p=D.profileForLevel(level);assert(p.bossLevel);assert(D.bossName(level));assert(D.bossStrength(level,p.sections)>0);}
 assert(maxObjects<420);
+
+function bestGateCount(count,gate){return Math.max(window.SleepRoadSystems.applyGateValue(count,gate.left),window.SleepRoadSystems.applyGateValue(count,gate.right));}
+function surviveEnemy(count,enemy){
+  let foes=enemy.count,ticks=0;
+  if(enemy.boss){
+    while(count>0&&foes>0&&ticks<10000){ticks++;const dealt=Math.max(1,Math.floor(count/30));foes=Math.max(0,foes-dealt);if(ticks%3===0)count=Math.max(0,count-Math.max(1,Math.ceil(enemy.maxCount/70)));}
+    return count;
+  }
+  if(enemy.elite)return count-Math.floor(foes/2);
+  return count-foes;
+}
+for(let level=1;level<=500;level++){
+  const state=Object.assign(Object.create(game),{level,time:0,playerX:0,playerZ:1.6,playerCount:80,baseSpeed:9,objects:[]});
+  game.generateLevel.call(state,level);
+  let count=8,banked=0;
+  for(const o of state.objects){
+    if(o.type==='gate')count=bestGateCount(count,o);
+    else if(o.type==='rescue')count=clamp(count+o.count,1,999);
+    else if(o.type==='split'){const active=Math.max(1,Math.ceil(count*Math.max(o.leftRatio,o.rightRatio)));banked+=Math.max(0,count-active);count=active;}
+    else if(o.type==='merge'){count=clamp(count+banked,1,999);banked=0;}
+    else if(o.type==='enemy'){count=surviveEnemy(count,o);assert(count>0,`level ${level} has a forced enemy defeat on an ideal route`);}
+  }
+}
 console.log(`PASS: Level Director 1-500, ${seenKinds.size} obstacle kinds, max ${maxObjects} objects`);
