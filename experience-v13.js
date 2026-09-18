@@ -199,12 +199,55 @@
     if(o.kind==='rainChase'&&g.v12){g.v12.weatherType='rain';g.v12.weatherIntensity=1.3;g.v12.weatherBoost=1.4;}
   }
 
+  function decodeTrafficBytes(b64){
+    const raw=atob(b64),out=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i)&255;
+    return out;
+  }
+  function decodeTrafficU16(b64){
+    const b=decodeTrafficBytes(b64);
+    if(b.byteLength%2)throw new Error('Invalid SuperSport traffic buffer');
+    const v=new DataView(b.buffer,b.byteOffset,b.byteLength),out=new Uint16Array(b.byteLength>>1);
+    for(let i=0;i<out.length;i++)out[i]=v.getUint16(i*2,true);
+    return out;
+  }
+  function buildTrafficCarMeshes(g){
+    if(g.__trafficCarMeshes)return g.__trafficCarMeshes;
+    const part=window.SleepRoadTrafficCarModel?.body;
+    if(!part?.groups?.length||!part.p||!part.n)return[];
+    const lo=part.bounds.min,hi=part.bounds.max,qp=decodeTrafficU16(part.p),nb=decodeTrafficBytes(part.n),positions=new Float32Array(qp.length),normals=new Float32Array(nb.length);
+    for(let i=0;i<qp.length;i++){const axis=i%3;positions[i]=lo[axis]+(qp[i]/65535)*(hi[axis]-lo[axis]);}
+    for(let i=0;i<nb.length;i++){const signed=nb[i]>127?nb[i]-256:nb[i];normals[i]=clamp(signed/127,-1,1);}
+    g.__trafficCarMeshes=part.groups.map(group=>{
+      const indices=group.__indices||(group.__indices=decodeTrafficU16(group.i));
+      if(indices.length!==group.tris*3)throw new Error('Invalid SuperSport material group: '+group.name);
+      return{mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,alpha:group.alpha??1};
+    });
+    return g.__trafficCarMeshes;
+  }
+  function drawTrafficCar(g,x,y,z,side,index){
+    const r=g.renderer,m=g.meshes,scale=.285,yaw=side<0?0:Math.PI,model=compose(x,y,z,0,yaw,0,scale,scale,scale);
+    r.draw(m.cylinder,compose(x,y+.012,z,0,0,0,.78,.010,1.72),[.035,.04,.05],.13);
+    for(const part of buildTrafficCarMeshes(g))r.draw(part.mesh,model,part.color,part.alpha);
+    const wheel=[.035,.038,.045],hub=[.40,.43,.48],wheelY=y+.19;
+    for(const sx of[-1,1])for(const sz of[-1,1]){
+      const wx=x+sx*.63,wz=z+sz*1.08;
+      r.draw(m.cylinder,compose(wx,wheelY,wz,0,0,Math.PI/2,.20,.13,.20),wheel,.98);
+      r.draw(m.cylinder,compose(wx+sx*.075,wheelY,wz,0,0,Math.PI/2,.105,.025,.105),hub,.92);
+    }
+    const front=side<0?z+1.58:z-1.58,rear=side<0?z-1.58:z+1.58;
+    for(const dx of[-.42,.42]){
+      r.draw(m.sphere,compose(x+dx,y+.34,front,0,0,0,.07,.06,.045),[1,.88,.58],.86);
+      r.draw(m.sphere,compose(x+dx,y+.31,rear,0,0,0,.065,.055,.04),[1,.05,.04],.72);
+    }
+  }
+
   function drawLivingWorld(g){
     if(g.state==='menu')return;const r=g.renderer,m=g.meshes,p=g.biome.palette,detail=qualityDetail(g),front=(g.playerZ||1.6)-6.0,count=detail>.7?6:4,span=92;
     for(let i=0;i<count;i++){
       const side=i%2?-1:1,z=10-(((i*17.3-(g.travel||0)*(.45+i*.025)+g.time*(1.2+i*.22))%span)+span)%span;if(z>=front)continue;
-      const x=side*(9.6+(i%3)*1.25),y=elevationAt(g,(g.travel||0)-z)+.38,c=i%2?mix(p.structure,p.accent,.25):p.structure;
-      r.draw(m.box,compose(x,y,z,0,0,0,1.15,.55,1.8),c,.82);r.draw(m.box,compose(x,y+.34,z-.20,0,0,0,.70,.30,.78),mix(c,COLORS.white,.22),.56);
+      const x=side*(9.6+(i%3)*1.25),y=elevationAt(g,(g.travel||0)-z)+.04;
+      drawTrafficCar(g,x,y,z,side,i);
     }
     if(g.biome?.id==='factory'||g.biome?.id==='neon')for(const side of[-1,1]){const x=side*10.8,z=-28-((g.travel*.35)%42),a=g.time*1.6*side;r.draw(m.cylinder,compose(x,2.0,z,0,0,0,.18,4,.18),p.structure,.88);for(let i=0;i<4;i++)r.draw(m.box,compose(x+Math.cos(a+i*TAU/4)*.75,3.2+Math.sin(a+i*TAU/4)*.75,z,0,0,a+i*TAU/4,1.15,.09,.12),p.accent,.68);}
   }
