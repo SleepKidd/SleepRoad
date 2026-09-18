@@ -137,6 +137,8 @@ for(const token of ['SuperSport_Car.blend','"runtimeVerts":734','"runtimeTris":1
 const envSrc=fs.readFileSync('environment-v8.js','utf8');
 assert.doesNotThrow(()=>new Function(envSrc));
 assert(envSrc.includes('buildDecorCarMeshes'));
+assert(envSrc.includes('buildDecorWheelMeshes'));
+assert(envSrc.includes('decodeDeltaIndices'));
 assert(envSrc.includes("else if(b.id==='city')drawDecorCar(this,x,z,i);"));
 
 const visualSrc=fs.readFileSync('visual-v9.js','utf8');
@@ -147,14 +149,23 @@ assert(visualSrc.includes('ap.arm[1]*.72'));
 const index=fs.readFileSync('index.html','utf8');
 assert(index.includes('pickup-model.js'));
 assert(index.includes('supersport-car.js'));
+for(const n of ['supersport-wheel-0.js','supersport-wheel-1.js','supersport-wheel-2.js','supersport-wheel-3.js'])assert(index.includes(n),n);
 assert(!index.includes('gclass-glb.js'));
 assert(index.indexOf('supersport-car.js')<index.indexOf('environment-v8.js'));
 assert(index.indexOf('pickup-model.js')<index.indexOf('experience-v14.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v39';"));
+assert(sw.includes("const CACHE='sleep-road-v40';"));
 assert(sw.includes('pickup-model.js'));
 assert(sw.includes('supersport-car.js'));
+for(const n of ['supersport-wheel-0.js','supersport-wheel-1.js','supersport-wheel-2.js','supersport-wheel-3.js'])assert(sw.includes(n),n);
 assert(!sw.includes('gclass-glb.js'));
 
-console.log('PASS: pickup hazard x2 at 75%, SuperSport roadside cars, boss proportions and cache wiring');
+const v13=fs.readFileSync('experience-v13.js','utf8');
+assert.doesNotThrow(()=>new Function(v13));
+assert(v13.includes('E8.drawDecorCar(g,x,z,i'));
+assert(!v13.includes('1.15,.55,1.8),c,.82'));
+
+const wheelFiles=['assets/models/supersport-wheel-0.js','assets/models/supersport-wheel-1.js','assets/models/supersport-wheel-2.js','assets/models/supersport-wheel-3.js'];
+for(const file of wheelFiles){const w=fs.readFileSync(file,'utf8');assert.doesNotThrow(()=>new Function(w));}
+console.log('PASS: pickup x2 at 75%, complete SuperSport body+wheels, living-world block replacement, boss proportions and cache wiring');
