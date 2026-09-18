@@ -120,9 +120,30 @@
     }
   }
 
+  function drawSkyDecor(g,b,p,cfg){
+    const r=g.renderer,m=g.meshes,id=b.id;
+    if(id==='meadow'){
+      r.draw(m.sphere,compose(-12,17,-118,0,0,0,3.0,3.0,3.0),[1,.83,.34],.96);
+      const clouds=cfg.detail>0?5:3;
+      for(let i=0;i<clouds;i++){const x=-18+i*9+(hash(i*3.7)-.5)*4,z=-72-i*12,y=10.5+(i%2)*1.7,s=.8+hash(i*5.2)*.55,col=[.93,.97,1];r.draw(m.sphere,compose(x,y,z,0,0,0,2.7*s,.86*s,1.05*s),col,.88);r.draw(m.sphere,compose(x+1.8*s,y-.08,z,0,0,0,1.85*s,.68*s,.88*s),col,.88);}
+    }else if(id==='desert'){
+      r.draw(m.sphere,compose(-13,15,-124,0,0,0,3.4,3.4,3.4),[1,.73,.28],.92);
+      r.draw(m.box,compose(0,2.5,-112,0,0,0,78,8,.1),[.95,.68,.35],.055);
+    }else if(id==='factory'){
+      for(let i=0;i<4;i++){const x=-18+i*12,z=-108-i*7,y=8+i%2*1.2;r.draw(m.sphere,compose(x,y,z,0,0,0,2.2,1.0,1.2),[.60,.63,.66],.24);}
+    }else if(id==='city'){
+      r.draw(m.sphere,compose(-12,15,-122,0,0,0,2.25,2.25,2.25),[.82,.88,1],.82);
+      if(cfg.detail>0)for(let i=0;i<16;i++){const x=-28+hash(i*4.2)*56,y=8+hash(i*7.4)*10,z=-105-hash(i*9.8)*38,s=.035+hash(i*2.1)*.045;r.draw(m.sphere,compose(x,y,z,0,0,0,s,s,s),[.72,.84,1],.72);}
+    }else{
+      r.draw(m.sphere,compose(-13,14,-120,0,0,0,2.2,2.2,2.2),p.accent,.34);
+      if(cfg.detail>0)for(let i=0;i<10;i++){const x=-24+hash(i*5.8)*48,y=7+hash(i*3.4)*10,z=-100-hash(i*8.2)*42,s=.04+hash(i)*.05;r.draw(m.sphere,compose(x,y,z,0,0,0,s,s,s),i%2?p.accent:p.good,.74);}
+    }
+  }
+
   P.drawEnvironment=function(){
     const r=this.renderer,m=this.meshes,b=this.biome,p=b.palette,cfg=envCfg(this),span=310;
     r.draw(m.box,compose(0,-.78,-132,0,0,0,92,1.0,316),p.ground);
+    drawSkyDecor(this,b,p,cfg);
     if(b.id==='meadow')drawMeadowDetails(this,p,cfg);
     else if(b.id==='desert')drawDesertBackdrop(this,p,cfg);
     else if(b.id==='factory')drawFactoryBackdrop(this,p,cfg);
@@ -186,6 +207,17 @@
     oldFinishScene.call(this);const r=this.renderer,m=this.meshes,p=this.biome.palette,cfg=envCfg(this);
     for(const side of[-1,1])for(let i=0;i<4;i++){const x=side*(6.8+i*.85),z=this.playerZ-3.2-i*2.4,h=2.3+i*.35;r.draw(m.cylinder,compose(x,h*.5,z,0,0,0,.10,h,.10),p.structure);r.draw(m.box,compose(x,h,z,0,0,side*.15,.62,.38,.10),i%2?p.accent:p.good);}
     if(cfg.detail>0)for(let i=0;i<12;i++){const x=(i%2?-1:1)*(6.4+(i%3)*.8),z=this.playerZ-2-(i%6)*1.7;r.draw(m.sphere,compose(x,3.6+(i%3)*.4,z,0,0,0,.08,.08,.08),i%2?p.accent:COLORS.gold,.78);}
+  };
+
+  const oldRender=P.render;
+  P.render=function(){
+    const p=this.biome?.palette;
+    if(p&&S.UI?.hud){
+      const toCss=a=>'rgb('+a.map(v=>Math.round(clamp(v,0,1)*255)).join(',')+')';
+      S.UI.hud.style.setProperty('--hud-accent',toCss(p.accent));
+      S.UI.hud.style.setProperty('--hud-secondary',toCss(p.good));
+    }
+    oldRender.call(this);
   };
 
   window.SleepRoadEnvironmentV8={envCfg,hash,tree,bush,grassTuft,flower,rock};
