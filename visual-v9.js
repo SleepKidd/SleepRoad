@@ -113,10 +113,12 @@
     }
     const railZ=9-wrap(165-g.travel*.99,330);
     if(railZ>-92&&railZ<15){
+      r.draw(m.box,compose(0,-.14,railZ,0,0,0,12.45,.22,15.2),shade(p.road,.88),.98);
+      r.draw(m.box,compose(0,-.28,railZ,0,0,0,13.25,.16,15.4),p.structure,.82);
       for(const side of[-1,1]){
         const x=side*6.75;
         r.draw(m.box,compose(x,.65,railZ,0,0,0,.10,.16,15),p.structure);
-        for(let j=-3;j<=3;j++)r.draw(m.cylinder,compose(x,.36,railZ+j*2.3,0,0,0,.065,.72,.065),p.structure);
+        for(let j=-3;j<=3;j++){r.draw(m.cylinder,compose(x,.36,railZ+j*2.3,0,0,0,.065,.72,.065),p.structure);r.draw(m.box,compose(side*7.55,-.52,railZ+j*2.3,0,0,0,1.55,.30,.34),mix(p.structure,p.groundDark,.28),.90);}
       }
     }
     if(g.biome.id==='city'||g.biome.id==='factory'){
