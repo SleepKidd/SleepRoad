@@ -46,10 +46,15 @@
     r.draw(m.sphere,compose(x+.46*s,-.27+.24*s,z-.06*s,0,0,w,.58*s,.48*s,.52*s),c2);
   }
   function tree(g,x,z,s=1,variant=0,tone=0){
-    const r=g.renderer,m=g.meshes,p=g.biome.palette,wind=Math.sin(g.time*.72+variant*1.7+x*.04+z*.015)*.035,leafA=tone%2?mix(p.groundDark,p.good,.23):mix(p.groundDark,p.ground,.31),leafB=scale(leafA,1.13),leafC=mix(leafA,p.stripe,.09),trunk=tone%2?[.34,.22,.12]:[.29,.19,.11];
-    shadow(g,x,z,1.15*s,.66*s,.18);
+    const r=g.renderer,m=g.meshes,p=g.biome.palette,wind=Math.sin(g.time*.72+variant*1.7+x*.04+z*.015)*.035,leafA=tone%2?mix(p.groundDark,p.good,.23):mix(p.groundDark,p.ground,.31),leafB=scale(leafA,1.13),leafC=mix(leafA,p.stripe,.09),trunk=tone%2?[.34,.22,.12]:[.29,.19,.11],far=z<-66||Math.abs(x)>25;
+    if(!far)shadow(g,x,z,1.15*s,.66*s,.18);
     const trunkH=(variant===1?2.7:variant===3?1.65:2.15)*s;
-    r.draw(m.cylinder,compose(x,-.23+trunkH*.48,z,0,0,wind*.35,.24*s,trunkH,.24*s),trunk);
+    r.draw(m.cylinder,compose(x,-.23+trunkH*.48,z,0,0,wind*.35,(far?.19:.24)*s,trunkH,(far?.19:.24)*s),trunk);
+    if(far){
+      if(variant===1)r.draw(m.cone,compose(x,1.40*s,z,0,0,wind,1.30*s,2.35*s,1.30*s),leafA);
+      else r.draw(m.sphere,compose(x,1.05*s,z,0,0,wind,1.25*s,.92*s,1.10*s),leafA);
+      return;
+    }
     if(variant===0){
       r.draw(m.sphere,compose(x,.85*s,z,0,0,wind,1.25*s,1.08*s,1.15*s),leafA);
       r.draw(m.sphere,compose(x-.55*s,1.18*s,z+.03*s,0,0,-wind,.82*s,.72*s,.78*s),leafB);
