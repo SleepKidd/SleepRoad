@@ -12,6 +12,7 @@
 .menu.v7-themed>.tap-to-play,
 .menu.v7-themed>.v6-progress-map{display:none!important}
 .menu.v7-themed:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(8,12,25,.16),transparent 20% 80%,rgba(8,12,25,.16));mix-blend-mode:multiply}
+.menu.v7-themed:after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle at 50% 35%,var(--v7-accent-soft),transparent 48%);opacity:0}.menu.v7-theme-shift:after{animation:v7-theme-shift .52s ease-out}
 .menu.v7-themed .menu-top{z-index:6}.menu.v7-themed .square-btn,.menu.v7-themed .menu-wallet{background:rgba(30,36,61,.72);border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 28px rgba(12,16,34,.18),inset 0 1px 0 rgba(255,255,255,.17)}
 .menu.v7-themed .shop{border-color:color-mix(in srgb,var(--v7-accent) 26%,rgba(255,255,255,.18));background:linear-gradient(145deg,rgba(39,42,67,.86),rgba(28,31,54,.80));box-shadow:0 18px 48px rgba(19,22,42,.28),0 0 34px var(--v7-accent-soft),inset 0 1px 0 rgba(255,255,255,.14)}
 .menu.v7-themed .shop-card{transition:transform .16s cubic-bezier(.2,.8,.2,1),filter .16s ease,box-shadow .16s ease}.menu.v7-themed .shop-card:hover{transform:translateY(-2px);filter:brightness(1.025)}.menu.v7-themed .shop-card:active{transform:translateY(2px) scale(.985)}
@@ -45,6 +46,7 @@ box-shadow:0 28px 70px rgba(12,16,34,.32),0 0 42px var(--v7-accent-soft),inset 0
 
 .menu.v7-themed .result-card{border:1px solid rgba(255,255,255,.65);box-shadow:0 22px 60px rgba(17,19,38,.32)}.result-reward{border:1px solid rgba(255,196,53,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 7px 16px rgba(123,81,8,.08)}
 
+@keyframes v7-theme-shift{0%{opacity:.72}100%{opacity:0}}
 @keyframes v7-orb-float{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.55}50%{transform:translate3d(14px,-11px,0) scale(1.14);opacity:.95}}
 @keyframes v7-hub-refresh{0%{opacity:.72;transform:translateX(-50%) translateY(6px) scale(.99)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 @keyframes v7-backdrop{from{opacity:0}to{opacity:1}}
