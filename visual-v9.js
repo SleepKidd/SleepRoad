@@ -120,9 +120,16 @@
       if(mode==='finish'){const cheer=clamp((finish-.34)/.44,0,1),cw=Math.sin(time*8+qf.index*.45);armL=lerp(wave*.30,-1.24+cw*.12,cheer);armR=lerp(-wave*.30,-1.24-cw*.12,cheer);legL=-wave*.22;legR=wave*.22;extraY=cheer*Math.abs(cw)*.11;}
       const squash=landing*.12,stretch=takeoff*.07,rootSx=scale*ap.width*(1+squash*.42-stretch*.16),rootSy=scale*ap.height*(1-squash+stretch),rootSz=scale*(1+squash*.28-stretch*.08),turn=direction<0?Math.PI:0,root=compose(x,baseY+bob+extraY,z,bodyLean,turn+bodyYaw,bodyRoll,rootSx,rootSy,rootSz);
       const rawShirt=shirts[(qf.index*7)%shirts.length],shirt=!enemy&&qf.index===0&&game?.v11?.leaderColor?game.v11.leaderColor:(enemy?rawShirt:softenShirt(rawShirt)),skin=skins[(qf.index*3)%skins.length],trouser=trousers[(qf.index*5)%trousers.length],leftLift=Math.max(0,wave)*.082*runAmount,rightLift=Math.max(0,-wave)*.082*runAmount,leftZ=counter*.038*runAmount,rightZ=-counter*.038*runAmount;
-      const pivots={head:[0,1.21,0],body:[0,.01,0],leftArm:[-.205,1.03,0],rightArm:[.205,1.03,0],leftLeg:[-.09,.62,0],rightLeg:[.09,.62,0]};
+      const pivots=boss
+        ?{head:[0,1.10,0],body:[0,.01,0],leftArm:[-.225,.99,0],rightArm:[.225,.99,0],leftLeg:[-.105,.60,0],rightLeg:[.105,.60,0]}
+        :{head:[0,1.21,0],body:[0,.01,0],leftArm:[-.205,1.03,0],rightArm:[.205,1.03,0],leftLeg:[-.09,.62,0],rightLeg:[.09,.62,0]};
       const rotations={head:headPitch,body:0,leftArm:armL,rightArm:armR,leftLeg:legL,rightLeg:legR};
-      const bodyScale=ap.body.map((x,i)=>x*torso.body[i]),partScale={head:ap.head,body:bodyScale,leftArm:ap.arm,rightArm:ap.arm,leftLeg:ap.leg,rightLeg:ap.leg};
+      const bodyScale=ap.body.map((x,i)=>x*torso.body[i]),
+        bossHead=boss?[ap.head[0]*.64,ap.head[1]*.64,ap.head[2]*.64]:ap.head,
+        bossArm=boss?[ap.arm[0]*1.58,ap.arm[1]*.84,ap.arm[2]*1.58]:ap.arm,
+        bossLeg=boss?[ap.leg[0]*1.34,ap.leg[1]*.98,ap.leg[2]*1.34]:ap.leg,
+        bossBody=boss?[bodyScale[0]*1.30,bodyScale[1]*1.10,bodyScale[2]*1.25]:bodyScale,
+        partScale={head:bossHead,body:bossBody,leftArm:bossArm,rightArm:bossArm,leftLeg:bossLeg,rightLeg:bossLeg};
       for(const n of names){
         const p=pivots[n],lift=n==='leftLeg'?leftLift:n==='rightLeg'?rightLift:0,zoff=n==='leftLeg'?leftZ:n==='rightLeg'?rightZ:0,ps=partScale[n],local=compose(p[0],p[1]+lift,p[2]+zoff,rotations[n],0,0,ps[0],ps[1],ps[2]),tint=n==='head'||n.includes('Arm')?skin:n==='body'?shirt:trouser,sv=.91+(qf.index%4)*.026;
         matrixPush(parts[n],colors[n],multiply(root,local),tint.map(v=>Math.min(1,v*sv)));
@@ -236,15 +243,13 @@
       for(const side of[-1,1]){
         const x=side*7.35;
         r.draw(m.box,compose(x,.12,z,0,0,0,2.25,.22,4.9),mix(p.groundDark,theme.alt,.12),.96);
-        r.draw(m.cylinder,compose(x,1.18,z,0,0,0,.10,2.36,.10),p.structure);
         r.draw(m.box,compose(x,2.12,z,0,0,side*.10,.72,.48,.08),i%2?theme.color:theme.alt,.92);
         r.draw(m.sphere,compose(x,2.57,z-.18,0,0,0,major?.15:.11,major?.15:.11,major?.15:.11),theme.color,.94);
       }
     }
     for(const side of[-1,1]){
       const x=side*6.35;
-      r.draw(m.box,compose(x,.52,centerZ-2.0,0,0,0,.16,1.04,13),p.structure,.88);
-      for(let i=0;i<5;i++)r.draw(m.sphere,compose(x,.90,centerZ+7-i*3.1,0,0,0,.08,.08,.08),i%2?theme.color:theme.alt,.94);
+      for(let i=0;i<5;i++)r.draw(m.sphere,compose(x,.18,centerZ+7-i*3.1,0,0,0,.09,.06,.09),i%2?theme.color:theme.alt,.72);
     }
   }
 
