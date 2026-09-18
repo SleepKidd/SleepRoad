@@ -52,6 +52,7 @@
     const sections=level<=50?11+chapter*2+Math.min(3,Math.floor((local-1)/3)):22+Math.min(6,Math.floor(Math.max(0,endless-1)/20));
     const spacing=level<=50?Math.max(43,48-chapter*1.0):Math.max(40,44-Math.min(4,endless*.012));
     const baseSpeed=level<=50?Math.min(10.8,8.7+chapter*.42+(local-1)*.035):Math.min(12.6,10.85+endless*.012);
+    const finalBoss=true;
     const bossLevel=level%10===0;
     const eliteLevel=!bossLevel&&level%5===0;
     const bonusLevel=!bossLevel&&level>5&&level%15===5;
@@ -59,7 +60,7 @@
     const noHit=!bossLevel&&level>=18&&level%9===0;
     const title=bossLevel?`${biome.name} · BOSS`:bonusLevel?`${biome.name} · BONUS`:biome.name;
     const timedLimit=timed?Math.max(46,Math.round((sections*spacing)/baseSpeed*1.16)):0;
-    return{level,biome,chapter,local,endless,intensity,sections,spacing,baseSpeed,bossLevel,eliteLevel,bonusLevel,timed,noHit,timedLimit,title};
+    return{level,biome,chapter,local,endless,intensity,sections,spacing,baseSpeed,finalBoss,bossLevel,eliteLevel,bonusLevel,timed,noHit,timedLimit,title};
   }
 
   function encounterFor(rng,index,profile){
@@ -85,6 +86,10 @@
     const profile=profileForLevel(level),base=42+level*1.55+section*2.1;
     return Math.round(base*(profile.endless?1+Math.min(.9,profile.endless*.008):1));
   }
+  function finalBossStrength(level,section){
+    const profile=profileForLevel(level),full=bossStrength(level,section);
+    return profile.bossLevel?full:Math.max(28,Math.round(full*.72));
+  }
 
   function gateValues(level,rng,risk=false){
     const profile=profileForLevel(level),scale=1+profile.chapter*.16+Math.min(.75,profile.endless*.006);
@@ -103,5 +108,5 @@
 
   function obstaclePool(profile){return profile.endless?[...new Set(BIOMES.flatMap(b=>b.obstaclePool))]:profile.biome.obstaclePool.slice();}
 
-  window.SleepRoadLevelDirector={BIOMES,ENCOUNTERS,biomeForLevel,profileForLevel,encounterFor,bossName,bossStrength,gateValues,obstaclePool,clamp};
+  window.SleepRoadLevelDirector={BIOMES,ENCOUNTERS,biomeForLevel,profileForLevel,encounterFor,bossName,bossStrength,finalBossStrength,gateValues,obstaclePool,clamp};
 })();
