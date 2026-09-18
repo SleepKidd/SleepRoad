@@ -38,6 +38,10 @@ assert.equal(D.biomeForLevel(31).id,'city');
 assert.equal(D.biomeForLevel(41).id,'neon');
 assert(D.profileForLevel(200).intensity>1);
 assert(D.profileForLevel(200).sections>=D.profileForLevel(50).sections);
+assert(D.profileForLevel(51).sections>=D.profileForLevel(50).sections);
+assert(D.profileForLevel(51).baseSpeed>=D.profileForLevel(50).baseSpeed);
+assert(D.obstaclePool(D.profileForLevel(51)).includes('fireline'));
+assert(D.obstaclePool(D.profileForLevel(51)).includes('spinner'));
 
 const seenBiomes=new Set(),seenKinds=new Set(),seenTypes=new Set(),seenZones=new Set(),seenPowerups=new Set();
 let maxObjects=0,sawTimed=false,sawNoHit=false,sawBonus=false;
