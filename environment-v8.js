@@ -26,24 +26,24 @@
     ],c=colors[tone%colors.length];
     for(let j=0;j<3;j++){
       const dx=(j-1)*.12*s,rz=wind+(j-1)*.07;
-      r.draw(m.cone,compose(x+dx,-.02+s*.19,z+(j%2)*.08,0,0,rz,.14*s,.52*s,.14*s),c,.96);
+      r.draw(m.cone,compose(x+dx,-.27+.26*s,z+(j%2)*.08,0,0,rz,.14*s,.52*s,.14*s),c,.96);
     }
   }
   function flower(g,x,z,s=1,tone=0){
     const r=g.renderer,m=g.meshes,p=g.biome.palette,colors=[[1,.86,.28],[.98,.47,.70],[.76,.62,1],[1,.96,.82]],c=colors[tone%colors.length];
-    r.draw(m.cylinder,compose(x,-.03,z,0,0,0,.035*s,.35*s,.035*s),mix(p.groundDark,p.good,.25));
-    r.draw(m.sphere,compose(x,.17*s,z,0,0,0,.13*s,.08*s,.13*s),c);
+    r.draw(m.cylinder,compose(x,-.105,z,0,0,0,.035*s,.35*s,.035*s),mix(p.groundDark,p.good,.25));
+    r.draw(m.sphere,compose(x,.10+s*.02,z,0,0,0,.13*s,.08*s,.13*s),c);
   }
   function rock(g,x,z,s=1,tone=0){
     const c=tone%2?[.45,.48,.45]:[.55,.55,.50];shadow(g,x,z,.55*s,.33*s,.10);
-    g.renderer.draw(g.meshes.sphere,compose(x,-.08+s*.18,z,0,hash(x+z)*TAU,0,.70*s,.42*s,.56*s),c);
+    g.renderer.draw(g.meshes.sphere,compose(x,-.27+.21*s,z,0,hash(x+z)*TAU,0,.70*s,.42*s,.56*s),c);
   }
   function bush(g,x,z,s=1,tone=0){
     const r=g.renderer,m=g.meshes,p=g.biome.palette,c1=tone%2?mix(p.groundDark,p.good,.17):mix(p.groundDark,p.ground,.35),c2=scale(c1,1.10),w=Math.sin(g.time*1.35+x*.1+z*.03)*.035;
     shadow(g,x,z,.82*s,.52*s,.13);
-    r.draw(m.sphere,compose(x,.13*s,z,0,0,w,.88*s,.52*s,.72*s),c1);
-    r.draw(m.sphere,compose(x-.48*s,.20*s,z+.08*s,0,0,-w,.52*s,.44*s,.48*s),c2);
-    r.draw(m.sphere,compose(x+.46*s,.23*s,z-.06*s,0,0,w,.58*s,.48*s,.52*s),c2);
+    r.draw(m.sphere,compose(x,-.27+.26*s,z,0,0,w,.88*s,.52*s,.72*s),c1);
+    r.draw(m.sphere,compose(x-.48*s,-.27+.22*s,z+.08*s,0,0,-w,.52*s,.44*s,.48*s),c2);
+    r.draw(m.sphere,compose(x+.46*s,-.27+.24*s,z-.06*s,0,0,w,.58*s,.48*s,.52*s),c2);
   }
   function tree(g,x,z,s=1,variant=0,tone=0){
     const r=g.renderer,m=g.meshes,p=g.biome.palette,wind=Math.sin(g.time*.72+variant*1.7+x*.04+z*.015)*.035,leafA=tone%2?mix(p.groundDark,p.good,.23):mix(p.groundDark,p.ground,.31),leafB=scale(leafA,1.13),leafC=mix(leafA,p.stripe,.09),trunk=tone%2?[.34,.22,.12]:[.29,.19,.11];
