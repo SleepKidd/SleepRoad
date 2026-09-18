@@ -47,7 +47,7 @@
 
   const oldDrawEnemy=P.drawEnemy;
   P.drawEnemy=function(o,z){
-    const bossBattle=this.state==='battle'&&o===this.battleEnemy&&o.boss===true,cadence=.055,clock=bossBattle?((o.battleTicks||0)+(this.battleTimer||0)/cadence):0,cycle=18;
+    const bossBattle=this.state==='battle'&&o===this.battleEnemy&&o.boss===true,cadence=.055,clock=bossBattle?((o.battleTicks||0)+(this.battleTimer||0)/cadence):0,cycle=o.v13Phase>=3?13:o.v13Phase>=2?15:18;
     this.crowdBatch.enemyMotion={mode:(this.state==='battle'&&o===this.battleEnemy)?'battle':'enemy',runSpeed:o.boss?.72:o.elite?.92:1,boss:o.boss===true,elite:o.elite===true,bossAttackActive:bossBattle,bossAttackPhase:bossBattle?((clock%cycle)/cycle):0,bossAttackSide:bossBattle?(Math.floor(clock/cycle)%2?-1:1):1,bossAttackType:o.v11AttackType||'punch',bossStagger:o.v11Stagger||0};
     oldDrawEnemy.call(this,o,z);this.crowdBatch.enemyMotion=null;
   };
