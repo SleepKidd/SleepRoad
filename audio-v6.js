@@ -28,6 +28,6 @@
     this._musicIndex=idx+1;this._musicClock=cfg.step*(boss?.72:state==='menu'?1.35:1);
   };
   const oldUpdate=P.update;
-  P.update=function(dt){oldUpdate.call(this,dt);const b=this.profile?.biome?.id||this.biome?.id||'meadow';this.audio?.musicStep?.(dt,b,!!this.profile?.bossLevel,this.state);};
+  P.update=function(dt){oldUpdate.call(this,dt);const b=this.profile?.biome?.id||this.biome?.id||'meadow';this.audio?.musicStep?.(dt,b,!!this.battleEnemy?.boss||!!this.profile?.bossLevel,this.state);};
   window.SleepRoadAudioV6={MUSIC};
 })();
