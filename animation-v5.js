@@ -46,7 +46,11 @@
   P.drawFinishScene=function(){const a=ensureAnim(this);this.crowdBatch.playerMotion={mode:'finish',runSpeed:.78,finishProgress:this.finishProgress||0,landing:a.landing};oldDrawFinishScene.call(this);this.crowdBatch.playerMotion=null;};
 
   const oldDrawEnemy=P.drawEnemy;
-  P.drawEnemy=function(o,z){this.crowdBatch.enemyMotion={mode:(this.state==='battle'&&o===this.battleEnemy)?'battle':'enemy',runSpeed:o.boss?.72:o.elite?.92:1,boss:o.boss===true,elite:o.elite===true};oldDrawEnemy.call(this,o,z);this.crowdBatch.enemyMotion=null;};
+  P.drawEnemy=function(o,z){
+    const bossBattle=this.state==='battle'&&o===this.battleEnemy&&o.boss===true,cadence=.055,clock=bossBattle?((o.battleTicks||0)+(this.battleTimer||0)/cadence):0,cycle=18;
+    this.crowdBatch.enemyMotion={mode:(this.state==='battle'&&o===this.battleEnemy)?'battle':'enemy',runSpeed:o.boss?.72:o.elite?.92:1,boss:o.boss===true,elite:o.elite===true,bossAttackActive:bossBattle,bossAttackPhase:bossBattle?((clock%cycle)/cycle):0,bossAttackSide:bossBattle?(Math.floor(clock/cycle)%2?-1:1):1};
+    oldDrawEnemy.call(this,o,z);this.crowdBatch.enemyMotion=null;
+  };
 
   P.setCamera=function(){
     const aspect=this.w/this.h,depth=this.crowdBatch?this.crowdBatch.metrics(this.visualCount).depth:0,pullback=clamp((depth-2.55)*.92,0,12.5),a=ensureAnim(this),j=jumpArc(this.jumpTimer||0,this.__jumpAnimDuration||JUMP_DURATION),jumpY=(this.jumpTimer||0)>0?j.y:0,speedRatio=this.baseSpeed?this.speed/this.baseSpeed:1,boost=this.boostTimer>0?1:0,slow=this.slowTimer>0?1:0;
