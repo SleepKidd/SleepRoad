@@ -18,3 +18,7 @@
   .hud-v9 .mission-hud{top:max(82px,calc(env(safe-area-inset-top) + 78px));width:min(52vw,290px);padding:4px 8px 5px}
   .hud-v9 .crowd-count{min-width:48px;height:39px;font-size:19px}
 }
+
+/* Crowd polish v9.1: lighter center feedback */
+.toast{bottom:36%!important;padding:7px 12px!important;border-radius:10px!important;background:rgba(31,35,58,.76)!important;border-color:rgba(255,255,255,.14)!important;font-size:clamp(10px,2.5vw,13px)!important;font-weight:880!important;letter-spacing:.015em!important;box-shadow:0 7px 18px rgba(12,16,33,.16)!important;backdrop-filter:blur(10px) saturate(1.05)}
+@media(max-width:520px){.toast{bottom:38%!important;padding:6px 10px!important;font-size:10px!important;border-radius:9px!important}}
