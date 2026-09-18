@@ -179,7 +179,7 @@
   };
 
   const oldDrawMoon=P.drawMoon;
-  P.drawMoon=function(o,z){oldDrawMoon.call(this,o,z);const skin=R.currentSkin(this),r=this.renderer,m=this.meshes,t=this.time*2.4+(o.spin||0),s=.07+(o.bonus?.035:0);for(let i=0;i<3;i++){const a=t+i*Math.PI*2/3;r.draw(m.sphere,compose(o.x+Math.cos(a)*.72,1.18+Math.sin(a*1.3)*.20,z+Math.sin(a)*.26,0,0,0,s,s,s),skin.moon,.75);}};
+  P.drawMoon=function(o,z){const skin=R.currentSkin(this),r=this.renderer,m=this.meshes,bob=Math.sin(this.time*3+(o.spin||0))*.16,y=1.18+bob,rot=this.time*1.7+(o.spin||0),scale=o.bonus?1.05:.76,t=this.time*2.4+(o.spin||0),s=.07+(o.bonus?.035:0);r.draw(m.cylinder,compose(o.x,y,z,Math.PI/2,0,rot,scale,.20,scale),skin.moon);r.draw(m.cylinder,compose(o.x+.20*scale,y+.07,z+.12,Math.PI/2,0,rot,scale*.68,.13,scale*.68),this.biome?.palette?.structure||COLORS.white);for(let i=0;i<3;i++){const a=t+i*Math.PI*2/3;r.draw(m.sphere,compose(o.x+Math.cos(a)*.72,y+Math.sin(a*1.3)*.20,z+Math.sin(a)*.26,0,0,0,s,s,s),skin.moon,.75);}};
 
   const oldDrawObstacle=P.drawObstacle;
   P.drawObstacle=function(o,z){oldDrawObstacle.call(this,o,z);const r=this.renderer,m=this.meshes,t=this.time*(o.speed||1)+(o.phase||0);if(o.kind==='saw'){const x=o.baseX+Math.sin(t)*o.range;for(let i=0;i<4;i++){const a=t*5+i*Math.PI/2,s=.05+.025*(Math.sin(t*9+i)*.5+.5);r.draw(m.sphere,compose(x+Math.cos(a)*.82,.42+Math.sin(a*1.7)*.25,z+Math.sin(a)*.22,0,0,0,s,s,s),[1,.62,.12],.85);}}else if(o.kind==='fireline'){for(let i=-4;i<=4;i+=2){const y=.5+Math.abs(Math.sin(t*2+i))*.45,s=.10+.04*(i%3);r.draw(m.sphere,compose(i,y,z-.15,0,0,0,s,s*1.35,s),[.32,.30,.34],.34);}}};
