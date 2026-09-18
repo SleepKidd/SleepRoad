@@ -104,12 +104,14 @@
         r.draw(m.box,compose(x,.12,z,0,0,0,.20,.22,2.5),i%2?mix(p.roadEdge,p.structure,.28):p.roadEdge,.76);
       }
     }
-    const signCount=roadDetailCount(g,8);
+    const signCount=roadDetailCount(g,8),decorFrontCull=(g.playerZ||1.6)-5.2;
     for(let i=0;i<signCount;i++){
-      const z=5-wrap(i*(324/signCount)-g.travel*.962+hash(i*3.3)*16,324),side=i%2?-1:1,x=side*(7.2+hash(i*4.5)*1.3),h=1.4+hash(i)*.5;
-      r.draw(m.cylinder,compose(x,h*.45,z,0,0,0,.055,h,.055),p.structure);
+      const z=5-wrap(i*(324/signCount)-g.travel*.962+hash(i*3.3)*16,324);
+      if(z>=decorFrontCull)continue;
+      const side=i%2?-1:1,x=side*(7.9+hash(i*4.5)*1.7),h=1.3+hash(i)*.45;
+      r.draw(m.cylinder,compose(x,h*.45,z,0,0,0,.050,h,.050),p.structure);
       const c=i%3===0?p.accent:i%3===1?p.good:p.bad;
-      r.draw(m.box,compose(x,h,z,0,0,side<0 ? .08 : -.08,.60,.38,.08),c,.90);
+      r.draw(m.box,compose(x,h,z,0,0,side<0 ? .08 : -.08,.54,.34,.07),c,.88);
     }
     const railZ=9-wrap(165-g.travel*.99,330);
     if(railZ>-92&&railZ<15){
@@ -300,5 +302,5 @@
     for(let i=0;i<8;i++){const z=this.playerZ-2.4-i*1.45,y=i*.45;r.draw(m.box,compose(-5.15,y+.05,z,0,0,0,.16,.16,1.35),p.structure);r.draw(m.box,compose(5.15,y+.05,z,0,0,0,.16,.16,1.35),p.structure);}
   };
 
-  window.SleepRoadVisualV9={APPEARANCES,BOSS_THEMES,WEATHER,cameraState,roadDetailCount};
+  window.SleepRoadVisualV9={APPEARANCES,BOSS_THEMES,WEATHER,cameraState,roadDetailCount,roadsideCullDistance:5.2};
 })();
