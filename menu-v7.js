@@ -4,7 +4,7 @@
   if(!S||!D||!R||!P)throw new Error('Sleep Road Unified Menu v7 dependencies are missing');
   const {UI,clamp}=S;
 
-  const rgb=a=>'rgb('+a.map(v=>Math.round(clamp(v,0,1)*255)).join(' ')+')';
+  const rgb=a=>'rgb('+a.map(v=>Math.round(clamp(v,0,1)*255)).join(',')+')';
   const rgba=(a,alpha)=>'rgba('+a.map(v=>Math.round(clamp(v,0,1)*255)).join(',')+','+alpha+')';
 
   function profileFor(g){
@@ -171,17 +171,17 @@
     card.querySelector('.v7-ach-summary b').textContent=unlocked+' / '+total;
 
     const skinBtn=card.querySelector('.v7-skin-action');
-    skinBtn.querySelector('.v7-action-copy b').textContent=skin.name;
+    const availableSkins=R.unlockedSkins(level);skinBtn.querySelector('.v7-action-copy small').textContent='СКИН · '+availableSkins.length+' / '+R.SKINS.length;skinBtn.querySelector('.v7-action-copy b').textContent=skin.name;
     const swatches=skinBtn.querySelectorAll('.v7-skin-preview i');
     swatches.forEach((s,i)=>s.style.background=rgb(skin.shirts[i%skin.shirts.length]));
-    skinBtn.title='Открыто скинов: '+R.unlockedSkins(level).length+' / '+R.SKINS.length;
+    skinBtn.title='Открыто скинов: '+availableSkins.length+' / '+R.SKINS.length;
 
     const label=playLabel(profile,level),play=card.querySelector('.v7-play');
     play.querySelector('b').textContent=label.title;play.querySelector('small').textContent=label.sub;
     play.classList.toggle('boss',!!profile.bossLevel);play.classList.toggle('bonus',!!profile.bonusLevel);
 
     syncAchievements(g);
-    if(animate){card.classList.remove('v7-refresh');void card.offsetWidth;card.classList.add('v7-refresh');}
+    if(animate){ui.menu.classList.remove('v7-theme-shift');card.classList.remove('v7-refresh');void card.offsetWidth;ui.menu.classList.add('v7-theme-shift');card.classList.add('v7-refresh');clearTimeout(g.__v7ThemeTimer);g.__v7ThemeTimer=setTimeout(()=>ui.menu.classList.remove('v7-theme-shift'),520);}
   }
 
   const oldRefresh=P.refreshUI;
