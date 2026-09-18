@@ -1,7 +1,7 @@
 'use strict';
 (() => {
-  const S=window.SleepRoadSystems,D=window.SleepRoadLevelDirector,R=window.SleepRoadProgressionV6,Q=window.SleepRoadQualityV6,V11=window.SleepRoadExperienceV11,V12=window.SleepRoadExperienceV12,P=window.SleepRoad3D&&window.SleepRoad3D.prototype,C=S&&S.CrowdBatch&&S.CrowdBatch.prototype;
-  if(!S||!D||!R||!Q||!V11||!V12||!P||!C)throw new Error('Sleep Road Experience v13 dependencies are missing');
+  const S=window.SleepRoadSystems,D=window.SleepRoadLevelDirector,R=window.SleepRoadProgressionV6,Q=window.SleepRoadQualityV6,E8=window.SleepRoadEnvironmentV8,V11=window.SleepRoadExperienceV11,V12=window.SleepRoadExperienceV12,P=window.SleepRoad3D&&window.SleepRoad3D.prototype,C=S&&S.CrowdBatch&&S.CrowdBatch.prototype;
+  if(!S||!D||!R||!Q||!E8||!V11||!V12||!P||!C)throw new Error('Sleep Road Experience v13 dependencies are missing');
   const {compose,COLORS,clamp,lerp,RNG,isGoodGate}=S,TAU=Math.PI*2;
   const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
   const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
@@ -203,8 +203,8 @@
     if(g.state==='menu')return;const r=g.renderer,m=g.meshes,p=g.biome.palette,detail=qualityDetail(g),front=(g.playerZ||1.6)-6.0,count=detail>.7?6:4,span=92;
     for(let i=0;i<count;i++){
       const side=i%2?-1:1,z=10-(((i*17.3-(g.travel||0)*(.45+i*.025)+g.time*(1.2+i*.22))%span)+span)%span;if(z>=front)continue;
-      const x=side*(9.6+(i%3)*1.25),y=elevationAt(g,(g.travel||0)-z)+.38,c=i%2?mix(p.structure,p.accent,.25):p.structure;
-      r.draw(m.box,compose(x,y,z,0,0,0,1.15,.55,1.8),c,.82);r.draw(m.box,compose(x,y+.34,z-.20,0,0,0,.70,.30,.78),mix(c,COLORS.white,.22),.56);
+      const x=side*(9.6+(i%3)*1.25),ground=elevationAt(g,(g.travel||0)-z),yaw=side<0?Math.PI:0;
+      E8.drawDecorCar(g,x,z,i,{scale:.42,groundY:ground+.015,yaw,shadow:false});
     }
     if(g.biome?.id==='factory'||g.biome?.id==='neon')for(const side of[-1,1]){const x=side*10.8,z=-28-((g.travel*.35)%42),a=g.time*1.6*side;r.draw(m.cylinder,compose(x,2.0,z,0,0,0,.18,4,.18),p.structure,.88);for(let i=0;i<4;i++)r.draw(m.box,compose(x+Math.cos(a+i*TAU/4)*.75,3.2+Math.sin(a+i*TAU/4)*.75,z,0,0,a+i*TAU/4,1.15,.09,.12),p.accent,.68);}
   }
