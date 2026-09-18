@@ -1,0 +1,20 @@
+/* Sleep Road Visual / HUD v9 */
+.hud-v9 .v9-hud-right{position:absolute;z-index:9;top:max(14px,calc(env(safe-area-inset-top) + 10px));right:max(14px,calc(env(safe-area-inset-right) + 10px));display:flex;align-items:center;padding:4px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(23,29,50,.76);box-shadow:0 10px 28px rgba(10,14,30,.20),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(13px)}
+.hud-v9 .v9-hud-right .hud-wallet,.hud-v9 .v9-hud-right .sound-btn{position:static!important;inset:auto!important;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important}
+.hud-v9 .v9-hud-right .hud-wallet{height:35px;min-width:84px;padding:0 9px;border-radius:11px!important}
+.hud-v9 .v9-hud-right .sound-btn{width:37px;height:35px;border-left:1px solid rgba(255,255,255,.11)!important;border-radius:0 11px 11px 0!important;font-size:17px}
+.hud-v9 .exit-btn{top:max(14px,calc(env(safe-area-inset-top) + 10px));left:max(14px,calc(env(safe-area-inset-left) + 10px));height:43px;padding:0 13px;border-radius:14px;font-size:9px}
+.hud-v9 .progress-wrap{top:max(68px,calc(env(safe-area-inset-top) + 62px));width:min(58vw,510px)}
+.hud-v9 .progress{height:10px;padding:2px;border-radius:999px}
+.hud-v9 .finish-icon{width:27px;height:25px;border-radius:8px;font-size:13px}
+.hud-v9 .mission-hud{top:max(98px,calc(env(safe-area-inset-top) + 92px));min-width:0;width:min(48vw,330px);padding:5px 9px 6px;border-radius:12px}
+.hud-v9 .mission-hud span{font-size:6px;letter-spacing:.15em}.hud-v9 .mission-hud b{font-size:8px}.hud-v9 .mission-hud i{height:3px;margin-top:4px}
+.hud-v9 .crowd-count{min-width:52px;height:42px;padding:0 12px;border-radius:13px;font-size:21px}
+@media(max-width:520px){
+  .hud-v9 .v9-hud-right{top:max(10px,calc(env(safe-area-inset-top) + 7px));right:10px;padding:3px;border-radius:14px}
+  .hud-v9 .v9-hud-right .hud-wallet{min-width:72px;height:32px;padding:0 7px}.hud-v9 .v9-hud-right .sound-btn{width:33px;height:32px}
+  .hud-v9 .exit-btn{top:max(10px,calc(env(safe-area-inset-top) + 7px));left:10px;height:39px;padding:0 10px}
+  .hud-v9 .progress-wrap{top:max(57px,calc(env(safe-area-inset-top) + 52px));width:min(62vw,390px)}
+  .hud-v9 .mission-hud{top:max(82px,calc(env(safe-area-inset-top) + 78px));width:min(52vw,290px);padding:4px 8px 5px}
+  .hud-v9 .crowd-count{min-width:48px;height:39px;font-size:19px}
+}
