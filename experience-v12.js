@@ -183,11 +183,11 @@
       for(const side of[-1,1])r.draw(m.box,compose(side*6.45,.25,z,0,0,0,.26,.34,10),p.structure,.88);
       const pieces=d>.7?7:4;for(let i=0;i<pieces;i++){const x=(i-(pieces-1)/2)*1.45,y=-.05-Math.max(0,i-3)*.07,rot=(i%2?1:-1)*.04*Math.sin(t*.8+i);r.draw(m.box,compose(x,y,z-i*.28,rot,0,(i-3)*.012,1.35,.20,2.2),i%2?p.road:mix(p.road,p.structure,.10),.96);}
     }else if(o.kind==='crossingTrain'){
-      const x=((t*.95)%18)-9,y=3.65;r.draw(m.box,compose(0,4.5,z,0,0,0,14,.20,.36),p.structure);for(let i=-2;i<=2;i++){const xx=x+i*2.25;r.draw(m.box,compose(xx,y,z-.4,0,0,0,2.0,.86,.70),i%2?mix(p.structure,p.accent,.30):p.structure);if(d>.7)r.draw(m.box,compose(xx,y+.05,z-.77,0,0,0,1.25,.24,.04),p.accent,.72);}}
+      const x=((t*.95)%18)-9,y=3.65;r.draw(m.box,compose(0,4.5,z,0,0,0,14,.20,.36),p.structure);for(let i=-2;i<=2;i++){const xx=x+i*2.25;r.draw(m.box,compose(xx,y,z-.4,0,0,0,2.0,.86,.70),i%2?mix(p.structure,p.accent,.30):p.structure);if(d>.7)r.draw(m.box,compose(xx,y+.05,z-.77,0,0,0,1.25,.24,.04),p.accent,.72);}
     }else if(o.kind==='craneDrop'){
       const side=o.phase>Math.PI?1:-1,x=side*7.8,drop=.9+Math.abs(Math.sin(t*.68))*3.0;r.draw(m.cylinder,compose(x,2.8,z,0,0,0,.12,5.6,.12),p.structure);r.draw(m.box,compose(x-side*2.1,5.25,z,0,0,0,4.3,.14,.18),p.structure);r.draw(m.box,compose(x-side*2.8,drop,z-.4,0,t*.12,0,1.6,1.15,1.0),p.accent,.93);
     }else if(o.kind==='blackoutTunnel'){
-      const rings=d>.75?5:3;for(let i=0;i<rings;i++){const zz=z-i*2.2;r.draw(m.box,compose(-5.95,2.1,zz,0,0,0,.30,4.2,.35),p.structure);r.draw(m.box,compose(5.95,2.1,zz,0,0,0,.30,4.2,.35),p.structure);r.draw(m.box,compose(0,4.12,zz,0,0,0,12.2,.28,.35),p.structure);if(i%2===0)r.draw(m.sphere,compose(0,3.75,zz-.2,0,0,0,.10,.06,.10),Math.sin(t*6+i)>.15?p.accent:[.06,.06,.08],.85);}}
+      const rings=d>.75?5:3;for(let i=0;i<rings;i++){const zz=z-i*2.2;r.draw(m.box,compose(-5.95,2.1,zz,0,0,0,.30,4.2,.35),p.structure);r.draw(m.box,compose(5.95,2.1,zz,0,0,0,.30,4.2,.35),p.structure);r.draw(m.box,compose(0,4.12,zz,0,0,0,12.2,.28,.35),p.structure);if(i%2===0)r.draw(m.sphere,compose(0,3.75,zz-.2,0,0,0,.10,.06,.10),Math.sin(t*6+i)>.15?p.accent:[.06,.06,.08],.85);}
     }else{
       for(const side of[-1,1]){const x=side*5.8;r.draw(m.cylinder,compose(x,1.5,z,0,0,0,.10,3.0,.10),p.structure);r.draw(m.sphere,compose(x,3.0,z,0,0,0,.13,.13,.13),p.accent,.88);}for(let i=0;i<(d>.7?7:4);i++){const a=t*1.4+i*TAU/7;r.draw(m.sphere,compose(Math.cos(a)*4.2,2.0+Math.sin(a*1.7)*.65,z+Math.sin(a)*1.3,0,0,0,.07,.07,.07),i%2?p.accent:p.good,.66);}
     }
