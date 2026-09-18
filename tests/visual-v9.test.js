@@ -67,6 +67,10 @@ assert(!vsrc.includes('shoeColors'));
 assert(!vsrc.includes('matrixPush(shoes'));
 assert(!vsrc.includes('if(shoes.length)'));
 assert(!vsrc.includes('k.y-.26'));
+assert(!vsrc.includes('shadowColors'));
+assert(!vsrc.includes('matrixPush(shadows'));
+assert(!vsrc.includes('compose(k.x,.018,k.z'));
+
 
 for(const token of ['dangerPad','safePad','warningBeacon','nearDecals','massSway','groupHalfWidth'])assert(vsrc.includes(token));
 for(const token of ["o.kind==='saw'","o.kind==='mines'","o.kind==='spikes'","o.kind==='hammer'","o.kind==='laser'","o.kind==='crusher'","o.kind==='movingWall'","drawBossArena","drawWeather","finishSpectator","drawGatePanel"])assert(vsrc.includes(token));
@@ -74,4 +78,4 @@ for(const token of ['characterDetail:160','propDetail:1','weatherDensity:1','fin
 const csrc=fs.readFileSync('visual-v9.css','utf8');
 assert(csrc.includes('.toast{bottom:36%'));
 for(const file of ['visual-v9.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: visual v9.2 shoe-box removal plus crowd polish regression');
+console.log('PASS: visual v9.3 removes individual character shadow circles');
