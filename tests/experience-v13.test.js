@@ -58,6 +58,8 @@ assert.equal(V.phaseFor(major),3);
 assert.equal(V.bossSpeed({v13Phase:1}),1);
 assert.equal(V.bossSpeed({v13Phase:2}),1.12);
 assert.equal(V.bossSpeed({v13Phase:3}),1.24);
+assert(src.includes("oldBattle.call(this,dt);"),'boss rage must not accelerate player DPS simulation');
+assert(!src.includes("oldBattle.call(this,e?.boss?dt*bossSpeed(e):dt)"));
 
 const g={level:30,playerCount:160,v13:null};
 const e={count:80,maxCount:100,majorBoss:false,v13Phase:1,v13LastAttack:'sweep'};
@@ -89,6 +91,8 @@ for(const token of [
 
 for(const id of ['doubleBoss','nightRun','noGates','moonStorm','giantObstacles','lowGravity'])assert(v12src.includes("id:'"+id+"'"),id);
 assert(v12src.includes(">=.35)return null"),'Rare Run total probability must stay at 35%');
+let rareCount=0;for(let level=1;level<=10000;level++){const h=n=>{const x=Math.sin(n*83.173+29.411)*43758.5453123;return x-Math.floor(x);};if(h(level*47.119+3.7)<.35)rareCount++;}
+const rareRate=rareCount/10000;assert(rareRate>.33&&rareRate<.37,'Rare Run v2 must remain around 35%');
 
 const index=fs.readFileSync('index.html','utf8');
 assert(index.includes('experience-v13.js'));
@@ -99,6 +103,9 @@ const audio=fs.readFileSync('audio-v6.js','utf8');
 assert(audio.includes("bossPhase=1"));
 assert(audio.includes("phase>=3?.48:phase>=2?.58:.72"));
 assert(audio.includes("this.battleEnemy.v13Phase||1"));
+const anim=fs.readFileSync('animation-v5.js','utf8');assert(anim.includes("cycle=o.v13Phase>=3?13:o.v13Phase>=2?15:18"));
+const polish=fs.readFileSync('polish-v6.js','utf8');assert(polish.includes("cycle=e.v13Phase>=3?13:e.v13Phase>=2?15:18"));
+const v11=fs.readFileSync('experience-v11.js','utf8');assert(v11.includes("attackCycle=e.v13Phase>=3?13:e.v13Phase>=2?15:18"));
 
 const sw=fs.readFileSync('sw.js','utf8');
 assert(sw.includes("const CACHE='sleep-road-v32';"));
