@@ -37,7 +37,7 @@
   P.drawCourse=function(){
     const a=ensureAnim(this),prev=this.__animPrevPlayerX==null?this.playerX:this.__animPrevPlayerX,delta=this.playerX-prev;this.__animPrevPlayerX=this.playerX;a.strafe=lerp(a.strafe,clamp(delta*12,-1,1),.22);
     const j=jumpArc(this.jumpTimer||0,this.__jumpAnimDuration||JUMP_DURATION),jumping=(this.jumpTimer||0)>0,ratio=this.baseSpeed?this.speed/this.baseSpeed:1;
-    this.crowdBatch.playerMotion={mode:this.state==='menu'?'idle':this.state==='battle'?'battle':jumping?'jump':'run',runSpeed:ratio,strafe:a.strafe,jumpY:jumping?j.y:0,jumpAir:j.air,jumpVertical:j.vertical,landing:a.landing,takeoff:a.takeoff};
+    this.crowdBatch.playerMotion={mode:this.state==='menu'?'idle':this.state==='battle'?'battle':jumping?'jump':'run',runSpeed:ratio,strafe:a.strafe,jumpY:jumping?j.y:0,jumpAir:j.air,jumpVertical:j.vertical,landing:a.landing,takeoff:a.takeoff,reaction:this.v11?.reaction||'',reactionPower:this.v11?.reactionPower||0};
     oldDrawCourse.call(this);
     this.crowdBatch.playerMotion=null;
   };
@@ -48,7 +48,7 @@
   const oldDrawEnemy=P.drawEnemy;
   P.drawEnemy=function(o,z){
     const bossBattle=this.state==='battle'&&o===this.battleEnemy&&o.boss===true,cadence=.055,clock=bossBattle?((o.battleTicks||0)+(this.battleTimer||0)/cadence):0,cycle=18;
-    this.crowdBatch.enemyMotion={mode:(this.state==='battle'&&o===this.battleEnemy)?'battle':'enemy',runSpeed:o.boss?.72:o.elite?.92:1,boss:o.boss===true,elite:o.elite===true,bossAttackActive:bossBattle,bossAttackPhase:bossBattle?((clock%cycle)/cycle):0,bossAttackSide:bossBattle?(Math.floor(clock/cycle)%2?-1:1):1};
+    this.crowdBatch.enemyMotion={mode:(this.state==='battle'&&o===this.battleEnemy)?'battle':'enemy',runSpeed:o.boss?.72:o.elite?.92:1,boss:o.boss===true,elite:o.elite===true,bossAttackActive:bossBattle,bossAttackPhase:bossBattle?((clock%cycle)/cycle):0,bossAttackSide:bossBattle?(Math.floor(clock/cycle)%2?-1:1):1,bossAttackType:o.v11AttackType||'punch',bossStagger:o.v11Stagger||0};
     oldDrawEnemy.call(this,o,z);this.crowdBatch.enemyMotion=null;
   };
 
