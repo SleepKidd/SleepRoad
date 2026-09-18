@@ -120,9 +120,11 @@
       if(mode==='finish'){const cheer=clamp((finish-.34)/.44,0,1),cw=Math.sin(time*8+qf.index*.45);armL=lerp(wave*.30,-1.24+cw*.12,cheer);armR=lerp(-wave*.30,-1.24-cw*.12,cheer);legL=-wave*.22;legR=wave*.22;extraY=cheer*Math.abs(cw)*.11;}
       const squash=landing*.12,stretch=takeoff*.07,rootSx=scale*ap.width*(1+squash*.42-stretch*.16),rootSy=scale*ap.height*(1-squash+stretch),rootSz=scale*(1+squash*.28-stretch*.08),turn=direction<0?Math.PI:0,root=compose(x,baseY+bob+extraY,z,bodyLean,turn+bodyYaw,bodyRoll,rootSx,rootSy,rootSz);
       const rawShirt=shirts[(qf.index*7)%shirts.length],shirt=!enemy&&qf.index===0&&game?.v11?.leaderColor?game.v11.leaderColor:(enemy?rawShirt:softenShirt(rawShirt)),skin=skins[(qf.index*3)%skins.length],trouser=trousers[(qf.index*5)%trousers.length],leftLift=Math.max(0,wave)*.082*runAmount,rightLift=Math.max(0,-wave)*.082*runAmount,leftZ=counter*.038*runAmount,rightZ=-counter*.038*runAmount;
-      const pivots={head:[0,1.21,0],body:[0,.01,0],leftArm:[-.205,1.03,0],rightArm:[.205,1.03,0],leftLeg:[-.09,.62,0],rightLeg:[.09,.62,0]};
+      const pivots={head:[0,1.21,0],body:[0,.01,0],leftArm:[boss?-.175:-.205,1.03,0],rightArm:[boss?.175:.205,1.03,0],leftLeg:[-.09,.62,0],rightLeg:[.09,.62,0]};
       const rotations={head:headPitch,body:0,leftArm:armL,rightArm:armR,leftLeg:legL,rightLeg:legR};
-      const bodyScale=ap.body.map((x,i)=>x*torso.body[i]),partScale={head:ap.head,body:bodyScale,leftArm:ap.arm,rightArm:ap.arm,leftLeg:ap.leg,rightLeg:ap.leg};
+      const bodyScale=ap.body.map((x,i)=>x*torso.body[i]*(boss?(i===0?1.14:i===2?1.08:1):1));
+      const bossArm=boss?[ap.arm[0]*1.72,ap.arm[1]*.72,ap.arm[2]*1.72]:ap.arm,bossLeg=boss?[ap.leg[0]*1.10,ap.leg[1],ap.leg[2]*1.10]:ap.leg,bossHead=boss?ap.head.map(v=>v*.84):ap.head;
+      const partScale={head:bossHead,body:bodyScale,leftArm:bossArm,rightArm:bossArm,leftLeg:bossLeg,rightLeg:bossLeg};
       for(const n of names){
         const p=pivots[n],lift=n==='leftLeg'?leftLift:n==='rightLeg'?rightLift:0,zoff=n==='leftLeg'?leftZ:n==='rightLeg'?rightZ:0,ps=partScale[n],local=compose(p[0],p[1]+lift,p[2]+zoff,rotations[n],0,0,ps[0],ps[1],ps[2]),tint=n==='head'||n.includes('Arm')?skin:n==='body'?shirt:trouser,sv=.91+(qf.index%4)*.026;
         matrixPush(parts[n],colors[n],multiply(root,local),tint.map(v=>Math.min(1,v*sv)));
