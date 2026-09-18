@@ -62,10 +62,16 @@ const qsrc=fs.readFileSync('quality-v6.js','utf8');
 const esrc=fs.readFileSync('environment-v8.js','utf8');
 assert(esrc.includes("far=z<-66||Math.abs(x)>25"));
 const vsrc=fs.readFileSync('visual-v9.js','utf8');
+assert(!vsrc.includes('const SHOES='));
+assert(!vsrc.includes('shoeColors'));
+assert(!vsrc.includes('matrixPush(shoes'));
+assert(!vsrc.includes('if(shoes.length)'));
+assert(!vsrc.includes('k.y-.26'));
+
 for(const token of ['dangerPad','safePad','warningBeacon','nearDecals','massSway','groupHalfWidth'])assert(vsrc.includes(token));
 for(const token of ["o.kind==='saw'","o.kind==='mines'","o.kind==='spikes'","o.kind==='hammer'","o.kind==='laser'","o.kind==='crusher'","o.kind==='movingWall'","drawBossArena","drawWeather","finishSpectator","drawGatePanel"])assert(vsrc.includes(token));
 for(const token of ['characterDetail:160','propDetail:1','weatherDensity:1','finishCrowd:18','characterDetail:48'])assert(qsrc.includes(token));
 const csrc=fs.readFileSync('visual-v9.css','utf8');
 assert(csrc.includes('.toast{bottom:36%'));
 for(const file of ['visual-v9.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: visual v9.1 crowd spacing, torsos, shadows, obstacle readability, road detail and UI');
+console.log('PASS: visual v9.2 shoe-box removal plus crowd polish regression');
