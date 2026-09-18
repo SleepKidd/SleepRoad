@@ -74,7 +74,7 @@ for(const token of [
   'collapseBridge','crossingTrain','craneDrop','blackoutTunnel','stormGate',
   'finishPhase','updateFinishSequence','drawFinishV12',
   'boss10','noHit5','crowd250','dodge20','allSkins','rare3',
-  'v12Weather','v12Debris','budgetFor','achievementProgress','triggerRoadEvent','v12Triggered'
+  'v12Weather','v12Debris','budgetFor','achievementProgress','triggerRoadEvent','v12Triggered','frontCull=(g.playerZ||1.6)-5.8','containerX=side*7.75'
 ])assert(src.includes(token),token);
 
 assert.deepEqual([Q.PRESETS.high.dpr,Q.PRESETS.medium.dpr,Q.PRESETS.low.dpr],[3,2.85,2.75],'v12 must preserve Retina DPR');
@@ -91,6 +91,9 @@ assert(sw.includes("'./experience-v12.css'"));
 assert(sw.includes("'./experience-v12.js'"));
 
 assert(src.includes("navigator.vibrate?.(18)"));
+assert(!src.includes("x=side*7.8,drop=.9+Math.abs(Math.sin(t*.68))*3.0"));
+assert(!src.includes("x-side*2.8,drop,z-.4"));
+
 assert(src.includes("window.SleepRoadExperienceV12={"));
 
 console.log('PASS: Experience v12 combos, events, destruction, weather, finish, 35% rare runs, achievements and performance');
