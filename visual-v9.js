@@ -41,9 +41,9 @@
     const game=window.__sleepRoad,q=qFor(game),renderCount=Math.min(Math.max(1,Math.round(count)),q.maxCrowd||420),f=this.formation(renderCount),scale0=opts.scale||1,direction=opts.direction||1,enemy=opts.enemy===true,motion=(enemy?this.enemyMotion:this.playerMotion)||opts.motion||{},mode=motion.mode||'run',baseY=(motion.jumpY!=null&&!enemy?motion.jumpY:(opts.baseY||0)),runSpeed=clamp(motion.runSpeed==null?1:motion.runSpeed,.42,1.7),strafe=clamp(motion.strafe||0,-1,1),landing=clamp(motion.landing||0,0,1),takeoff=clamp(motion.takeoff||0,0,1),finish=clamp(motion.finishProgress||0,0,1),boss=motion.boss===true;
     const names=['head','body','leftArm','rightArm','leftLeg','rightLeg'],parts={},colors={};for(const n of names){parts[n]=[];colors[n]=[];}
     const shadows=[],shadowColors=[],hairs=[],hairColors=[],shoes=[],shoeColors=[],belts=[],beltColors=[],detail=Math.min(f.length,q.characterDetail||detailLimit()),palette=this.skinPalette||{},shirts=enemy?[[.95,.19,.27],[1,.31,.16],[.74,.09,.20],[.92,.27,.39]]:(palette.shirts||[[.14,.52,.98],[.08,.67,.91],[.24,.42,.91],[.18,.72,.73],[.37,.49,.98]]),skins=[[1,.70,.49],[.72,.43,.28],[.94,.59,.40],[.48,.29,.21],[.84,.50,.32],[.62,.36,.24]],trousers=enemy?[[.30,.06,.09],[.40,.08,.10]]:[[.05,.12,.28],[.10,.10,.22],[.07,.22,.38],[.15,.12,.20]];
-    const metrics=this.metrics(renderCount),groundY=opts.groundY==null?.012:opts.groundY;
+    const metrics=this.metrics(renderCount),groundY=opts.groundY==null ? .012 : opts.groundY;
     for(const qf of f){
-      const ap=APPEARANCES[qf.index%APPEARANCES.length],row=Math.floor(qf.index/Math.max(1,metrics.cols)),phase=time*(6.25+runSpeed*2.05)+qf.index*.57+row*.13,wave=Math.sin(phase),counter=Math.cos(phase),runAmount=mode==='idle'?.20:mode==='finish'?.50:mode==='battle'?.37:1,bob=Math.abs(wave)*.050*runAmount,scale=scale0,follow=(motion.strafe||0)*clamp(qf.z/Math.max(1,metrics.depth),0,1),x=rootX+(qf.x-follow*.58)*scale,z=rootZ+qf.z*direction*scale;
+      const ap=APPEARANCES[qf.index%APPEARANCES.length],row=Math.floor(qf.index/Math.max(1,metrics.cols)),phase=time*(6.25+runSpeed*2.05)+qf.index*.57+row*.13,wave=Math.sin(phase),counter=Math.cos(phase),runAmount=mode==='idle' ? .20 : mode==='finish' ? .50 : mode==='battle' ? .37 : 1,bob=Math.abs(wave)*.050*runAmount,scale=scale0,follow=(motion.strafe||0)*clamp(qf.z/Math.max(1,metrics.depth),0,1),x=rootX+(qf.x-follow*.58)*scale,z=rootZ+qf.z*direction*scale;
       let bodyLean=.040*runAmount+Math.max(0,runSpeed-1)*.085,bodyRoll=-strafe*.115,bodyYaw=strafe*.045,armL=wave*.58*runAmount,armR=-wave*.58*runAmount,legL=-wave*.42*runAmount,legR=wave*.42*runAmount,headPitch=-bodyLean*.25,extraY=0;
       if(mode==='idle'){bodyLean=0;bodyRoll=Math.sin(time*1.45+qf.index*.12)*.016;armL=wave*.08;armR=-wave*.08;legL=legR=0;extraY=Math.sin(time*2+qf.index*.21)*.012;}
       if(mode==='jump'){const a=clamp(motion.jumpAir||0,0,1),v=motion.jumpVertical||0;bodyLean=-v*.17-.045;armL=.40+a*.82+wave*.08;armR=.40+a*.82-wave*.08;legL=-.22-a*.43;legR=.20+a*.43;headPitch=v*.07;}
@@ -109,7 +109,7 @@
       const z=5-wrap(i*(324/signCount)-g.travel*.962+hash(i*3.3)*16,324),side=i%2?-1:1,x=side*(7.2+hash(i*4.5)*1.3),h=1.4+hash(i)*.5;
       r.draw(m.cylinder,compose(x,h*.45,z,0,0,0,.055,h,.055),p.structure);
       const c=i%3===0?p.accent:i%3===1?p.good:p.bad;
-      r.draw(m.box,compose(x,h,z,0,0,side<0?.08:-.08,.60,.38,.08),c,.90);
+      r.draw(m.box,compose(x,h,z,0,0,side<0 ? .08 : -.08,.60,.38,.08),c,.90);
     }
     const railZ=9-wrap(165-g.travel*.99,330);
     if(railZ>-92&&railZ<15){
@@ -238,7 +238,7 @@
     const aspect=this.w/this.h,s=cameraState(this),shakeX=this.shake?(Math.random()-.5)*.065*this.shake:0,shakeY=this.shake?(Math.random()-.5)*.026*this.shake:0;
     if(this.state==='menu'){const orbit=Math.sin(this.time*.25)*.85;this.renderer.setCamera([orbit,8.75,14.7],[0,.45,-12.2],aspect,(s.mobile?48:44)*DEG);return;}
     if(this.state==='finish'||this.state==='complete'){const p=this.finishProgress||0,orbit=this.profile?.bossLevel?Math.sin(p*Math.PI)*.70:0;this.renderer.setCamera([lerp(0,5.4,p)+orbit,lerp(8.8,6.7,p)+s.pullback*.22,lerp(15.2,13.3,p)+s.pullback],[0,lerp(.35,1.25,p),lerp(-13,-3.8,p)],aspect,(47+(this.profile?.bossLevel?2:0))*DEG);return;}
-    const battle=this.state==='battle',boss=battle&&this.battleEnemy?.boss,camX=shakeX+(battle?Math.sin(this.time*1.25)*(boss?.48:.25):0)-s.a.strafe*.13+this.playerX*.020,camY=(s.mobile?9.25:8.35)+s.pullback*.38+shakeY+s.jump.y*.08,camZ=15.1+s.pullback+(s.boost?-.28:s.slow?.16:0),targetY=.28+s.jump.y*.025,targetZ=boss?-10.2:-12.3+s.pullback*.15,fov=(s.mobile?48.5:44.5)+(s.boost?2.2:0)+(s.slow?-.8:0)+Math.max(0,s.speedRatio-1)*.8;
+    const battle=this.state==='battle',boss=battle&&this.battleEnemy?.boss,camX=shakeX+(battle?Math.sin(this.time*1.25)*(boss ? .48 : .25):0)-s.a.strafe*.13+this.playerX*.020,camY=(s.mobile?9.25:8.35)+s.pullback*.38+shakeY+s.jump.y*.08,camZ=15.1+s.pullback+(s.boost ? -.28 : s.slow ? .16 : 0),targetY=.28+s.jump.y*.025,targetZ=boss?-10.2:-12.3+s.pullback*.15,fov=(s.mobile?48.5:44.5)+(s.boost?2.2:0)+(s.slow?-.8:0)+Math.max(0,s.speedRatio-1)*.8;
     this.renderer.setCamera([camX,camY,camZ],[this.playerX*.028,targetY,targetZ],aspect,fov*DEG);
   };
 
