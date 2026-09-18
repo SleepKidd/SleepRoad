@@ -74,7 +74,7 @@ for(const token of [
   'collapseBridge','crossingTrain','craneDrop','blackoutTunnel','stormGate',
   'finishPhase','updateFinishSequence','drawFinishV12',
   'boss10','noHit5','crowd250','dodge20','allSkins','rare3',
-  'v12Weather','v12Debris','budgetFor'
+  'v12Weather','v12Debris','budgetFor','achievementProgress','triggerRoadEvent','v12Triggered'
 ])assert(src.includes(token),token);
 
 assert.deepEqual([Q.PRESETS.high.dpr,Q.PRESETS.medium.dpr,Q.PRESETS.low.dpr],[3,2.85,2.75],'v12 must preserve Retina DPR');
@@ -89,5 +89,8 @@ const sw=fs.readFileSync('sw.js','utf8');
 assert(sw.includes("const CACHE='sleep-road-v29';"));
 assert(sw.includes("'./experience-v12.css'"));
 assert(sw.includes("'./experience-v12.js'"));
+
+assert(src.includes("navigator.vibrate?.(18)"));
+assert(src.includes("window.SleepRoadExperienceV12={"));
 
 console.log('PASS: Experience v12 combos, events, destruction, weather, finish, 35% rare runs, achievements and performance');
