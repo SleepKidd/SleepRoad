@@ -96,8 +96,7 @@
     const good=()=>rng.next()<.13+Math.min(.10,profile.intensity*.05)?{op:'mul',value:profile.level>20&&rng.next()<.08?3:2}:{op:'add',value:Math.round(rng.range(6,14+profile.chapter*2)*scale)};
     const bad=()=>rng.next()<.36+Math.min(.22,profile.intensity*.08)?{op:'div',value:profile.level>18&&rng.next()<.18?3:2}:{op:'sub',value:Math.round(rng.range(5,11+profile.chapter*4)*scale)};
     let a=good(),b=bad();
-    if(rng.next()<.17+profile.chapter*.025){a=bad();b=bad();}
-    else if(rng.next()<.20){a=good();b=good();}
+    if(rng.next()<.20){a=good();b=good();}
     if(rng.next()<.5)[a,b]=[b,a];
     return[a,b];
   }
