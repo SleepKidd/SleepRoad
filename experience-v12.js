@@ -193,6 +193,16 @@
       for(const side of[-1,1]){const x=side*5.8;r.draw(m.cylinder,compose(x,1.5,z,0,0,0,.10,3.0,.10),p.structure);r.draw(m.sphere,compose(x,3.0,z,0,0,0,.13,.13,.13),p.accent,.88);}for(let i=0;i<(d>.7?7:4);i++){const a=t*1.4+i*TAU/7;r.draw(m.sphere,compose(Math.cos(a)*4.2,2.0+Math.sin(a*1.7)*.65,z+Math.sin(a)*1.3,0,0,0,.07,.07,.07),i%2?p.accent:p.good,.66);}
     }
   }
+  function triggerRoadEvent(g,o){
+    if(o.v12Triggered)return;o.v12Triggered=true;const p=g.biome?.palette||{},accent=p.accent||COLORS.gold,structure=p.structure||[.5,.5,.5];
+    if(o.kind==='collapseBridge'){spawnDebris(g,0,.35,g.playerZ-2,18,structure,1.0);g.toast?.('МОСТ РУШИТСЯ!',700);}
+    else if(o.kind==='crossingTrain'){g.toast?.('ПОЕЗД НАД ТРАССОЙ',650);}
+    else if(o.kind==='craneDrop'){spawnDebris(g,-2.6,1.5,g.playerZ-2.5,14,accent,.85);g.toast?.('ПАДАЕТ КОНТЕЙНЕР!',700);}
+    else if(o.kind==='blackoutTunnel'){g.toast?.('BLACKOUT!',650);g.flash=Math.max(g.flash,.10);}
+    else {spawnDebris(g,0,.45,g.playerZ-1.8,10,mix(structure,COLORS.white,.45),.45);g.toast?.('ШТОРМОВОЙ ФРОНТ',650);}
+    g.shake=Math.max(g.shake,3.5);try{navigator.vibrate?.(18);}catch{}
+  }
+
 
   function finishPhase(progress){return progress<.14?0:progress<.38?1:progress<.78?2:3;}
   function updateFinishSequence(g){
@@ -208,6 +218,16 @@
     if(p>.20){for(const side of[-1,1]){const x=side*5.6;r.draw(m.sphere,compose(x,2.8,g.playerZ-7.2,0,0,0,.12,.12,.12),COLORS.gold,.72);if(p>.58)r.draw(m.box,compose(x,2.2,g.playerZ-10.5,0,0,side*.22,.10,3.8,.12),c,.62);}}
   }
 
+  function achievementProgress(g,key){
+    const st=ensure(g).stats,done=!!R.ensureState(g).achievements[key],level=g.save?.level||g.level||1,totalSkins=R.SKINS.length,unlocked=R.unlockedSkins(level).length;
+    if(key==='boss10')return{value:st.bossWins,target:10,ratio:done?1:clamp(st.bossWins/10,0,1),label:Math.min(st.bossWins,10)+' / 10'};
+    if(key==='noHit5')return{value:st.noHitStreak,target:5,ratio:done?1:clamp(st.noHitStreak/5,0,1),label:Math.min(st.noHitStreak,5)+' / 5'};
+    if(key==='crowd250')return{value:st.maxCrowd,target:250,ratio:done?1:clamp(st.maxCrowd/250,0,1),label:Math.min(st.maxCrowd,250)+' / 250'};
+    if(key==='dodge20')return{value:st.dodgeStreak,target:20,ratio:done?1:clamp(st.dodgeStreak/20,0,1),label:Math.min(st.dodgeStreak,20)+' / 20'};
+    if(key==='allSkins')return{value:unlocked,target:totalSkins,ratio:done?1:clamp(unlocked/Math.max(1,totalSkins),0,1),label:unlocked+' / '+totalSkins};
+    if(key==='rare3')return{value:st.rareLevels.length,target:3,ratio:done?1:clamp(st.rareLevels.length/3,0,1),label:Math.min(st.rareLevels.length,3)+' / 3'};
+    return null;
+  }
   function checkSkinAchievement(g){if(R.unlockedSkins(g.save?.level||g.level).length>=R.SKINS.length)R.unlockAchievement(g,'allSkins');}
   function markCrowd(g,n){const s=ensure(g),st=s.stats;if(n>st.maxCrowd){st.maxCrowd=n;saveStats(st);}if(n>=250)R.unlockAchievement(g,'crowd250');}
 
@@ -248,7 +268,11 @@
   P.updateFinish=function(dt){const p=this.finishProgress||0,slow=p<.14 ? .62 : p<.30 ? .84 : 1;oldFinish.call(this,dt*slow);updateFinishSequence(this);};
 
   const oldUpdate=P.update;
-  P.update=function(dt){oldUpdate.call(this,dt);updateDebris(this,dt);updateWeather(this,dt);if(this.state==='finish')updateFinishSequence(this);};
+  P.update=function(dt){
+    oldUpdate.call(this,dt);updateDebris(this,dt);updateWeather(this,dt);
+    if(this.state==='running')for(const o of this.objects){if(o.type!=='v12Event'||o.v12Triggered)continue;const z=this.objectZ(o);if(z<this.playerZ+1.1&&z>this.playerZ-1.4)triggerRoadEvent(this,o);}
+    if(this.state==='finish')updateFinishSequence(this);
+  };
 
   const oldEnv=P.drawEnvironment;
   P.drawEnvironment=function(){oldEnv.call(this);drawWeather(this);};
@@ -259,5 +283,5 @@
   const oldFinishScene=P.drawFinishScene;
   P.drawFinishScene=function(){oldFinishScene.call(this);drawFinishV12(this);drawDebris(this);};
 
-  window.SleepRoadExperienceV12={COMBOS,ROAD_EVENTS,RARE_EVENTS,WEATHER_PHASES,PERF,V12_ACHIEVEMENTS,rareEventFor,comboCount,budgetFor,installObstacleCombos,installRoadEvents,finishPhase,ensure,loadStats};
+  window.SleepRoadExperienceV12={COMBOS,ROAD_EVENTS,RARE_EVENTS,WEATHER_PHASES,PERF,V12_ACHIEVEMENTS,rareEventFor,comboCount,budgetFor,installObstacleCombos,installRoadEvents,finishPhase,achievementProgress,triggerRoadEvent,ensure,loadStats};
 })();
