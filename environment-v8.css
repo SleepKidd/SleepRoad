@@ -1,0 +1,14 @@
+/* Sleep Road Environment & HUD v8 */
+.hud{--hud-accent:#67cfff;--hud-panel:rgba(25,31,53,.78)}
+.progress-wrap{filter:drop-shadow(0 9px 20px rgba(13,18,38,.20))}
+.progress{height:15px;padding:3px;border:1px solid rgba(255,255,255,.18);background:var(--hud-panel);backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.progress i{background:linear-gradient(90deg,#4fd4bc,#64c6ff);box-shadow:0 0 13px rgba(87,202,255,.42)}
+.finish-icon{height:27px;width:31px;border:1px solid rgba(255,255,255,.16);background:var(--hud-panel);backdrop-filter:blur(12px);font-size:17px;box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.hud-wallet,.sound-btn,.exit-btn{border:1px solid rgba(255,255,255,.15);background:var(--hud-panel);backdrop-filter:blur(12px);box-shadow:0 8px 22px rgba(13,18,38,.18),inset 0 1px 0 rgba(255,255,255,.14)}
+.hud-wallet{height:34px;border-radius:13px}.sound-btn,.exit-btn{height:42px;border-radius:14px}.sound-btn{width:42px}
+.mission-hud{padding:6px 10px 7px;border:1px solid rgba(255,255,255,.15);border-radius:14px;background:linear-gradient(135deg,rgba(28,34,58,.86),rgba(39,38,68,.72));box-shadow:0 9px 24px rgba(13,18,38,.18),inset 0 1px 0 rgba(255,255,255,.10);backdrop-filter:blur(13px)}
+.mission-hud span{color:#75e5d1}.mission-hud b{font-size:9px;letter-spacing:.01em}.mission-hud i{height:4px;background:rgba(255,255,255,.10)}.mission-hud em{background:linear-gradient(90deg,#4ed7bd,#68c9ff);box-shadow:0 0 10px rgba(82,211,222,.38)}
+.shield-hud{border-color:rgba(255,255,255,.25);box-shadow:0 0 24px rgba(62,205,255,.34)}
+.crowd-count{border:1px solid rgba(255,255,255,.80);background:linear-gradient(145deg,#5aa4ee,#416fbd);box-shadow:0 8px 20px rgba(35,70,126,.24),inset 0 1px 0 rgba(255,255,255,.24);backdrop-filter:blur(6px)}
+.world-label{backdrop-filter:blur(4px)}
+@media(max-width:520px){.progress{height:14px}.mission-hud{padding:5px 8px 6px}.hud-wallet{height:33px}.sound-btn,.exit-btn{height:40px}}
