@@ -70,12 +70,24 @@ global.SleepRoadExperienceV13={elevationAt(){return 0;}};
 vm.runInThisContext(src,{filename:'experience-v14.js'});
 const V=global.SleepRoadCarHazardV14;
 assert(V);
-assert.equal(V.CAR_CHANCE,.5);
+assert.equal(V.CAR_CHANCE,.75);
+assert.equal(V.CARS_PER_EVENT,2);
+assert.equal(V.MIN_CAR_GAP,54);
 assert.equal(V.MODEL_TRIANGLES,13110);
 
 let deterministic=0;
 for(let level=1;level<=10000;level++)if(V.carEventFor(level))deterministic++;
-assert(deterministic/10000>.48&&deterministic/10000<.52);
+assert(deterministic/10000>.73&&deterministic/10000<.77);
+
+const oldRandom=Math.random;
+try{
+  const rolls=[.20,.11,.73];
+  Math.random=()=>rolls.shift()??.41;
+  const pair=V.makeCars({level:18,levelLength:520,baseSpeed:9.5,playerZ:1.6,objects:[]});
+  assert.equal(pair.length,2,'successful hazard event must spawn exactly two cars');
+  assert(Math.abs(pair[0].meetDistance-pair[1].meetDistance)>=V.MIN_CAR_GAP,'hazard cars must be separated');
+  assert.notEqual(pair[0].x,pair[1].x,'consecutive hazard cars should not use the same lane');
+}finally{Math.random=oldRandom;}
 
 const calls=[];
 const gmesh={renderer:{createMesh(d){calls.push(d);return d;}}};
@@ -106,7 +118,10 @@ assert.equal(hitGame.tookDamage,true);
 assert(hitGame.knockouts.some(k=>k.vz>=6.8));
 
 for(const token of [
-  'const CAR_CHANCE=.5',
+  'const CAR_CHANCE=.75',
+  'CARS_PER_EVENT=2',
+  'MIN_CAR_GAP=54',
+  'makeCars',
   'CAR_WIDTH=2.65',
   'MODEL_SCALE=.88',
   'MODEL_TRIANGLES=13110',
@@ -123,8 +138,8 @@ assert(!index.includes('gclass-glb.js'));
 assert(index.indexOf('pickup-model.js')<index.indexOf('experience-v14.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v38';"));
+assert(sw.includes("const CACHE='sleep-road-v39';"));
 assert(sw.includes('pickup-model.js'));
 assert(!sw.includes('gclass-glb.js'));
 
-console.log('PASS: full-resolution Blender pickup, preserved topology/material groups, collision and lighting');
+console.log('PASS: full-resolution Blender pickup, 75% two-car hazard event, collision and lighting');
