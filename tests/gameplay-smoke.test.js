@@ -20,11 +20,12 @@ context.document={hidden:false,getElementById:()=>element(),addEventListener(){}
 context.localStorage={getItem(){return null;},setItem(){}};
 vm.createContext(context);
 
-for(const file of ['engine.js','assets/models/countmaster-character.js','systems-v4.js','gameplay-v4.js']){
+for(const file of ['engine.js','assets/models/countmaster-character.js','systems-v4.js','level-director-v5.js','gameplay-v4.js','level-runtime-v5.js']){
   vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 }
 
 const systems=context.SleepRoadSystems;
+const director=context.SleepRoadLevelDirector;
 const mesh=context.CountMasterCharacter;
 const game=context.SleepRoad3D.prototype;
 
@@ -54,23 +55,37 @@ assert.equal(systems.applyGateValue(12,{op:'sub',value:20}),1);
 assert.equal(systems.applyGateValue(13,{op:'div',value:2}),7);
 assert.equal(systems.applyGateValue(800,{op:'mul',value:2}),999);
 
+assert.equal(director.biomeForLevel(1).id,'meadow');
+assert.equal(director.biomeForLevel(11).id,'desert');
+assert.equal(director.biomeForLevel(21).id,'factory');
+assert.equal(director.biomeForLevel(31).id,'city');
+assert.equal(director.biomeForLevel(41).id,'neon');
+assert(director.profileForLevel(100).intensity>1);
+
 const generatedKinds=new Set(),collisionBatch=new systems.CrowdBatch({},{});
-for(let level=1;level<=80;level++){
-  const levelState=Object.assign(Object.create(game),{time:0,playerX:0,playerCount:80,baseSpeed:9});
+for(let level=1;level<=100;level++){
+  const levelState=Object.assign(Object.create(game),{level,time:0,playerX:0,playerZ:1.6,playerCount:80,baseSpeed:9,objects:[]});
   game.generateLevel.call(levelState,level);
   assert(levelState.levelLength>500);
+  assert(levelState.objects.length<420);
   assert(levelState.objects.every((item,index,list)=>index===0||list[index-1].distance<=item.distance));
   const finish=levelState.objects.filter(item=>item.type==='finish');
   assert.equal(finish.length,1);assert.equal(finish[0].distance,levelState.levelLength);
   const gates=levelState.objects.filter(item=>item.type==='gate');
-  assert(gates.some(item=>!systems.isGoodGate(item.left)||!systems.isGoodGate(item.right)));
+  assert(gates.length>0);
+  for(const gate of gates){
+    for(const opt of [gate.left,gate.right])assert(['add','sub','mul','div'].includes(opt.op));
+  }
+  const bosses=levelState.objects.filter(item=>item.type==='enemy'&&item.boss);
+  assert.equal(bosses.length,level%10===0?1:0);
   for(const obstacle of levelState.objects.filter(item=>item.type==='obstacle')){
     generatedKinds.add(obstacle.kind);
     const hits=game.obstacleHits.call(levelState,obstacle,collisionBatch.formation(80));
     assert(Number.isInteger(hits)&&hits>=0&&hits<=80);
   }
 }
-assert.equal(generatedKinds.size,12);
+assert(generatedKinds.size>=15);
+for(const kind of ['movingWall','fallingBlock','fireline'])assert(generatedKinds.has(kind));
 
 for(let count=1;count<=999;count+=7){
   const step=systems.finishStepForCount(count);
@@ -107,4 +122,4 @@ const missionState=Object.assign(Object.create(game),{
 });
 assert.equal(game.missionProgress.call(missionState),7);
 
-console.log('PASS: model, gates, crowd pickup, income, missions, finish multiplier');
+console.log('PASS: model, Level Director, 15+ obstacles, crowd pickup, income, missions, finish multiplier');
