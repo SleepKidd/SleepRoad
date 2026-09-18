@@ -64,6 +64,35 @@
     return{armL:side<0?attack:guard,armR:side>0?attack:guard,bodyLean,bodyRoll,bodyYaw,headPitch,extraY,impact};
   }
 
+  function bossSlamPose(phase){
+    phase=((phase%1)+1)%1;let arm=-.18,bodyLean=.08,bodyRoll=0,bodyYaw=0,headPitch=-.02,extraY=0,legL=-.06,legR=.06,impact=0;
+    if(phase<.34){const t=smooth(phase/.34);arm=lerp(-.18,.96,t);bodyLean=lerp(.08,-.16,t);extraY=.08*t;headPitch=lerp(-.02,.05,t);}
+    else if(phase<.52){const t=smooth((phase-.34)/.18);arm=lerp(.96,-1.72,t);bodyLean=lerp(-.16,.44,t);extraY=lerp(.08,-.12,t);headPitch=lerp(.05,.20,t);impact=smooth((t-.58)/.42);}
+    else if(phase<.66){const t=(phase-.52)/.14;arm=lerp(-1.72,-1.48,t);bodyLean=lerp(.44,.32,t);extraY=lerp(-.12,-.05,t);impact=1-t;}
+    else{const t=smooth((phase-.66)/.34);arm=lerp(-1.48,-.18,t);bodyLean=lerp(.32,.08,t);extraY=lerp(-.05,0,t);headPitch=lerp(.18,-.02,t);}
+    return{armL:arm,armR:arm,bodyLean,bodyRoll,bodyYaw,headPitch,extraY,legL,legR,impact};
+  }
+  function bossStompPose(phase,side=1){
+    phase=((phase%1)+1)%1;side=side<0?-1:1;let bodyLean=.07,bodyRoll=0,bodyYaw=0,headPitch=-.02,extraY=0,armL=-.30,armR=-.30,legL=-.06,legR=.06,impact=0,lift=0;
+    if(phase<.36){const t=smooth(phase/.36);lift=t;extraY=.18*t;bodyLean=lerp(.07,-.06,t);bodyRoll=side*.06*t;armL=lerp(-.30,.18,t);armR=lerp(-.30,.18,t);}
+    else if(phase<.52){const t=smooth((phase-.36)/.16);lift=1-t;extraY=lerp(.18,-.10,t);bodyLean=lerp(-.06,.30,t);bodyRoll=side*lerp(.06,-.08,t);impact=smooth((t-.58)/.42);}
+    else if(phase<.65){const t=(phase-.52)/.13;extraY=lerp(-.10,-.04,t);bodyLean=lerp(.30,.22,t);impact=1-t;}
+    else{const t=smooth((phase-.65)/.35);bodyLean=lerp(.22,.07,t);bodyRoll=lerp(-side*.05,0,t);extraY=lerp(-.04,0,t);armL=lerp(.06,-.30,t);armR=lerp(.06,-.30,t);}
+    if(side>0)legR=lerp(.06,-1.18,lift);else legL=lerp(-.06,-1.18,lift);
+    return{armL,armR,bodyLean,bodyRoll,bodyYaw,headPitch,extraY,legL,legR,impact};
+  }
+  function bossSweepPose(phase,side=1){
+    phase=((phase%1)+1)%1;side=side<0?-1:1;let attack=-.20,guard=-.30,bodyLean=.08,bodyRoll=0,bodyYaw=0,headPitch=-.02,extraY=0,legL=-.08,legR=.08,impact=0;
+    if(phase<.30){const t=smooth(phase/.30);attack=lerp(-.20,.58,t);bodyYaw=-side*.32*t;bodyRoll=side*.08*t;}
+    else if(phase<.50){const t=smooth((phase-.30)/.20);attack=lerp(.58,-1.34,t);bodyYaw=side*lerp(-.32,.38,t);bodyRoll=side*lerp(.08,-.12,t);bodyLean=lerp(.08,.22,t);impact=smooth((t-.48)/.52);}
+    else if(phase<.63){const t=(phase-.50)/.13;attack=lerp(-1.34,-1.18,t);bodyYaw=side*lerp(.38,.26,t);impact=1-t;}
+    else{const t=smooth((phase-.63)/.37);attack=lerp(-1.18,-.20,t);bodyYaw=side*lerp(.26,0,t);bodyRoll=lerp(-side*.08,0,t);bodyLean=lerp(.20,.08,t);}
+    return{armL:side<0?attack:guard,armR:side>0?attack:guard,bodyLean,bodyRoll,bodyYaw,headPitch,extraY,legL,legR,impact};
+  }
+  function bossStaggerPose(amount,side=1){
+    const t=clamp(amount,0,1),s=side<0?-1:1;return{armL:.18*t,armR:.18*t,bodyLean:-.30*t,bodyRoll:s*.16*t,bodyYaw:-s*.10*t,headPitch:-.16*t,extraY:.05*t,legL:-.02,legR:.02,impact:0};
+  }
+
   C.draw=function(count,rootX,rootZ,color,time,opts={}){
     const game=window.__sleepRoad,q=qFor(game),renderCount=Math.min(Math.max(1,Math.round(count)),q.maxCrowd||420),f=this.formation(renderCount),scale0=opts.scale||1,direction=opts.direction||1,enemy=opts.enemy===true,motion=(enemy?this.enemyMotion:this.playerMotion)||opts.motion||{},mode=motion.mode||'run',baseY=(motion.jumpY!=null&&!enemy?motion.jumpY:(opts.baseY||0)),runSpeed=clamp(motion.runSpeed==null?1:motion.runSpeed,.42,1.7),strafe=clamp(motion.strafe||0,-1,1),landing=clamp(motion.landing||0,0,1),takeoff=clamp(motion.takeoff||0,0,1),finish=clamp(motion.finishProgress||0,0,1),boss=motion.boss===true;
     const names=['head','body','leftArm','rightArm','leftLeg','rightLeg'],parts={},colors={};for(const n of names){parts[n]=[];colors[n]=[];}
@@ -76,13 +105,21 @@
       if(mode==='jump'){const a=clamp(motion.jumpAir||0,0,1),v=motion.jumpVertical||0;bodyLean=-v*.17-.045;armL=.40+a*.82+wave*.08;armR=.40+a*.82-wave*.08;legL=-.22-a*.43;legR=.20+a*.43;headPitch=v*.07;}
       if(mode==='battle'){const punch=Math.sin(time*11.2+qf.index*.41),hit=Math.max(0,punch),guard=Math.max(0,-punch);bodyLean=.12+hit*.09;bodyRoll=punch*.06;armL=-.25-hit*1.0;armR=-.25-guard*1.0;legL=-wave*.15;legR=wave*.15;extraY=Math.abs(punch)*.025;}
       if(mode==='battle'&&boss&&motion.bossAttackActive){
-        const pose=bossStrikePose(motion.bossAttackPhase||0,motion.bossAttackSide||1);
-        bodyLean=pose.bodyLean;bodyRoll=pose.bodyRoll;bodyYaw=pose.bodyYaw;headPitch=pose.headPitch;armL=pose.armL;armR=pose.armR;legL=-.10+Math.sin(time*2.2)*.035;legR=.10-Math.sin(time*2.2)*.035;extraY=pose.extraY;
+        const type=motion.bossAttackType||'punch',side=motion.bossAttackSide||1,stagger=clamp(motion.bossStagger||0,0,1);
+        let pose=type==='slam'?bossSlamPose(motion.bossAttackPhase||0):type==='stomp'?bossStompPose(motion.bossAttackPhase||0,side):type==='sweep'?bossSweepPose(motion.bossAttackPhase||0,side):bossStrikePose(motion.bossAttackPhase||0,side);
+        if(stagger>0)pose=bossStaggerPose(stagger,side);
+        bodyLean=pose.bodyLean;bodyRoll=pose.bodyRoll;bodyYaw=pose.bodyYaw;headPitch=pose.headPitch;armL=pose.armL;armR=pose.armR;legL=pose.legL==null?-.10+Math.sin(time*2.2)*.035:pose.legL;legR=pose.legR==null?.10-Math.sin(time*2.2)*.035:pose.legR;extraY=pose.extraY;
+      }
+      if(!enemy&&motion.reaction){
+        const rp=clamp(motion.reactionPower||0,0,1),rw=Math.sin(time*8+qf.index*.43);
+        if(motion.reaction==='cheer'){armL=lerp(armL,-1.18+rw*.12,rp);armR=lerp(armR,-1.18-rw*.12,rp);extraY+=Math.abs(rw)*.08*rp;bodyLean=lerp(bodyLean,-.03,rp);}
+        else if(motion.reaction==='fear'){armL=lerp(armL,.42,rp);armR=lerp(armR,.42,rp);bodyLean=lerp(bodyLean,-.16,rp);bodyRoll+=rw*.035*rp;}
+        else if(motion.reaction==='recoil'){armL=lerp(armL,.58,rp);armR=lerp(armR,.58,rp);bodyLean=lerp(bodyLean,-.28,rp);bodyRoll+=rw*.06*rp;}
       }
       if(mode==='enemy'&&boss){bodyLean=.09+Math.sin(time*3.2+qf.index*.15)*.025;armL=wave*.74;armR=-wave*.74;extraY=Math.abs(wave)*.075;}
       if(mode==='finish'){const cheer=clamp((finish-.34)/.44,0,1),cw=Math.sin(time*8+qf.index*.45);armL=lerp(wave*.30,-1.24+cw*.12,cheer);armR=lerp(-wave*.30,-1.24-cw*.12,cheer);legL=-wave*.22;legR=wave*.22;extraY=cheer*Math.abs(cw)*.11;}
       const squash=landing*.12,stretch=takeoff*.07,rootSx=scale*ap.width*(1+squash*.42-stretch*.16),rootSy=scale*ap.height*(1-squash+stretch),rootSz=scale*(1+squash*.28-stretch*.08),turn=direction<0?Math.PI:0,root=compose(x,baseY+bob+extraY,z,bodyLean,turn+bodyYaw,bodyRoll,rootSx,rootSy,rootSz);
-      const rawShirt=shirts[(qf.index*7)%shirts.length],shirt=enemy?rawShirt:softenShirt(rawShirt),skin=skins[(qf.index*3)%skins.length],trouser=trousers[(qf.index*5)%trousers.length],leftLift=Math.max(0,wave)*.082*runAmount,rightLift=Math.max(0,-wave)*.082*runAmount,leftZ=counter*.038*runAmount,rightZ=-counter*.038*runAmount;
+      const rawShirt=shirts[(qf.index*7)%shirts.length],shirt=!enemy&&qf.index===0&&game?.v11?.leaderColor?game.v11.leaderColor:(enemy?rawShirt:softenShirt(rawShirt)),skin=skins[(qf.index*3)%skins.length],trouser=trousers[(qf.index*5)%trousers.length],leftLift=Math.max(0,wave)*.082*runAmount,rightLift=Math.max(0,-wave)*.082*runAmount,leftZ=counter*.038*runAmount,rightZ=-counter*.038*runAmount;
       const pivots={head:[0,1.21,0],body:[0,.01,0],leftArm:[-.205,1.03,0],rightArm:[.205,1.03,0],leftLeg:[-.09,.62,0],rightLeg:[.09,.62,0]};
       const rotations={head:headPitch,body:0,leftArm:armL,rightArm:armR,leftLeg:legL,rightLeg:legR};
       const bodyScale=ap.body.map((x,i)=>x*torso.body[i]),partScale={head:ap.head,body:bodyScale,leftArm:ap.arm,rightArm:ap.arm,leftLeg:ap.leg,rightLeg:ap.leg};
@@ -358,5 +395,5 @@
     for(let i=0;i<8;i++){const z=this.playerZ-2.4-i*1.45,y=i*.45;r.draw(m.box,compose(-5.15,y+.05,z,0,0,0,.16,.16,1.35),p.structure);r.draw(m.box,compose(5.15,y+.05,z,0,0,0,.16,.16,1.35),p.structure);}
   };
 
-  window.SleepRoadVisualV9={APPEARANCES,TORSO_STYLES,BOSS_THEMES,WEATHER,cameraState,roadDetailCount,crowdOffset,softenShirt,bossStrikePose,roadsideCullDistance:5.2};
+  window.SleepRoadVisualV9={APPEARANCES,TORSO_STYLES,BOSS_THEMES,WEATHER,cameraState,roadDetailCount,crowdOffset,softenShirt,bossStrikePose,bossSlamPose,bossStompPose,bossSweepPose,bossStaggerPose,roadsideCullDistance:5.2};
 })();
