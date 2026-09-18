@@ -99,5 +99,5 @@
   const oldResult=P.showResult;
   P.showResult=function(won){oldResult.call(this,won);if(!won)return;const extra=claimMilestone(this,this.level);if(extra&&UI.resultReward)UI.resultReward.textContent+=` · ${this.level%10===0?'глава':'сундук'} +${extra} ☾`;if(this.profile?.bossLevel&&!this.tookDamage)unlockAchievement(this,'bossNoHit');renderUI(this);};
 
-  window.SleepRoadProgressionV6={KEY,SKINS,ACHIEVEMENTS,milestoneReward,unlockedSkins,currentSkin,unlockAchievement,claimMilestone,showIntro,ensureState,renderUI,save};
+  window.SleepRoadProgressionV6={KEY,SKINS,ACHIEVEMENTS,milestoneReward,unlockedSkins,currentSkin,cycleSkin,unlockAchievement,claimMilestone,showIntro,ensureState,renderUI,save};
 })();
