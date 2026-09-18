@@ -226,7 +226,7 @@
     const rare=g.v12?.rare,s=ensure(g);if(!rare||!V13_RARE_IDS.includes(rare.id))return;
     if(rare.id==='doubleBoss'){
       s.doubleBoss=true;const boss=(g.objects||[]).find(o=>o.boss&&o.finalBoss&&!o.processed);
-      if(boss){const full=boss.maxCount||boss.count;boss.count=boss.maxCount=Math.max(24,Math.round(full*.82));const twinCount=Math.max(22,Math.round(full*.62));g.objects.push({type:'enemy',distance:boss.distance-18,count:twinCount,maxCount:twinCount,boss:true,finalBoss:false,majorBoss:false,soloBoss:true,bossScale:3.05,elite:true,name:'TWIN GIANT',processed:false,phase:(boss.phase||0)+1.7,v13Twin:true});}
+      if(boss){const full=boss.maxCount||boss.count;boss.count=boss.maxCount=Math.max(24,Math.round(full*.82));const twinCount=Math.max(22,Math.round(full*.62));g.objects.push({type:'enemy',distance:boss.distance-13,count:twinCount,maxCount:twinCount,boss:true,finalBoss:false,majorBoss:false,soloBoss:true,bossScale:3.05,elite:true,name:'TWIN GIANT',processed:false,phase:(boss.phase||0)+1.7,v13Twin:true});}
     }else if(rare.id==='nightRun')s.night=true;
     else if(rare.id==='noGates'){s.noGates=true;g.objects=g.objects.filter(o=>o.type!=='gate');g.playerCount=clamp(g.playerCount+18,1,S.MAX_CROWD);g.visualCount=Math.max(g.visualCount,g.playerCount);g.setCrowdCount(g.playerCount,true);}
     else if(rare.id==='moonStorm'){s.moonStorm=true;const rng=new RNG(0x13aa71+g.level*811),end=(g.levelLength||260)-88;for(let d=58,i=0;d<end;d+=6.8,i++)g.objects.push({type:'moon',distance:d,x:Math.sin(i*.88)*3.6,processed:false,bonus:i%7===6,spin:rng.range(0,TAU)});}
