@@ -130,7 +130,6 @@
     else drawNeonBackdrop(this,p,cfg);
 
     if(b.id==='meadow')drawMeadowBackdrop(this,p,cfg);
-    else if(b.id==='desert')drawDesertBackdrop(this,p,cfg);
 
     const shoulder=b.id==='meadow'?[.40,.31,.20]:b.id==='desert'?[.65,.46,.23]:mix(p.road,p.ground,.30);
     r.draw(m.box,compose(-6.48,-.16,-132,0,0,0,.74,.22,316),shoulder);
