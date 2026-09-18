@@ -10,8 +10,7 @@ global.window=global;
 if(typeof global.atob!=='function')global.atob=s=>Buffer.from(s,'base64').toString('binary');
 Object.defineProperty(global,'navigator',{value:{vibrate(){}},configurable:true});
 
-for(let i=1;i<=6;i++)vm.runInThisContext(fs.readFileSync('assets/models/gclass-frag-'+i+'.js','utf8'),{filename:'gclass-frag-'+i+'.js'});
-vm.runInThisContext(fs.readFileSync('assets/models/gclass-final.js','utf8'),{filename:'gclass-final.js'});
+vm.runInThisContext(fs.readFileSync('assets/models/gclass-glb.js','utf8'),{filename:'gclass-glb.js'});
 const M=global.SleepRoadCarModelGLB;
 assert(M);
 assert.equal(M.meta.source,'mercedes-benz_g-class_free_download.glb');
@@ -66,21 +65,24 @@ assert(hitGame.playerCount<25);
 assert.equal(hitGame.tookDamage,true);
 assert(hitGame.knockouts.some(k=>k.vz>=6.8));
 
-for(const token of ['const CAR_CHANCE=.5','spawnRoll=Math.random()','spawnKnockouts(loss)','SleepRoadCarModelGLB','m.cylinder','MODEL_TRIANGLES=696'])assert(src.includes(token),token);
+for(const token of ['const CAR_CHANCE=.5','spawnRoll=Math.random()','spawnKnockouts(loss)','SleepRoadCarModelGLB','m.cylinder','MODEL_TRIANGLES=696','1.08,1.08,1.08'])assert(src.includes(token),token);
 assert(!src.includes('SleepRoadCarModelMeta'));
 assert(!src.includes('__SleepRoadCarChunks'));
 assert(!src.includes('r.draw(m.box,compose(car.x,y-.012,z'));
 
 const index=fs.readFileSync('index.html','utf8');
-for(let i=1;i<=6;i++)assert(index.includes('gclass-frag-'+i+'.js'));
-assert(index.includes('gclass-final.js'));
+assert(index.includes('gclass-glb.js'));
+assert(!index.includes('gclass-frag-'));
+assert(!index.includes('gclass-final.js'));
 assert(!index.includes('car-model-meta.js'));
 assert(!index.includes('car-model-data.js'));
-assert(index.indexOf('gclass-final.js')<index.indexOf('experience-v14.js'));
+assert(index.indexOf('gclass-glb.js')<index.indexOf('experience-v14.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v36';"));
-assert(sw.includes('gclass-final.js'));
+assert(sw.includes("const CACHE='sleep-road-v37';"));
+assert(sw.includes('gclass-glb.js'));
+assert(!sw.includes('gclass-frag-'));
+assert(!sw.includes('gclass-final.js'));
 assert(!sw.includes('car-model-meta.js'));
 assert(!sw.includes('car-model-data.js'));
 
