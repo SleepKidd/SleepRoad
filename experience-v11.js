@@ -258,7 +258,7 @@
       e.v11Stagger=Math.max(0,(e.v11Stagger||0)-dt*2.8);
       const afterRatio=e.count/Math.max(1,e.maxCount||1),beforeQuarter=Math.floor(beforeRatio*4+.0001),afterQuarter=Math.floor(afterRatio*4+.0001);
       if(e.count>0&&afterQuarter<beforeQuarter){e.v11Stagger=1;showReaction(this,'cheer',.40,.34);this.audio?.v11Stagger?.();haptic(18);}
-      for(let tick=beforeTicks+1;tick<=(e.battleTicks||0);tick++)if(tick%18===8){showReaction(this,'recoil',.95,.46);ensure(this).cameraKick=1.1;haptic([35,25,45]);this.audio?.v11Impact?.(1);}
+      const attackCycle=e.v13Phase>=3?13:e.v13Phase>=2?15:18,impactTick=Math.max(5,Math.round(attackCycle*.44));for(let tick=beforeTicks+1;tick<=(e.battleTicks||0);tick++)if(tick%attackCycle===impactTick){showReaction(this,'recoil',.95,.46);ensure(this).cameraKick=1.1;haptic([35,25,45]);this.audio?.v11Impact?.(1);}
       if(!this.battleEnemy&&e.count<=0){
         const variant=BOSS_VARIANTS[clamp(this.profile?.chapter||0,0,4)],s=ensure(this);s.corpse={life:1.35,max:1.35,z:e.battleZ-2.25,travel:this.travel,scale:e.bossScale||3.25,color:variant.main};s.cameraKick=1.4;showReaction(this,'cheer',1,1.05);haptic([45,35,70]);this.audio?.v11BossDeath?.();Polish?.cinematic?.(this,1.0);
       }
