@@ -39,12 +39,14 @@ assert.equal(D.biomeForLevel(41).id,'neon');
 assert(D.profileForLevel(200).intensity>1);
 assert(D.profileForLevel(200).sections>=D.profileForLevel(50).sections);
 
-const seenBiomes=new Set(),seenKinds=new Set();
-let maxObjects=0;
+const seenBiomes=new Set(),seenKinds=new Set(),seenTypes=new Set(),seenZones=new Set(),seenPowerups=new Set();
+let maxObjects=0,sawTimed=false,sawNoHit=false,sawBonus=false;
 for(let level=1;level<=500;level++){
   const state=Object.assign(Object.create(game),{level,time:0,playerX:0,playerZ:1.6,playerCount:80,baseSpeed:9,objects:[]});
   game.generateLevel.call(state,level);
   seenBiomes.add(state.biome.id);maxObjects=Math.max(maxObjects,state.objects.length);
+  sawTimed ||= state.profile.timed;sawNoHit ||= state.profile.noHit;sawBonus ||= state.profile.bonusLevel;
+  for(const obj of state.objects){seenTypes.add(obj.type);if(obj.type==='zone')seenZones.add(obj.kind);if(obj.type==='powerup')seenPowerups.add(obj.kind);}
   assert(state.levelLength>500,`level ${level} too short`);
   assert(state.objects.length<420,`level ${level} object budget exceeded`);
   assert(state.objects.every((item,index,list)=>index===0||list[index-1].distance<=item.distance),`level ${level} is not sorted`);
@@ -60,6 +62,10 @@ for(let level=1;level<=500;level++){
   assert.equal(compact(state),compact(state2),`level ${level} is not deterministic`);
 }
 assert.deepEqual([...seenBiomes].sort(),['city','desert','factory','meadow','neon']);
+for(const type of ['rescue','jump','split','merge','bonusGate','powerup','zone'])assert(seenTypes.has(type),`missing object type ${type}`);
+for(const zone of ['boost','slow'])assert(seenZones.has(zone),`missing zone ${zone}`);
+for(const power of ['shield','magnet','double','invuln'])assert(seenPowerups.has(power),`missing powerup ${power}`);
+assert(sawTimed&&sawNoHit&&sawBonus,'special level profiles did not appear');
 for(const required of ['movingWall','fallingBlock','fireline','laser','pendulum','crusher','hammer','roller','saw','mines'])assert(seenKinds.has(required),`missing ${required}`);
 for(const level of [10,20,30,40,50,60,100]){const p=D.profileForLevel(level);assert(p.bossLevel);assert(D.bossName(level));assert(D.bossStrength(level,p.sections)>0);}
 assert(maxObjects<420);
