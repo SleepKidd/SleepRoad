@@ -19,15 +19,15 @@
   A.combo=function(n=3){this.tone(480+n*35,.08,'triangle',.028,1.32);setTimeout(()=>this.tone(680+n*28,.09,'sine',.024,1.15),55);};
   A.chest=function(big=false){this.tone(big?390:330,.11,'triangle',.035,1.32);setTimeout(()=>this.tone(big?620:520,.13,'triangle',.032,1.25),90);setTimeout(()=>this.tone(big?880:720,.18,'sine',.026,1.12),190);};
   A.achievement=function(){this.tone(520,.09,'triangle',.03,1.3);setTimeout(()=>this.tone(780,.12,'sine',.03,1.2),75);};
-  A.musicStep=function(dt,biome='meadow',boss=false,state='running'){
+  A.musicStep=function(dt,biome='meadow',boss=false,state='running',bossPhase=1){
     if(!this.enabled||state==='failed'||state==='complete'||(!this.ac&&state==='menu')){this._musicClock=.1;return;}
     const cfg=MUSIC[biome]||MUSIC.meadow;this._musicClock=(this._musicClock==null?0:this._musicClock)-dt;
     if(this._musicClock>0)return;
-    const idx=(this._musicIndex||0)%cfg.notes.length,root=cfg.notes[idx]*(boss?(idx%2?1:.5):1),gain=state==='menu'?.008:boss?.014:.010;
+    const idx=(this._musicIndex||0)%cfg.notes.length,phase=Math.max(1,Number(bossPhase)||1),pitch=phase>=3?(idx%3?1.12:.84):phase>=2?1.04:1,root=cfg.notes[idx]*(boss?(idx%2?1:.5):1)*pitch,gain=state==='menu'?.008:boss?(phase>=3?.020:phase>=2?.017:.014):.010;
     this.tone(root,.16,cfg.wave,gain,idx%4===3?1.05:1);if(idx%2===0)this.tone(root*.5,.20,'sine',gain*.45,1);
-    this._musicIndex=idx+1;this._musicClock=cfg.step*(boss?.72:state==='menu'?1.35:1);
+    this._musicIndex=idx+1;this._musicClock=cfg.step*(boss?(phase>=3?.48:phase>=2?.58:.72):state==='menu'?1.35:1);
   };
   const oldUpdate=P.update;
-  P.update=function(dt){oldUpdate.call(this,dt);const b=this.profile?.biome?.id||this.biome?.id||'meadow';this.audio?.musicStep?.(dt,b,!!this.battleEnemy?.boss||!!this.profile?.bossLevel,this.state);};
+  P.update=function(dt){oldUpdate.call(this,dt);const b=this.profile?.biome?.id||this.biome?.id||'meadow',phase=this.battleEnemy?.boss?(this.battleEnemy.v13Phase||1):1;this.audio?.musicStep?.(dt,b,!!this.battleEnemy?.boss||!!this.profile?.bossLevel,this.state,phase);};
   window.SleepRoadAudioV6={MUSIC};
 })();
