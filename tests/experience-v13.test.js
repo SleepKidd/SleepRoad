@@ -5,7 +5,10 @@ const vm=require('vm');
 
 const src=fs.readFileSync('experience-v13.js','utf8');
 const v12src=fs.readFileSync('experience-v12.js','utf8');
+const trafficSrc=fs.readFileSync('assets/models/supersport-traffic.js','utf8');
 assert.doesNotThrow(()=>new Function(src));
+assert.doesNotThrow(()=>new Function(trafficSrc));
+for(const token of ['SuperSport_Car.blend','"runtimeVerts":431','"runtimeTris":647'])assert(trafficSrc.includes(token),token);
 
 class RNG{
   constructor(seed){this.s=(seed>>>0)||1;}
@@ -81,7 +84,7 @@ for(const token of [
   'startBossDeath','cracks:Array.from','drawDeath',
   'drawElevationRoad','withElevation','elevationAt',
   'drawSetpiece','trainCrossing','collapseBridge','giantDoors','tunnelRun','industrialLift','rainChase',
-  'drawLivingWorld',
+  'drawLivingWorld','buildTrafficCarMeshes','drawTrafficCar','SleepRoadTrafficCarModel',
   'ПРОЛОМИЛИ ПРЕПЯТСТВИЕ',
   'drawFakeReflections','wetReflectionEnabled',
   "rare.id==='doubleBoss'","rare.id==='nightRun'","rare.id==='noGates'","rare.id==='moonStorm'","rare.id==='giantObstacles'","rare.id==='lowGravity'",
@@ -93,9 +96,13 @@ for(const id of ['doubleBoss','nightRun','noGates','moonStorm','giantObstacles',
 assert(v12src.includes(">=.35)return null"),'Rare Run total probability must stay at 35%');
 let rareCount=0;for(let level=1;level<=10000;level++){const h=n=>{const x=Math.sin(n*83.173+29.411)*43758.5453123;return x-Math.floor(x);};if(h(level*47.119+3.7)<.35)rareCount++;}
 const rareRate=rareCount/10000;assert(rareRate>.33&&rareRate<.37,'Rare Run v2 must remain around 35%');
+assert(!src.includes('1.15,.55,1.8'),'old rectangular traffic body must be removed');
+assert(!src.includes('.70,.30,.78'),'old rectangular traffic cabin must be removed');
 
 const index=fs.readFileSync('index.html','utf8');
 assert(index.includes('experience-v13.js'));
+assert(index.includes('supersport-traffic.js'));
+assert(index.indexOf('supersport-traffic.js')<index.indexOf('experience-v13.js'));
 assert(index.indexOf('experience-v13.js')>index.indexOf('experience-v12.js'));
 assert(index.indexOf('experience-v13.js')<index.indexOf('boot-v4.js'));
 
@@ -108,7 +115,8 @@ const polish=fs.readFileSync('polish-v6.js','utf8');assert(polish.includes("cycl
 const v11=fs.readFileSync('experience-v11.js','utf8');assert(v11.includes("attackCycle=e.v13Phase>=3?13:e.v13Phase>=2?15:18"));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v37';"));
+assert(sw.includes("const CACHE='sleep-road-v39';"));
+assert(sw.includes("'./assets/models/supersport-traffic.js'"));
 assert(sw.includes("'./experience-v13.js'"));
 
-console.log('PASS: Experience v13 boss AI/phases/death, crowd feel, elevation, setpieces, living world, destruction, reflections and Rare Run v2');
+console.log('PASS: Experience v13 boss AI, real SuperSport traffic, elevation, setpieces, destruction, reflections and Rare Run v2');
