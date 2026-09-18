@@ -3,7 +3,7 @@
   const S=window.SleepRoadSystems,V13=window.SleepRoadExperienceV13,P=window.SleepRoad3D&&window.SleepRoad3D.prototype;
   if(!S||!P)throw new Error('Sleep Road Car Hazard v14 dependencies are missing');
   const {compose,clamp,COLORS}=S;
-  const CAR_CHANCE=.5,LANES=[-3.05,0,3.05],CAR_WIDTH=2.0,CAR_LENGTH=4.55,MODEL_TRIANGLES=696;
+  const CAR_CHANCE=.5,LANES=[-3.05,0,3.05],CAR_WIDTH=2.65,CAR_LENGTH=4.66,MODEL_SCALE=.88,MODEL_TRIANGLES=13110;
   const hash=n=>{const x=Math.sin(n*91.713+17.31)*43758.5453123;return x-Math.floor(x);};
 
   function carEventFor(level){
@@ -19,20 +19,39 @@
     for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i)&255;
     return out;
   }
+  function decodeF32(b64){
+    const b=decodeBytes(b64);
+    if(b.byteLength%4)throw new Error('Invalid pickup float buffer');
+    const v=new DataView(b.buffer,b.byteOffset,b.byteLength),out=new Float32Array(b.byteLength>>2);
+    for(let i=0;i<out.length;i++)out[i]=v.getFloat32(i*4,true);
+    return out;
+  }
   function decodeU16(b64){
-    const b=decodeBytes(b64),v=new DataView(b.buffer,b.byteOffset,b.byteLength),out=new Uint16Array(b.length>>1);
+    const b=decodeBytes(b64);
+    if(b.byteLength%2)throw new Error('Invalid pickup index buffer');
+    const v=new DataView(b.buffer,b.byteOffset,b.byteLength),out=new Uint16Array(b.byteLength>>1);
     for(let i=0;i<out.length;i++)out[i]=v.getUint16(i*2,true);
     return out;
   }
   function buildCarMeshes(g){
     if(g.__carGpuMeshes)return g.__carGpuMeshes;
-    const model=window.SleepRoadCarModelGLB;if(!model?.meta||!model?.groups?.length)return[];
-    const lo=model.meta.bounds.min,hi=model.meta.bounds.max,qp=decodeU16(model.p),nb=decodeBytes(model.n),positions=new Float32Array(qp.length),normals=new Float32Array(nb.length);
-    for(let i=0;i<qp.length;i++){const axis=i%3;positions[i]=lo[axis]+(qp[i]/65535)*(hi[axis]-lo[axis]);}
-    for(let i=0;i<nb.length;i++){const signed=nb[i]>127?nb[i]-256:nb[i];normals[i]=clamp(signed/127,-1,1);}
+    const model=window.SleepRoadCarModel;
+    if(!model?.meta||!model?.groups?.length||!model.p32||!model.n32)return[];
+    const positions=model.__positions||(model.__positions=decodeF32(model.p32));
+    const normals=model.__normals||(model.__normals=decodeF32(model.n32));
+    const expected=model.meta.runtimeVerts*3;
+    if(positions.length!==expected||normals.length!==expected)throw new Error('Invalid full-resolution pickup geometry');
     g.__carGpuMeshes=model.groups.map(group=>{
-      const indices=decodeU16(group.i);
-      return{mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,tris:group.tris};
+      const indices=group.__indices||(group.__indices=decodeU16(group.i));
+      if(indices.length!==group.tris*3)throw new Error('Invalid pickup material group: '+group.name);
+      return{
+        mesh:g.renderer.createMesh({positions,normals,indices}),
+        color:group.color,
+        alpha:group.alpha??1,
+        emissive:group.emissive||0,
+        name:group.name,
+        tris:group.tris
+      };
     });
     return g.__carGpuMeshes;
   }
@@ -106,11 +125,41 @@
   }
   function groundY(g,z){return(V13?.elevationAt?.(g,(g.travel||0)-z)||0)+.035;}
   function drawCar(g){
-    const car=ensure(g).car;if(!car||car.done)return;const z=currentCarZ(g,car);
-    if(z<-92||z>19)return;const r=g.renderer,m=g.meshes,y=groundY(g,z),model=compose(car.x,y,z,0,0,0,1.08,1.08,1.08);
-    r.draw(m.cylinder,compose(car.x,y+.008,z-.06,0,0,0,1.10,.012,2.30),[.025,.03,.038],.12);
-    for(const part of buildCarMeshes(g))r.draw(part.mesh,model,part.color.map(v=>clamp(v*1.06+.01,0,1)),1);
-    if(z>-48&&z<-7)g.addWorldLabel?.([car.x,y+2.45,z+.35],'МАШИНА!','bad');
+    const car=ensure(g).car;
+    if(!car||car.done)return;
+    const z=currentCarZ(g,car);
+    if(z<-92||z>19)return;
+
+    const r=g.renderer,m=g.meshes,y=groundY(g,z),asset=window.SleepRoadCarModel,bounds=asset?.meta?.bounds;
+    const lo=bounds?.min||[-1.579805,.234096,-3.017546],hi=bounds?.max||[1.353162,3.296137,2.274039];
+    const centerX=(lo[0]+hi[0])*.5,centerZ=(lo[2]+hi[2])*.5;
+    const model=compose(
+      car.x-centerX*MODEL_SCALE,
+      y-lo[1]*MODEL_SCALE,
+      z-centerZ*MODEL_SCALE,
+      0,0,0,
+      MODEL_SCALE,MODEL_SCALE,MODEL_SCALE
+    );
+
+    // Contact shadow + magenta underglow from the Blender reference.
+    r.draw(m.cylinder,compose(car.x,y+.008,z-.05,0,0,0,1.46,.012,2.48),[.025,.03,.038],.15);
+    const glow=[.98,.04,.46];
+    r.draw(m.sphere,compose(car.x-.64,y+.028,z-.62,0,0,0,.92,.024,1.18),glow,.09);
+    r.draw(m.sphere,compose(car.x+.64,y+.028,z-.62,0,0,0,.92,.024,1.18),glow,.09);
+
+    // Source MTL colors stay untouched; only lamp materials receive a small emissive-looking boost.
+    for(const part of buildCarMeshes(g)){
+      const color=part.emissive>0
+        ?part.color.map(v=>clamp(v*(1+part.emissive*.45)+part.emissive*.14,0,1))
+        :part.color;
+      r.draw(part.mesh,model,color,part.alpha);
+    }
+
+    // Soft headlight spill. The front of this Blender/OBJ model points toward +Z.
+    const lamp=[1,.80,.34];
+    r.draw(m.sphere,compose(car.x-.56,y+.030,z+2.72,0,0,0,.46,.018,1.42),lamp,.045);
+    r.draw(m.sphere,compose(car.x+.56,y+.030,z+2.72,0,0,0,.46,.018,1.42),lamp,.045);
+    if(z>-48&&z<-7)g.addWorldLabel?.([car.x,y+3.20,z+.35],'МАШИНА!','bad');
   }
 
   const oldStart=P.startLevel;

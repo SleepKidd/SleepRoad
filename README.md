@@ -26,6 +26,7 @@ Sleep Road работает без игрового фреймворка: про
 |---|---|
 | `engine.js` | WebGL-рендерер, матрицы, камера и меши |
 | `assets/models/countmaster-character.js` | адаптированный меш персонажа CountMaster |
+| `assets/models/pickup-model.js` | полноразмерный меш пикапа из Blender: 13 110 треугольников, без Decimate/упрощения геометрии |
 | `systems-v4.js` | сохранения, звук, формирование и отрисовка толпы |
 | `gameplay-v4.js` | игровой цикл, генерация, столкновения и экономика |
 | `render-v4.js` | трасса, окружение, ворота, препятствия и финиш |
@@ -60,4 +61,4 @@ python tools/convert_countmaster_fbx.py \
 
 Создано и развивается **Sleepkidd Studio**.
 
-© Sleepkidd Studio. Сторонняя модель используется по лицензии MIT; подробности — в `THIRD_PARTY_NOTICES.md`.
+© Sleepkidd Studio. Модель персонажа CountMaster используется по лицензии MIT; подробности — в `THIRD_PARTY_NOTICES.md`.
