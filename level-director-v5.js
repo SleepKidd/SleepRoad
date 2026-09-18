@@ -32,9 +32,9 @@
   const ENCOUNTERS={
     meadow:['classic','riskReward','doubleSaw','spinnerIslands','rescue','jumpRun'],
     desert:['riskReward','mineZigzag','doubleSaw','hammerRun','speedRun','splitMerge','rescue'],
-    factory:['crusherGate','hammerRun','movingWalls','waves','fallingRun','splitMerge','elite'],
-    city:['laserShift','twinPendulum','movingWalls','speedRun','waves','fireRun','elite','treasure'],
-    neon:['laserShift','twinPendulum','movingWalls','fallingRun','fireRun','waves','riskReward','splitMerge','elite','treasure']
+    factory:['crusherGate','hammerRun','movingWalls','waves','fallingRun','slowRun','splitMerge','elite'],
+    city:['laserShift','twinPendulum','movingWalls','speedRun','slowRun','waves','fireRun','elite','treasure'],
+    neon:['laserShift','twinPendulum','movingWalls','fallingRun','fireRun','slowRun','waves','riskReward','splitMerge','elite','treasure']
   };
 
   function biomeForLevel(level){
