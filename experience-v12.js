@@ -10,7 +10,7 @@
     ['saw','hammer'],['laser','movingWall'],['hammer','mines'],['crusher','saw'],
     ['fireline','laser'],['movingWall','hammer'],['pendulum','laser'],['spikes','crusher']
   ];
-  const ROAD_EVENTS=['collapseBridge','crossingTrain','craneDrop','blackoutTunnel','stormGate'];
+  const ROAD_EVENTS=['collapseBridge','crossingTrain','blackoutTunnel','stormGate'];
   const RARE_EVENTS=[
     {id:'moonRush',name:'MOON RUSH',desc:'Лун на трассе намного больше'},
     {id:'giantCrowd',name:'GIANT CROWD',desc:'Большая стартовая толпа'},
@@ -192,12 +192,9 @@
     }else if(o.kind==='crossingTrain'){
       const x=((t*.95)%18)-9,y=3.65;r.draw(m.box,compose(0,4.5,z,0,0,0,14,.20,.36),p.structure);for(let i=-2;i<=2;i++){const xx=x+i*2.25;r.draw(m.box,compose(xx,y,z-.4,0,0,0,2.0,.86,.70),i%2?mix(p.structure,p.accent,.30):p.structure);if(d>.7)r.draw(m.box,compose(xx,y+.05,z-.77,0,0,0,1.25,.24,.04),p.accent,.72);}
     }else if(o.kind==='craneDrop'){
-      const side=o.phase>Math.PI?1:-1,frontCull=(g.playerZ||1.6)-5.8;if(z>=frontCull)return;
-      const fade=clamp((frontCull-z)/5.5,0,1),x=side*9.6,armCenter=x-side*1.55,containerX=side*7.75,drop=1.1+Math.abs(Math.sin(t*.68))*2.35,containerColor=mix(p.structure,p.accent,.46);
-      r.draw(m.cylinder,compose(x,2.45,z,0,0,0,.10,4.9,.10),p.structure,.90*fade);
-      r.draw(m.box,compose(armCenter,4.65,z,0,0,0,3.15,.11,.14),p.structure,.90*fade);
-      r.draw(m.box,compose(containerX,drop,z-.55,0,t*.08,0,1.08,.82,.78),containerColor,.84*fade);
-      r.draw(m.box,compose(containerX,3.72+(drop-1.1)*.22,z-.55,0,0,0,.025,2.45,.025),p.structure,.55*fade);
+      // Legacy v12 event: intentionally hidden. The roadside crane could dominate the
+      // foreground on wide/low camera angles, so old generated instances are culled.
+      return;
     }else if(o.kind==='blackoutTunnel'){
       const rings=d>.75?5:3;for(let i=0;i<rings;i++){const zz=z-i*2.2;r.draw(m.box,compose(-5.95,2.1,zz,0,0,0,.30,4.2,.35),p.structure);r.draw(m.box,compose(5.95,2.1,zz,0,0,0,.30,4.2,.35),p.structure);r.draw(m.box,compose(0,4.12,zz,0,0,0,12.2,.28,.35),p.structure);if(i%2===0)r.draw(m.sphere,compose(0,3.75,zz-.2,0,0,0,.10,.06,.10),Math.sin(t*6+i)>.15?p.accent:[.06,.06,.08],.85);}
     }else{
@@ -205,10 +202,9 @@
     }
   }
   function triggerRoadEvent(g,o){
-    if(o.v12Triggered)return;o.v12Triggered=true;const p=g.biome?.palette||{},accent=p.accent||COLORS.gold,structure=p.structure||[.5,.5,.5];
+    if(o.v12Triggered)return;o.v12Triggered=true;if(o.kind==='craneDrop')return;const p=g.biome?.palette||{},accent=p.accent||COLORS.gold,structure=p.structure||[.5,.5,.5];
     if(o.kind==='collapseBridge'){spawnDebris(g,0,.35,g.playerZ-2,18,structure,1.0);g.toast?.('МОСТ РУШИТСЯ!',700);}
     else if(o.kind==='crossingTrain'){g.toast?.('ПОЕЗД НАД ТРАССОЙ',650);}
-    else if(o.kind==='craneDrop'){const side=o.phase>Math.PI?1:-1;spawnDebris(g,side*7.3,.85,g.playerZ-3.5,9,mix(structure,accent,.45),.55);g.toast?.('КРАН У ОБОЧИНЫ',650);}
     else if(o.kind==='blackoutTunnel'){g.toast?.('BLACKOUT!',650);g.flash=Math.max(g.flash,.10);}
     else {spawnDebris(g,0,.45,g.playerZ-1.8,10,mix(structure,COLORS.white,.45),.45);g.toast?.('ШТОРМОВОЙ ФРОНТ',650);}
     g.shake=Math.max(g.shake,3.5);try{navigator.vibrate?.(18);}catch{}
