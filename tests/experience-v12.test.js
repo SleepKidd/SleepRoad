@@ -96,4 +96,9 @@ assert(!src.includes("x-side*2.8,drop,z-.4"));
 
 assert(src.includes("window.SleepRoadExperienceV12={"));
 
+
+assert(!src.includes("'craneDrop','blackoutTunnel'"),'craneDrop must not be generated as a road event');
+assert(src.includes("if(o.kind==='craneDrop')return"),'legacy craneDrop events must be silently disabled');
+assert(!src.includes("containerX=side*7.75"),'foreground crane container geometry must be removed');
+assert(!src.includes("armCenter=x-side*1.55"),'foreground crane boom geometry must be removed');
 console.log('PASS: Experience v12 combos, events, destruction, weather, finish, 35% rare runs, achievements and performance');
