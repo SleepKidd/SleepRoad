@@ -53,6 +53,10 @@ assert.equal(cs.mobile,true);
 assert(cs.pullback>=0&&cs.pullback<=11);
 
 const qsrc=fs.readFileSync('quality-v6.js','utf8');
+const esrc=fs.readFileSync('environment-v8.js','utf8');
+assert(esrc.includes("far=z<-66||Math.abs(x)>25"));
+const vsrc=fs.readFileSync('visual-v9.js','utf8');
+for(const token of ["o.kind==='saw'","o.kind==='mines'","o.kind==='spikes'","o.kind==='hammer'","o.kind==='laser'","o.kind==='crusher'","o.kind==='movingWall'","drawBossArena","drawWeather","finishSpectator","drawGatePanel"])assert(vsrc.includes(token));
 for(const token of ['characterDetail:160','propDetail:1','weatherDensity:1','finishCrowd:18','characterDetail:48'])assert(qsrc.includes(token));
 for(const file of ['visual-v9.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
 console.log('PASS: visual v9 characters, LOD, camera, weather and boss themes');
