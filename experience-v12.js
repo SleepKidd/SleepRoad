@@ -61,7 +61,7 @@
     return g.v12;
   }
   function budgetFor(g){
-    const q=Q.preset(g),base=PERF[q.id]||PERF.low,fps=Q.ensure(g).avgFps||60,scale=fps<34?.52:fps<42?.72:fps<50?.86:1;
+    const q=Q.preset(g),base=PERF[q.id]||PERF.low,fps=Q.ensure(g).avgFps||60,scale=fps<34 ? .52 : fps<42 ? .72 : fps<50 ? .86 : 1;
     const rare=ensure(g).rare?.id==='stormRun'?1.18:1;
     return{weather:Math.max(10,Math.round(base.weather*scale*rare)),debris:Math.max(18,Math.round(base.debris*scale)),eventDetail:base.eventDetail*scale,drawDistance:base.drawDistance,eventDistance:base.eventDistance};
   }
@@ -159,7 +159,7 @@
   function spawnWeather(g,type,intensity){
     if(type==='clear')return;const s=ensure(g),b=budgetFor(g),limit=b.weather,rate=Math.max(1,Math.round(intensity*(type==='rain'?5:type==='drizzle'?3:2)));
     for(let i=0;i<rate;i++){
-      const p=acquire(s.weatherPool,limit),seed=g.time*13.1+i*7.7;p.active=true;p.life=p.max=type==='rain'||type==='drizzle'?1.2:1.8;p.x=g.playerX+(hash(seed)-.5)*18;p.z=g.playerZ-8-hash(seed+2)*52;p.y=.5+hash(seed+5)*7;p.vx=type==='gust'||type==='dust'?2.2+intensity*2:type==='pollen'||type==='energy'?(hash(seed+8)-.5)*.4:0;p.vy=type==='rain'?-8.8:type==='drizzle'?-5.4:type==='sparks'?-1.8:type==='steam'||type==='mist'?.9:(hash(seed+9)-.5)*.15;p.vz=type==='gust'||type==='dust'?1.5:0;p.size=type==='rain'?.035:type==='drizzle'?.028:type==='steam'||type==='mist'?.18:.06;p.spin=hash(seed+11)*TAU;p.kind=type;p.color=type==='sparks'?[1,.56,.16]:type==='energy'||type==='pulse'?[.32,1,.86]:type==='pollen'?[1,.88,.40]:type==='rain'||type==='drizzle'?[.58,.78,1]:type==='dust'||type==='gust'?[.78,.58,.32]:[.72,.76,.78];
+      const p=acquire(s.weatherPool,limit),seed=g.time*13.1+i*7.7;p.active=true;p.life=p.max=type==='rain'||type==='drizzle'?1.2:1.8;p.x=g.playerX+(hash(seed)-.5)*18;p.z=g.playerZ-8-hash(seed+2)*52;p.y=.5+hash(seed+5)*7;p.vx=type==='gust'||type==='dust'?2.2+intensity*2:type==='pollen'||type==='energy'?(hash(seed+8)-.5)*.4:0;p.vy=type==='rain' ? -8.8 : type==='drizzle' ? -5.4 : type==='sparks' ? -1.8 : (type==='steam'||type==='mist') ? .9 : (hash(seed+9)-.5)*.15;p.vz=type==='gust'||type==='dust'?1.5:0;p.size=type==='rain' ? .035 : type==='drizzle' ? .028 : (type==='steam'||type==='mist') ? .18 : .06;p.spin=hash(seed+11)*TAU;p.kind=type;p.color=type==='sparks'?[1,.56,.16]:type==='energy'||type==='pulse'?[.32,1,.86]:type==='pollen'?[1,.88,.40]:type==='rain'||type==='drizzle'?[.58,.78,1]:type==='dust'||type==='gust'?[.78,.58,.32]:[.72,.76,.78];
     }
   }
   function updateWeather(g,dt){
@@ -172,7 +172,7 @@
     for(const p of s.weatherPool){if(!p.active||drawn>=b.weather)continue;if(p.z<g.playerZ-b.drawDistance||p.z>g.playerZ+12)continue;const a=clamp(p.life/p.max,0,1),type=p.kind;
       if(type==='rain'||type==='drizzle')r.draw(m.box,compose(p.x,p.y,p.z,.18,0,0,p.size,p.size*(type==='rain'?9:6),p.size),p.color,a*.56);
       else if(type==='steam'||type==='mist')r.draw(m.sphere,compose(p.x,p.y,p.z,0,0,0,p.size*2,p.size,p.size*2),p.color,a*.18);
-      else r.draw(m.sphere,compose(p.x,p.y,p.z,0,0,0,p.size,p.size,p.size),p.color,a*(type==='dust'||type==='gust'?.30:.62));drawn++;
+      else r.draw(m.sphere,compose(p.x,p.y,p.z,0,0,0,p.size,p.size,p.size),p.color,a*((type==='dust'||type==='gust') ? .30 : .62));drawn++;
     }
     if((s.weatherType==='dust'||s.weatherType==='rain'||s.weatherType==='smog')&&s.weatherIntensity>.55){const c=s.weatherType==='dust'?[.72,.55,.34]:s.weatherType==='smog'?[.42,.46,.50]:[.42,.58,.72];r.draw(m.sphere,compose(0,2.2,-48,0,0,0,34,6,22),c,.035*Math.min(1.4,s.weatherIntensity));}
   }
@@ -244,7 +244,7 @@
   P.beginFinish=function(){oldBeginFinish.call(this);const s=ensure(this);s.finish={phase:-1,lastBurst:-1};updateFinishSequence(this);};
 
   const oldFinish=P.updateFinish;
-  P.updateFinish=function(dt){const p=this.finishProgress||0,slow=p<.14?.62:p<.30?.84:1;oldFinish.call(this,dt*slow);updateFinishSequence(this);};
+  P.updateFinish=function(dt){const p=this.finishProgress||0,slow=p<.14 ? .62 : p<.30 ? .84 : 1;oldFinish.call(this,dt*slow);updateFinishSequence(this);};
 
   const oldUpdate=P.update;
   P.update=function(dt){oldUpdate.call(this,dt);updateDebris(this,dt);updateWeather(this,dt);if(this.state==='finish')updateFinishSequence(this);};
