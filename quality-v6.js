@@ -3,9 +3,9 @@
   const S=window.SleepRoadSystems,P=window.SleepRoad3D&&window.SleepRoad3D.prototype,C=S&&S.CrowdBatch&&S.CrowdBatch.prototype;
   if(!P||!C)throw new Error('Sleep Road v6 quality dependencies are missing');
   const PRESETS={
-    high:{id:'high',maxCrowd:420,maxParticles:150,dpr:1.7,trailRate:1,environmentDensity:1,environmentShadows:true},
-    medium:{id:'medium',maxCrowd:310,maxParticles:95,dpr:1.35,trailRate:.7,environmentDensity:.70,environmentShadows:true},
-    low:{id:'low',maxCrowd:220,maxParticles:55,dpr:1.0,trailRate:.42,environmentDensity:.43,environmentShadows:false}
+    high:{id:'high',maxCrowd:420,maxParticles:150,dpr:1.7,trailRate:1,environmentDensity:1,environmentShadows:true,characterDetail:160,propDetail:1,weatherDensity:1,finishCrowd:18},
+    medium:{id:'medium',maxCrowd:310,maxParticles:95,dpr:1.35,trailRate:.7,environmentDensity:.70,environmentShadows:true,characterDetail:96,propDetail:.72,weatherDensity:.66,finishCrowd:12},
+    low:{id:'low',maxCrowd:220,maxParticles:55,dpr:1.0,trailRate:.42,environmentDensity:.43,environmentShadows:false,characterDetail:48,propDetail:.42,weatherDensity:.36,finishCrowd:8}
   };
   function initial(){
     const mem=Number(navigator.deviceMemory)||4,cores=Number(navigator.hardwareConcurrency)||4;
