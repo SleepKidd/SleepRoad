@@ -73,9 +73,12 @@ assert(!vsrc.includes('compose(k.x,.018,k.z'));
 
 
 for(const token of ['dangerPad','safePad','warningBeacon','nearDecals','massSway','groupHalfWidth'])assert(vsrc.includes(token));
+for(const token of ['bossHead=boss?','bossArm=boss?','bossLeg=boss?','bossBody=boss?','ap.head[0]*.64','ap.arm[0]*1.58'])assert(vsrc.includes(token),token);
+assert(!vsrc.includes('compose(x,1.18,z,0,0,0,.10,2.36,.10)'),'boss arena vertical poles must be removed');
+assert(!vsrc.includes('compose(x,.52,centerZ-2.0,0,0,0,.16,1.04,13)'),'boss arena side rails must be removed');
 for(const token of ["o.kind==='saw'","o.kind==='mines'","o.kind==='spikes'","o.kind==='hammer'","o.kind==='laser'","o.kind==='crusher'","o.kind==='movingWall'","drawBossArena","drawWeather","finishSpectator","drawGatePanel"])assert(vsrc.includes(token));
 for(const token of ['characterDetail:160','propDetail:1','weatherDensity:1','finishCrowd:18','characterDetail:48'])assert(qsrc.includes(token));
 const csrc=fs.readFileSync('visual-v9.css','utf8');
 assert(csrc.includes('.toast{bottom:36%'));
 for(const file of ['visual-v9.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: visual v9.3 removes individual character shadow circles');
+console.log('PASS: visual v9.3 boss proportions fixed, arena poles removed, character shadows stable');
