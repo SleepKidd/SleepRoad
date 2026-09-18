@@ -44,6 +44,26 @@
   }
   function matrixPush(bucket,colorBucket,matrix,color){bucket.push(matrix);pushColor(colorBucket,color);}
 
+  const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+  function bossStrikePose(phase,side=1){
+    phase=((phase%1)+1)%1;side=side<0?-1:1;
+    let attack=-.22,guard=-.22,bodyLean=.08,bodyRoll=0,bodyYaw=0,headPitch=-.02,extraY=0,impact=0;
+    if(phase<.30){
+      const t=smooth(phase/.30);
+      attack=lerp(-.22,.72,t);guard=lerp(-.22,-.48,t);bodyLean=lerp(.08,-.10,t);bodyRoll=side*.12*t;bodyYaw=-side*.09*t;headPitch=lerp(-.02,.04,t);extraY=.02*t;
+    }else if(phase<.48){
+      const t=smooth((phase-.30)/.18);
+      attack=lerp(.72,-1.62,t);guard=-.42;bodyLean=lerp(-.10,.34,t);bodyRoll=side*lerp(.12,-.13,t);bodyYaw=side*lerp(-.09,.11,t);headPitch=lerp(.04,.18,t);extraY=lerp(.02,-.06,t);impact=smooth((t-.62)/.38);
+    }else if(phase<.62){
+      const t=(phase-.48)/.14;
+      attack=lerp(-1.62,-1.50,t);guard=lerp(-.42,-.36,t);bodyLean=lerp(.34,.29,t);bodyRoll=lerp(-side*.13,-side*.08,t);bodyYaw=lerp(side*.11,side*.06,t);headPitch=lerp(.18,.13,t);extraY=lerp(-.06,-.035,t);impact=1-t;
+    }else{
+      const t=smooth((phase-.62)/.38);
+      attack=lerp(-1.50,-.22,t);guard=lerp(-.36,-.22,t);bodyLean=lerp(.29,.08,t);bodyRoll=lerp(-side*.08,0,t);bodyYaw=lerp(side*.06,0,t);headPitch=lerp(.13,-.02,t);extraY=lerp(-.035,0,t);
+    }
+    return{armL:side<0?attack:guard,armR:side>0?attack:guard,bodyLean,bodyRoll,bodyYaw,headPitch,extraY,impact};
+  }
+
   C.draw=function(count,rootX,rootZ,color,time,opts={}){
     const game=window.__sleepRoad,q=qFor(game),renderCount=Math.min(Math.max(1,Math.round(count)),q.maxCrowd||420),f=this.formation(renderCount),scale0=opts.scale||1,direction=opts.direction||1,enemy=opts.enemy===true,motion=(enemy?this.enemyMotion:this.playerMotion)||opts.motion||{},mode=motion.mode||'run',baseY=(motion.jumpY!=null&&!enemy?motion.jumpY:(opts.baseY||0)),runSpeed=clamp(motion.runSpeed==null?1:motion.runSpeed,.42,1.7),strafe=clamp(motion.strafe||0,-1,1),landing=clamp(motion.landing||0,0,1),takeoff=clamp(motion.takeoff||0,0,1),finish=clamp(motion.finishProgress||0,0,1),boss=motion.boss===true;
     const names=['head','body','leftArm','rightArm','leftLeg','rightLeg'],parts={},colors={};for(const n of names){parts[n]=[];colors[n]=[];}
@@ -55,6 +75,10 @@
       if(mode==='idle'){bodyLean=0;bodyRoll=Math.sin(time*1.45+qf.index*.12)*.016;armL=wave*.08;armR=-wave*.08;legL=legR=0;extraY=Math.sin(time*2+qf.index*.21)*.012;}
       if(mode==='jump'){const a=clamp(motion.jumpAir||0,0,1),v=motion.jumpVertical||0;bodyLean=-v*.17-.045;armL=.40+a*.82+wave*.08;armR=.40+a*.82-wave*.08;legL=-.22-a*.43;legR=.20+a*.43;headPitch=v*.07;}
       if(mode==='battle'){const punch=Math.sin(time*11.2+qf.index*.41),hit=Math.max(0,punch),guard=Math.max(0,-punch);bodyLean=.12+hit*.09;bodyRoll=punch*.06;armL=-.25-hit*1.0;armR=-.25-guard*1.0;legL=-wave*.15;legR=wave*.15;extraY=Math.abs(punch)*.025;}
+      if(mode==='battle'&&boss&&motion.bossAttackActive){
+        const pose=bossStrikePose(motion.bossAttackPhase||0,motion.bossAttackSide||1);
+        bodyLean=pose.bodyLean;bodyRoll=pose.bodyRoll;bodyYaw=pose.bodyYaw;headPitch=pose.headPitch;armL=pose.armL;armR=pose.armR;legL=-.10+Math.sin(time*2.2)*.035;legR=.10-Math.sin(time*2.2)*.035;extraY=pose.extraY;
+      }
       if(mode==='enemy'&&boss){bodyLean=.09+Math.sin(time*3.2+qf.index*.15)*.025;armL=wave*.74;armR=-wave*.74;extraY=Math.abs(wave)*.075;}
       if(mode==='finish'){const cheer=clamp((finish-.34)/.44,0,1),cw=Math.sin(time*8+qf.index*.45);armL=lerp(wave*.30,-1.24+cw*.12,cheer);armR=lerp(-wave*.30,-1.24-cw*.12,cheer);legL=-wave*.22;legR=wave*.22;extraY=cheer*Math.abs(cw)*.11;}
       const squash=landing*.12,stretch=takeoff*.07,rootSx=scale*ap.width*(1+squash*.42-stretch*.16),rootSy=scale*ap.height*(1-squash+stretch),rootSz=scale*(1+squash*.28-stretch*.08),turn=direction<0?Math.PI:0,root=compose(x,baseY+bob+extraY,z,bodyLean,turn+bodyYaw,bodyRoll,rootSx,rootSy,rootSz);
@@ -334,5 +358,5 @@
     for(let i=0;i<8;i++){const z=this.playerZ-2.4-i*1.45,y=i*.45;r.draw(m.box,compose(-5.15,y+.05,z,0,0,0,.16,.16,1.35),p.structure);r.draw(m.box,compose(5.15,y+.05,z,0,0,0,.16,.16,1.35),p.structure);}
   };
 
-  window.SleepRoadVisualV9={APPEARANCES,TORSO_STYLES,BOSS_THEMES,WEATHER,cameraState,roadDetailCount,crowdOffset,softenShirt,roadsideCullDistance:5.2};
+  window.SleepRoadVisualV9={APPEARANCES,TORSO_STYLES,BOSS_THEMES,WEATHER,cameraState,roadDetailCount,crowdOffset,softenShirt,bossStrikePose,roadsideCullDistance:5.2};
 })();
