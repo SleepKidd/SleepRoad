@@ -84,17 +84,28 @@
     g.__decorCarMeshes=groups.map(group=>({mesh:g.renderer.createMesh({positions,normals,indices:group.indices}),color:group.color,name:group.name,tris:group.tris}));
     return g.__decorCarMeshes;
   }
-  function drawDecorCar(g,x,z,index=0){
-    const r=g.renderer,m=g.meshes,parts=buildDecorCarMeshes(g);
-    if(!parts.length)return;
-    const side=x<0?-1:1,scale=.305,y=-.205,yaw=side<0?.035:-.035;
-    shadow(g,x,z,1.00,.64,.16);
+  function drawDecorCar(g,x,z,index=0,opts={}){
+    const r=g.renderer,m=g.meshes,body=buildDecorCarMeshes(g);
+    if(!body.length)return;
+    const side=x<0?-1:1,scale=opts.scale??.42,y=opts.groundY??-.205,yaw=opts.yaw??(side<0?.035:-.035);
+    if(opts.shadow!==false)shadow(g,x,z,1.28*scale/.42,.78*scale/.42,.16);
     const model=compose(x,y,z,0,yaw,0,scale,scale,scale);
-    for(const part of parts)r.draw(part.mesh,model,part.color,1);
+    for(const part of body)r.draw(part.mesh,model,part.color,1);
+
+    // The supplied Blender file stores the detailed body as one mirrored mesh and one wheel object.
+    // Re-create the four wheel placements around the untouched source body.
+    const c=Math.cos(yaw),sn=Math.sin(yaw),wheelPos=[[-2.16,.70,-3.48],[2.16,.70,-3.48],[-2.16,.70,3.42],[2.16,.70,3.42]];
+    for(const p of wheelPos){
+      const ox=(p[0]*c+p[2]*sn)*scale,oz=(-p[0]*sn+p[2]*c)*scale,wx=x+ox,wy=y+p[1]*scale,wz=z+oz;
+      const rw=.19*scale/.42,rr=.34*scale/.42;
+      r.draw(m.cylinder,compose(wx,wy,wz,0,yaw,Math.PI/2,rw,rr,rr),[.045,.048,.052],1);
+      r.draw(m.cylinder,compose(wx,wy,wz,0,yaw,Math.PI/2,rw*1.03,rr*.57,rr*.57),[.63,.65,.66],1);
+      r.draw(m.cylinder,compose(wx,wy,wz,0,yaw,Math.PI/2,rw*1.06,rr*.20,rr*.20),[.20,.21,.22],1);
+    }
     if(envCfg(g).detail>0){
-      const lamp=[1,.72,.24],front=z-1.72;
-      r.draw(m.sphere,compose(x-side*.34,y+.34,front,0,0,0,.055,.035,.10),lamp,.82);
-      r.draw(m.sphere,compose(x+side*.34,y+.34,front,0,0,0,.055,.035,.10),lamp,.82);
+      const lamp=[1,.72,.24],front=z-2.15*scale/.42;
+      r.draw(m.sphere,compose(x-side*.46*scale/.42,y+.54*scale/.42,front,0,0,0,.065,.040,.11),lamp,.82);
+      r.draw(m.sphere,compose(x+side*.46*scale/.42,y+.54*scale/.42,front,0,0,0,.065,.040,.11),lamp,.82);
     }
   }
   function bush(g,x,z,s=1,tone=0){
@@ -330,5 +341,5 @@
     oldRender.call(this);
   };
 
-  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock};
+  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock,buildDecorCarMeshes,drawDecorCar};
 })();

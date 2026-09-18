@@ -152,9 +152,13 @@ assert(index.indexOf('supersport-car.js')<index.indexOf('environment-v8.js'));
 assert(index.indexOf('pickup-model.js')<index.indexOf('experience-v14.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v39';"));
+assert(sw.includes("const CACHE='sleep-road-v40';"));
 assert(sw.includes('pickup-model.js'));
 assert(sw.includes('supersport-car.js'));
 assert(!sw.includes('gclass-glb.js'));
 
-console.log('PASS: pickup hazard x2 at 75%, SuperSport roadside cars, boss proportions and cache wiring');
+const v13=fs.readFileSync('experience-v13.js','utf8');
+assert.doesNotThrow(()=>new Function(v13));
+assert(v13.includes('E8.drawDecorCar(g,x,z,i'));
+assert(!v13.includes('1.15,.55,1.8),c,.82'));
+console.log('PASS: pickup x2 at 75%, SuperSport body, four-wheel render, living-world block replacement, boss proportions and cache wiring');
