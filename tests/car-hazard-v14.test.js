@@ -70,12 +70,25 @@ global.SleepRoadExperienceV13={elevationAt(){return 0;}};
 vm.runInThisContext(src,{filename:'experience-v14.js'});
 const V=global.SleepRoadCarHazardV14;
 assert(V);
-assert.equal(V.CAR_CHANCE,.5);
+assert.equal(V.CAR_CHANCE,1);
+assert.equal(V.SECOND_CAR_CHANCE,.75);
 assert.equal(V.MODEL_TRIANGLES,13110);
 
-let deterministic=0;
-for(let level=1;level<=10000;level++)if(V.carEventFor(level))deterministic++;
-assert(deterministic/10000>.48&&deterministic/10000<.52);
+for(let level=1;level<=100;level++)assert.equal(V.carEventFor(level),true);
+let doubleCount=0;
+for(let level=1;level<=10000;level++)if(V.doubleCarEventFor(level))doubleCount++;
+assert(doubleCount/10000>.73&&doubleCount/10000<.77);
+
+const oldRandom=Math.random;
+const carGame={level:12,levelLength:320,baseSpeed:9.5,playerZ:1.6,objects:[]};
+Math.random=()=>.50;
+const twoCars=V.makeCars(carGame);
+assert.equal(twoCars.length,2);
+assert(twoCars[0].meetDistance<twoCars[1].meetDistance);
+Math.random=()=>.90;
+const oneCar=V.makeCars(carGame);
+assert.equal(oneCar.length,1);
+Math.random=oldRandom;
 
 const calls=[];
 const gmesh={renderer:{createMesh(d){calls.push(d);return d;}}};
@@ -106,7 +119,7 @@ assert.equal(hitGame.tookDamage,true);
 assert(hitGame.knockouts.some(k=>k.vz>=6.8));
 
 for(const token of [
-  'const CAR_CHANCE=.5',
+  'const CAR_CHANCE=1,SECOND_CAR_CHANCE=.75',
   'CAR_WIDTH=2.65',
   'MODEL_SCALE=.88',
   'MODEL_TRIANGLES=13110',
@@ -117,14 +130,31 @@ for(const token of [
 assert(!src.includes('SleepRoadCarModelGLB'));
 assert(!src.includes('MODEL_TRIANGLES=696'));
 
+const decorSrc=fs.readFileSync('assets/models/supersport-car.js','utf8');
+assert.doesNotThrow(()=>new Function(decorSrc));
+for(const token of ['SuperSport_Car.blend','"runtimeVerts":734','"runtimeTris":1408','"simplification":"none"'])assert(decorSrc.includes(token),token);
+
+const envSrc=fs.readFileSync('environment-v8.js','utf8');
+assert.doesNotThrow(()=>new Function(envSrc));
+assert(envSrc.includes('buildDecorCarMeshes'));
+assert(envSrc.includes("else if(b.id==='city')drawDecorCar(this,x,z,i);"));
+
+const visualSrc=fs.readFileSync('visual-v9.js','utf8');
+assert.doesNotThrow(()=>new Function(visualSrc));
+assert(visualSrc.includes('bossArm=boss?'));
+assert(visualSrc.includes('ap.arm[1]*.72'));
+
 const index=fs.readFileSync('index.html','utf8');
 assert(index.includes('pickup-model.js'));
+assert(index.includes('supersport-car.js'));
 assert(!index.includes('gclass-glb.js'));
+assert(index.indexOf('supersport-car.js')<index.indexOf('environment-v8.js'));
 assert(index.indexOf('pickup-model.js')<index.indexOf('experience-v14.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v38';"));
+assert(sw.includes("const CACHE='sleep-road-v39';"));
 assert(sw.includes('pickup-model.js'));
+assert(sw.includes('supersport-car.js'));
 assert(!sw.includes('gclass-glb.js'));
 
-console.log('PASS: full-resolution Blender pickup, preserved topology/material groups, collision and lighting');
+console.log('PASS: pickup hazard x2 at 75%, SuperSport roadside cars, boss proportions and cache wiring');
