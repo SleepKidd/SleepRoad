@@ -3,7 +3,7 @@
   const S=window.SleepRoadSystems,V13=window.SleepRoadExperienceV13,P=window.SleepRoad3D&&window.SleepRoad3D.prototype;
   if(!S||!P)throw new Error('Sleep Road Car Hazard v14 dependencies are missing');
   const {compose,clamp,COLORS}=S;
-  const CAR_CHANCE=.5,LANES=[-3.05,0,3.05],CAR_WIDTH=2.65,CAR_LENGTH=4.66,MODEL_SCALE=.88,MODEL_TRIANGLES=13110;
+  const CAR_CHANCE=.75,CARS_PER_EVENT=2,MIN_CAR_GAP=54,LANES=[-3.05,0,3.05],CAR_WIDTH=2.65,CAR_LENGTH=4.66,MODEL_SCALE=.88,MODEL_TRIANGLES=13110;
   const hash=n=>{const x=Math.sin(n*91.713+17.31)*43758.5453123;return x-Math.floor(x);};
 
   function carEventFor(level){
@@ -11,7 +11,7 @@
     return hash(level*57.119+2.7)<CAR_CHANCE;
   }
   function ensure(g){
-    if(!g.v14)g.v14={car:null,gpuMeshes:null,modelReady:false};
+    if(!g.v14)g.v14={car:null,cars:[],gpuMeshes:null,modelReady:false};
     return g.v14;
   }
   function decodeBytes(b64){
@@ -55,24 +55,43 @@
     });
     return g.__carGpuMeshes;
   }
-  function pickDistance(g,level){
+  function pickDistance(g,seed,blockedMeetDistances=[]){
     const min=92,max=Math.max(min+20,(g.levelLength||300)-118),span=Math.max(20,max-min);
-    let d=min+hash(level*18.731+4.6)*span;
-    for(let pass=0;pass<7;pass++){
-      const blocked=(g.objects||[]).some(o=>['enemy','finish','gate','obstacle','jump'].includes(o.type)&&Math.abs((o.distance||0)-d)<13);
-      if(!blocked)break;
-      d+=17;if(d>max)d=min+8+pass*9;
+    let d=min+hash(seed*18.731+4.6)*span;
+    const objectBlocked=value=>(g.objects||[]).some(o=>['enemy','finish','gate','obstacle','jump'].includes(o.type)&&Math.abs((o.distance||0)-value)<13);
+    const carBlocked=value=>blockedMeetDistances.some(other=>Math.abs(other-value)<MIN_CAR_GAP);
+    for(let pass=0;pass<14;pass++){
+      if(!objectBlocked(d)&&!carBlocked(d))return clamp(d,min,max);
+      d+=MIN_CAR_GAP*.57+pass*3.1;
+      if(d>max)d=min+((pass+1)*MIN_CAR_GAP*.43)%span;
     }
-    return clamp(d,min,max);
+    const candidates=[min,max,(min+max)*.5].filter(value=>!objectBlocked(value));
+    let best=candidates[0]??clamp(d,min,max),bestGap=-1;
+    for(const value of candidates){
+      const gap=blockedMeetDistances.length?Math.min(...blockedMeetDistances.map(other=>Math.abs(other-value))):Infinity;
+      if(gap>bestGap){best=value;bestGap=gap;}
+    }
+    return clamp(best,min,max);
   }
-  function makeCar(g){
-    const level=g.level||1,spawnRoll=Math.random();if(spawnRoll>=CAR_CHANCE)return null;
-    const runSeed=level+Math.random()*997,laneIndex=Math.floor(hash(runSeed*33.19+7.4)*LANES.length)%LANES.length,speed=10.8+hash(runSeed*12.57+9.2)*3.4,meetDistance=pickDistance(g,runSeed),roadSpeed=Math.max(1,g.baseSpeed||9.5),hitPlane=(g.playerZ||1.6)+.20;
+  function makeCar(g,runSeed,blockedMeetDistances=[],spawnRoll=0){
+    const laneIndex=Math.floor(hash(runSeed*33.19+7.4)*LANES.length)%LANES.length,speed=10.8+hash(runSeed*12.57+9.2)*3.4,meetDistance=pickDistance(g,runSeed,blockedMeetDistances),roadSpeed=Math.max(1,g.baseSpeed||9.5),hitPlane=(g.playerZ||1.6)+.20;
     const approachTravel=roadSpeed*(58+hitPlane)/(roadSpeed+speed),distance=meetDistance+58-approachTravel;
     return{
       active:true,started:false,done:false,hit:false,warned:false,
       x:LANES[laneIndex],distance,meetDistance,speed,spawnRoll,advance:0,z:-999,prevZ:-999
     };
+  }
+  function makeCars(g){
+    const spawnRoll=Math.random();
+    if(spawnRoll>=CAR_CHANCE)return[];
+    const level=g.level||1,cars=[],blocked=[];
+    for(let i=0;i<CARS_PER_EVENT;i++){
+      const runSeed=level+Math.random()*997+i*193.731;
+      const car=makeCar(g,runSeed,blocked,spawnRoll);
+      if(i>0&&car.x===cars[i-1]?.x)car.x=LANES[(LANES.indexOf(car.x)+1+i)%LANES.length];
+      cars.push(car);blocked.push(car.meetDistance);
+    }
+    return cars;
   }
   function staticCarZ(g,car){return-car.distance+(g.travel||0);}
   function currentCarZ(g,car){return car.started?car.z:staticCarZ(g,car);}
@@ -110,25 +129,30 @@
     try{navigator.vibrate?.([16,36,16]);}catch{}
   }
   function updateCar(g,dt){
-    const car=ensure(g).car;if(!car||car.done||g.state!=='running')return;
-    const base=staticCarZ(g,car);
-    if(!car.started){
-      car.z=base;car.prevZ=base;
-      if(base>-58){car.started=true;car.z=base;car.prevZ=base;}
-      else return;
+    const cars=ensure(g).cars?.length?ensure(g).cars:(ensure(g).car?[ensure(g).car]:[]);
+    if(!cars.length||g.state!=='running')return;
+    for(const car of cars){
+      if(!car||car.done)continue;
+      const base=staticCarZ(g,car);
+      if(!car.started){
+        car.z=base;car.prevZ=base;
+        if(base>-58){car.started=true;car.z=base;car.prevZ=base;}
+        else continue;
+      }
+      car.prevZ=car.z;car.advance+=car.speed*dt;car.z=staticCarZ(g,car)+car.advance;
+      if(!car.warned&&car.z>-30)warnCar(g,car);
+      const hitPlane=(g.playerZ||1.6)+.20;
+      if(!car.hit&&car.prevZ<hitPlane&&car.z>=hitPlane)knockPeople(g,car);
+      if(car.z>24)car.done=true;
     }
-    car.prevZ=car.z;car.advance+=car.speed*dt;car.z=staticCarZ(g,car)+car.advance;
-    if(!car.warned&&car.z>-30)warnCar(g,car);
-    const hitPlane=(g.playerZ||1.6)+.20;
-    if(!car.hit&&car.prevZ<hitPlane&&car.z>=hitPlane)knockPeople(g,car);
-    if(car.z>24)car.done=true;
   }
   function groundY(g,z){return(V13?.elevationAt?.(g,(g.travel||0)-z)||0)+.035;}
   function drawCar(g){
-    const car=ensure(g).car;
-    if(!car||car.done)return;
-    const z=currentCarZ(g,car);
-    if(z<-92||z>19)return;
+    const cars=ensure(g).cars?.length?ensure(g).cars:(ensure(g).car?[ensure(g).car]:[]);
+    for(const car of cars){
+      if(!car||car.done)continue;
+      const z=currentCarZ(g,car);
+      if(z<-92||z>19)continue;
 
     const r=g.renderer,m=g.meshes,y=groundY(g,z),asset=window.SleepRoadCarModel,bounds=asset?.meta?.bounds;
     const lo=bounds?.min||[-1.579805,.234096,-3.017546],hi=bounds?.max||[1.353162,3.296137,2.274039];
@@ -159,11 +183,12 @@
     const lamp=[1,.80,.34];
     r.draw(m.sphere,compose(car.x-.56,y+.030,z+2.72,0,0,0,.46,.018,1.42),lamp,.045);
     r.draw(m.sphere,compose(car.x+.56,y+.030,z+2.72,0,0,0,.46,.018,1.42),lamp,.045);
-    if(z>-48&&z<-7)g.addWorldLabel?.([car.x,y+3.20,z+.35],'МАШИНА!','bad');
+      if(z>-48&&z<-7)g.addWorldLabel?.([car.x,y+3.20,z+.35],'МАШИНА!','bad');
+    }
   }
 
   const oldStart=P.startLevel;
-  P.startLevel=function(level){oldStart.call(this,level);this.v14=null;const s=ensure(this);s.car=makeCar(this);};
+  P.startLevel=function(level){oldStart.call(this,level);this.v14=null;const s=ensure(this);s.cars=makeCars(this);s.car=s.cars[0]||null;};
 
   const oldUpdate=P.update;
   P.update=function(dt){oldUpdate.call(this,dt);updateCar(this,dt);};
@@ -172,6 +197,6 @@
   P.drawCourse=function(){const out=oldCourse.call(this);drawCar(this);return out;};
 
   window.SleepRoadCarHazardV14={
-    CAR_CHANCE,LANES,CAR_WIDTH,CAR_LENGTH,MODEL_TRIANGLES,carEventFor,ensure,makeCar,staticCarZ,currentCarZ,laneHitCount,knockPeople,buildCarMeshes
+    CAR_CHANCE,CARS_PER_EVENT,MIN_CAR_GAP,LANES,CAR_WIDTH,CAR_LENGTH,MODEL_TRIANGLES,carEventFor,ensure,makeCar,makeCars,staticCarZ,currentCarZ,laneHitCount,knockPeople,buildCarMeshes
   };
 })();
