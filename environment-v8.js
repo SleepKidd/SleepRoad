@@ -81,7 +81,7 @@
       const side=i%2?-1:1,x=side*(16+i%4*7),z=-104-(i%5)*17,s=8+(i%3)*3;
       r.draw(m.cone,compose(x,1.1,z,0,0,0,s,s*.62,s),i%2?mix(p.groundDark,p.sky,.22):mix(p.ground,p.sky,.30));
     }
-    const forest=Math.round(20*cfg.density);
+    const forest=Math.round(12*cfg.density);
     for(let i=0;i<forest;i++){
       const side=i%2?-1:1,x=side*(11+hash(i*7.1)*27),z=-72-hash(i*3.9)*72,s=.7+hash(i*8.3)*1.15;
       tree(g,x,z,s,1,i);
@@ -108,15 +108,15 @@
   function drawMeadowDetails(g,p,cfg){
     const r=g.renderer,m=g.meshes,span=310;
     for(let i=0;i<18;i++){const z=7-wrap(i*17.9-g.travel*.975,span),side=i%2?-1:1,x=side*(7.0+hash(i*2.7)*4.3),w=1.6+hash(i*6.2)*3.0,l=3+hash(i*4.1)*6.5,col=i%3===0?mix(p.ground,p.stripe,.06):i%3===1?mix(p.ground,p.groundDark,.20):mix(p.ground,p.good,.06);patch(g,x,z,w,l,col,hash(i)*.4-.2,.88);}
-    const grassCount=Math.round(72*cfg.density);
+    const grassCount=Math.round(42*cfg.density);
     for(let i=0;i<grassCount;i++){const z=9-wrap(i*(310/Math.max(1,grassCount))-g.travel*.985+hash(i*2.3)*7,310),side=i%2?-1:1,x=side*(6.45+hash(i*7.7)*8.7),s=.55+hash(i*11.2)*.75;grassTuft(g,x,z,s,i,i*.77);}
-    const bushCount=Math.round(20*cfg.density);
+    const bushCount=Math.round(12*cfg.density);
     for(let i=0;i<bushCount;i++){const z=7-wrap(i*(307/Math.max(1,bushCount))-g.travel*.97+hash(i*5.2)*10,307),side=i%2?-1:1,x=side*(8+hash(i*9.7)*9),s=.55+hash(i*3.4)*.75;bush(g,x,z,s,i);}
-    const treeCount=Math.round(19*cfg.density);
+    const treeCount=Math.round(12*cfg.density);
     for(let i=0;i<treeCount;i++){const z=8-wrap(i*(300/Math.max(1,treeCount))-g.travel*.956+hash(i*5.6)*11,300),side=i%2?-1:1,x=side*(10.5+hash(i*8.8)*13.5),s=.66+hash(i*2.1)*.72;tree(g,x,z,s,i%5,i);}
     if(cfg.detail>0){
-      const flowerCount=Math.round(30*cfg.density);for(let i=0;i<flowerCount;i++){const z=7-wrap(i*(300/flowerCount)-g.travel*.986+hash(i*7.1)*8,300),side=i%2?-1:1,x=side*(6.7+hash(i*4.5)*5.5);flower(g,x,z,.65+hash(i)*.5,i);}
-      const rockCount=Math.round(13*cfg.density);for(let i=0;i<rockCount;i++){const z=5-wrap(i*(304/rockCount)-g.travel*.97+hash(i*8.1)*13,304),side=i%2?-1:1,x=side*(8+hash(i*3.2)*12);rock(g,x,z,.5+hash(i*6.1)*.55,i);}
+      const flowerCount=Math.round(16*cfg.density);for(let i=0;i<flowerCount;i++){const z=7-wrap(i*(300/flowerCount)-g.travel*.986+hash(i*7.1)*8,300),side=i%2?-1:1,x=side*(6.7+hash(i*4.5)*5.5);flower(g,x,z,.65+hash(i)*.5,i);}
+      const rockCount=Math.round(8*cfg.density);for(let i=0;i<rockCount;i++){const z=5-wrap(i*(304/rockCount)-g.travel*.97+hash(i*8.1)*13,304),side=i%2?-1:1,x=side*(8+hash(i*3.2)*12);rock(g,x,z,.5+hash(i*6.1)*.55,i);}
     }
   }
 
