@@ -29,7 +29,8 @@
   }
   function routeProgress(level){return clamp((Math.min(50,Math.max(1,level))-1)/49,0,1);}
   function achievementProgress(g,key){
-    const state=R.ensureState(g),done=!!state.achievements[key];
+    const state=R.ensureState(g),done=!!state.achievements[key],extended=window.SleepRoadExperienceV12?.achievementProgress?.(g,key);
+    if(extended)return extended;
     if(key==='moons'){const value=Math.max(state.totalMoons||0,g.save?.moons||0);return{value,target:1000,ratio:done?1:clamp(value/1000,0,1),label:Math.min(value,1000)+' / 1000'};}
     if(key==='crowd'){const value=state.bestCrowd||0;return{value,target:100,ratio:done?1:clamp(value/100,0,1),label:Math.min(value,100)+' / 100'};}
     if(key==='perfect10'){const value=state.bestPerfect||0;return{value,target:10,ratio:done?1:clamp(value/10,0,1),label:Math.min(value,10)+' / 10'};}
