@@ -51,6 +51,7 @@
     if(!g.v11)g.v11={reaction:'',reactionTimer:0,reactionPower:0,gateFx:null,camera:null,cameraKick:0,bossImpactTick:-1,bossWarnCycle:-1,bossLastRatio:1,corpse:null,chapterTimer:0,finishPulse:0,intensity:intensityFor(g.level),leaderColor:null,miniEventsInstalled:false};
     const skin=R.currentSkin(g);
     g.v11.leaderColor=(skin&&skin.leader)||mix((skin?.shirts||[[.2,.55,.96]])[0],COLORS.white,.20);
+    g.v11.bossColor=BOSS_VARIANTS[clamp(g.profile?.chapter||0,0,4)].main;
     g.v11.intensity=intensityFor(g.level);
     return g.v11;
   }
@@ -199,8 +200,8 @@
   function drawBossCorpse(g){
     const c=ensure(g).corpse;if(!c||c.life<=0)return;
     const p=clamp(1-c.life/c.max,0,1),fall=Math.sin(Math.min(1,p)*Math.PI*.5),r=g.renderer,m=g.meshes,alpha=clamp(c.life/.28,0,1),rot=fall*1.38,scale=c.scale||3.3;
-    r.draw(m.character,compose(0,.42+Math.cos(p*Math.PI)*.12,c.z,rot,0,Math.sin(p*Math.PI)*.08,scale,scale,scale),c.color,alpha);
-    if(p>.52&&p<.72)for(let i=0;i<5;i++){const a=i*TAU/5;r.draw(m.sphere,compose(Math.cos(a)*1.4,.12,c.z+Math.sin(a)*.8,0,0,0,.10,.06,.10),[.60,.55,.48],.34);}
+    const z=c.z-(g.travel-(c.travel||g.travel));r.draw(m.character,compose(0,.42+Math.cos(p*Math.PI)*.12,z,rot,0,Math.sin(p*Math.PI)*.08,scale,scale,scale),c.color,alpha);
+    if(p>.52&&p<.72)for(let i=0;i<5;i++){const a=i*TAU/5;r.draw(m.sphere,compose(Math.cos(a)*1.4,.12,z+Math.sin(a)*.8,0,0,0,.10,.06,.10),[.60,.55,.48],.34);}
   }
 
   function drawObstacleTelegraph(g,o,z){
@@ -259,7 +260,7 @@
       if(e.count>0&&afterQuarter<beforeQuarter){e.v11Stagger=1;showReaction(this,'cheer',.40,.34);this.audio?.v11Stagger?.();haptic(18);}
       for(let tick=beforeTicks+1;tick<=(e.battleTicks||0);tick++)if(tick%18===8){showReaction(this,'recoil',.95,.46);ensure(this).cameraKick=1.1;haptic([35,25,45]);this.audio?.v11Impact?.(1);}
       if(!this.battleEnemy&&e.count<=0){
-        const variant=BOSS_VARIANTS[clamp(this.profile?.chapter||0,0,4)],s=ensure(this);s.corpse={life:1.35,max:1.35,z:e.battleZ-2.25,scale:e.bossScale||3.25,color:variant.main};s.cameraKick=1.4;showReaction(this,'cheer',1,1.05);haptic([45,35,70]);this.audio?.v11BossDeath?.();Polish?.cinematic?.(this,1.0);
+        const variant=BOSS_VARIANTS[clamp(this.profile?.chapter||0,0,4)],s=ensure(this);s.corpse={life:1.35,max:1.35,z:e.battleZ-2.25,travel:this.travel,scale:e.bossScale||3.25,color:variant.main};s.cameraKick=1.4;showReaction(this,'cheer',1,1.05);haptic([45,35,70]);this.audio?.v11BossDeath?.();Polish?.cinematic?.(this,1.0);
       }
     }
   };
@@ -274,6 +275,10 @@
     if(s.reactionTimer>0){s.reactionTimer=Math.max(0,s.reactionTimer-dt);s.reactionPower=clamp(s.reactionTimer/.35,0,1);}else{s.reaction='';s.reactionPower=0;}
     if(s.gateFx){s.gateFx.life-=dt;if(s.gateFx.life<=0)s.gateFx=null;}
     if(s.corpse){s.corpse.life-=dt;if(s.corpse.life<=0)s.corpse=null;}
+    if(this.state==='running'&&this.speed>0&&this.audio?.enabled){
+      s.stepClock=(s.stepClock||0)-dt;
+      if(s.stepClock<=0){const biome=this.biome?.id||'meadow',freq=biome==='factory'?92:biome==='city'?108:biome==='desert'?122:biome==='neon'?148:116;this.audio.tone(freq,.045,biome==='factory'?'square':'triangle',.0048,biome==='desert'?.82:.72);s.stepClock=.33/Math.max(.8,this.speed/Math.max(.1,this.baseSpeed||this.speed));}
+    }
   };
 
   const oldEnv=P.drawEnvironment;
