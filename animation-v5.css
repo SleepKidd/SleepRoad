@@ -1,0 +1,18 @@
+/* Motion polish for Sleep Road v5. Purely visual; gameplay remains unchanged. */
+.world-label{will-change:transform,filter;animation:sr-label-float 1.8s ease-in-out infinite}
+.world-label.good{animation-duration:1.55s}.world-label.bad,.world-label.boss{animation-duration:1.15s}
+.world-label.powerup{animation:sr-power-label 1.1s ease-in-out infinite}
+.toast:not(.hidden){animation:sr-toast-in .24s cubic-bezier(.2,.9,.25,1.25)}
+.shield-hud:not(.hidden){animation:sr-shield-glow 1.05s ease-in-out infinite}
+.result:not(.hidden) .result-banner{animation:sr-result-banner .42s cubic-bezier(.17,.84,.3,1.18)}
+.result:not(.hidden) .result-card{animation:sr-result-card .48s cubic-bezier(.17,.84,.3,1.12)}
+.primary-btn,.secondary-btn,.square-btn,.sound-btn,.exit-btn,.shop-card{transition:transform .14s cubic-bezier(.2,.8,.2,1),filter .14s ease}
+.primary-btn:active,.secondary-btn:active,.square-btn:active,.sound-btn:active,.exit-btn:active{transform:translateY(2px) scale(.985)}
+.progress i{will-change:width,filter}.crowd-count{will-change:left,top,transform}
+@keyframes sr-label-float{0%,100%{filter:brightness(1);transform:translate(-50%,-50%) translateY(0)}50%{filter:brightness(1.06);transform:translate(-50%,-50%) translateY(-3px)}}
+@keyframes sr-power-label{0%,100%{transform:translate(-50%,-50%) scale(1);filter:brightness(1)}50%{transform:translate(-50%,-50%) scale(1.055);filter:brightness(1.14)}}
+@keyframes sr-toast-in{0%{opacity:0;transform:translateX(-50%) translateY(14px) scale(.9)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes sr-shield-glow{0%,100%{transform:translateX(-50%) scale(1);filter:brightness(1)}50%{transform:translateX(-50%) scale(1.04);filter:brightness(1.18)}}
+@keyframes sr-result-banner{0%{opacity:0;transform:translateY(-24px) scaleY(.82)}100%{opacity:1;transform:translateY(0) scaleY(1)}}
+@keyframes sr-result-card{0%{opacity:0;transform:translateY(28px) scale(.9)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.world-label,.world-label.powerup,.toast:not(.hidden),.shield-hud:not(.hidden),.result:not(.hidden) .result-banner,.result:not(.hidden) .result-card{animation:none!important}.primary-btn,.secondary-btn,.square-btn,.sound-btn,.exit-btn,.shop-card{transition:none!important}}
