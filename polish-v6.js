@@ -148,7 +148,7 @@
   const oldBattle=P.beginBattle;
   P.beginBattle=function(enemy){oldBattle.call(this,enemy);ensure(this).bossAttackTick=0;if(enemy.boss){cinematic(this,1.0);screenPulse(this,'gold',1);this.audio?.bossAttack?.('shockwave');}};
   const oldBattleUpdate=P.updateBattle;
-  P.updateBattle=function(dt){const e=this.battleEnemy,before=e?.battleTicks||0;oldBattleUpdate.call(this,dt);if(e?.boss&&(e.battleTicks||0)>before){const tick=e.battleTicks||0;if(tick%3===0&&tick!==ensure(this).bossAttackTick){ensure(this).bossAttackTick=tick;bossAttack(this,e);}}};
+  P.updateBattle=function(dt){const e=this.battleEnemy,before=e?.battleTicks||0;oldBattleUpdate.call(this,dt);if(e?.boss&&(e.battleTicks||0)>before){const tick=e.battleTicks||0;if(tick%18===8&&tick!==ensure(this).bossAttackTick){ensure(this).bossAttackTick=tick;bossAttack(this,e);}}};
 
   const oldFinish=P.beginFinish;
   P.beginFinish=function(){oldFinish.call(this);cinematic(this,1.5);confetti(this,this.profile?.bossLevel?110:70);screenPulse(this,'gold',1.2);ensure(this).cameraKick=1.2;};
