@@ -4,7 +4,7 @@
   const BIOMES=[
     {
       id:'meadow',name:'GREEN ROAD',levels:[1,10],
-      palette:{sky:[.48,.73,.94],ground:[.36,.68,.40],groundDark:[.24,.51,.31],road:[.34,.37,.44],roadEdge:[.90,.92,.96],stripe:[.92,.92,.82],accent:[1,.72,.09],structure:[.28,.23,.50],good:[.16,.75,.67],bad:[.93,.20,.25]},
+      palette:{sky:[.46,.72,.93],ground:[.31,.60,.36],groundDark:[.18,.39,.24],road:[.34,.37,.44],roadEdge:[.90,.92,.96],stripe:[.92,.92,.82],accent:[1,.72,.09],structure:[.28,.23,.50],good:[.16,.75,.67],bad:[.93,.20,.25]},
       obstaclePool:['spinner','spikes','poles','barrier','mines','saw'],decor:'trees',lightDir:[-.45,.9,.35]
     },
     {
