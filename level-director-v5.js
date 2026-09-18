@@ -46,12 +46,12 @@
 
   function profileForLevel(level){
     level=Math.max(1,Math.floor(level));
-    const biome=biomeForLevel(level),chapter=BIOMES.indexOf(biome),local=((level-1)%10)+1,endless=Math.max(0,level-50);
+    const biome=biomeForLevel(level),biomeIndex=BIOMES.indexOf(biome),chapter=level<=50?biomeIndex:4,local=((level-1)%10)+1,endless=Math.max(0,level-50);
     const endlessScale=endless?Math.log2(1+endless/10):0;
     const intensity=level<=50?clamp((level-1)/49,0,1):1+endlessScale*.22;
-    const sections=level<=50?11+chapter*2+Math.min(3,Math.floor((local-1)/3)):19+Math.min(7,Math.floor(endless/20));
-    const spacing=Math.max(43,48-chapter*1.0-Math.min(1,endless*.01));
-    const baseSpeed=Math.min(12.6,8.7+chapter*.42+(local-1)*.035+endless*.018);
+    const sections=level<=50?11+chapter*2+Math.min(3,Math.floor((local-1)/3)):22+Math.min(6,Math.floor(Math.max(0,endless-1)/20));
+    const spacing=level<=50?Math.max(43,48-chapter*1.0):Math.max(40,44-Math.min(4,endless*.012));
+    const baseSpeed=level<=50?Math.min(10.8,8.7+chapter*.42+(local-1)*.035):Math.min(12.6,10.85+endless*.012);
     const bossLevel=level%10===0;
     const eliteLevel=!bossLevel&&level%5===0;
     const bonusLevel=!bossLevel&&level>5&&level%15===5;
@@ -63,7 +63,7 @@
   }
 
   function encounterFor(rng,index,profile){
-    const pool=ENCOUNTERS[profile.biome.id]||ENCOUNTERS.meadow;
+    const pool=profile.endless?[...new Set(Object.values(ENCOUNTERS).flat())]:(ENCOUNTERS[profile.biome.id]||ENCOUNTERS.meadow);
     if(index===0)return profile.level<=3?'classic':'riskReward';
     if(profile.bossLevel){
       const bossSequence=['classic','riskReward','elite','waves','splitMerge','speedRun','crusherGate','rescue'];
@@ -102,7 +102,7 @@
     return[a,b];
   }
 
-  function obstaclePool(profile){return profile.biome.obstaclePool.slice();}
+  function obstaclePool(profile){return profile.endless?[...new Set(BIOMES.flatMap(b=>b.obstaclePool))]:profile.biome.obstaclePool.slice();}
 
   window.SleepRoadLevelDirector={BIOMES,ENCOUNTERS,biomeForLevel,profileForLevel,encounterFor,bossName,bossStrength,gateValues,obstaclePool,clamp};
 })();
