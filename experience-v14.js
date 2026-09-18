@@ -25,17 +25,17 @@
     return out;
   }
   function buildCarMeshes(g){
-    const s=ensure(g);if(s.modelReady)return s.gpuMeshes||[];
-    s.modelReady=true;const chunks=window.__SleepRoadCarChunks||[],meta=window.SleepRoadCarModelMeta;
-    if(!meta||!chunks.length){s.gpuMeshes=[];return s.gpuMeshes;}
+    if(g.__carGpuMeshes)return g.__carGpuMeshes;
+    const chunks=window.__SleepRoadCarChunks||[],meta=window.SleepRoadCarModelMeta;
+    if(!meta||!chunks.length)return[];
     const lo=meta.bounds.min,hi=meta.bounds.max;
-    s.gpuMeshes=chunks.map(chunk=>{
+    g.__carGpuMeshes=chunks.map(chunk=>{
       const qp=decodeU16(chunk.p),nb=decodeBytes(chunk.n),indices=decodeU16(chunk.i),positions=new Float32Array(qp.length),normals=new Float32Array(nb.length);
       for(let i=0;i<qp.length;i++){const axis=i%3;positions[i]=lo[axis]+(qp[i]/65535)*(hi[axis]-lo[axis]);}
       for(let i=0;i<nb.length;i++){const signed=nb[i]>127?nb[i]-256:nb[i];normals[i]=clamp(signed/127,-1,1);}
       return{mesh:g.renderer.createMesh({positions,normals,indices}),color:chunk.color,group:chunk.group,tris:chunk.tris};
     });
-    return s.gpuMeshes;
+    return g.__carGpuMeshes;
   }
   function pickDistance(g,level){
     const min=92,max=Math.max(min+20,(g.levelLength||300)-118),span=Math.max(20,max-min);
@@ -48,12 +48,12 @@
     return clamp(d,min,max);
   }
   function makeCar(g){
-    const level=g.level||1;if(!carEventFor(level))return null;
-    const laneIndex=Math.floor(hash(level*33.19+7.4)*LANES.length)%LANES.length,speed=10.8+hash(level*12.57+9.2)*3.4,meetDistance=pickDistance(g,level),roadSpeed=Math.max(1,g.baseSpeed||9.5),hitPlane=(g.playerZ||1.6)+.20;
+    const level=g.level||1,spawnRoll=Math.random();if(spawnRoll>=CAR_CHANCE)return null;
+    const runSeed=level+Math.random()*997,laneIndex=Math.floor(hash(runSeed*33.19+7.4)*LANES.length)%LANES.length,speed=10.8+hash(runSeed*12.57+9.2)*3.4,meetDistance=pickDistance(g,runSeed),roadSpeed=Math.max(1,g.baseSpeed||9.5),hitPlane=(g.playerZ||1.6)+.20;
     const approachTravel=roadSpeed*(58+hitPlane)/(roadSpeed+speed),distance=meetDistance+58-approachTravel;
     return{
       active:true,started:false,done:false,hit:false,warned:false,
-      x:LANES[laneIndex],distance,meetDistance,speed,advance:0,z:-999,prevZ:-999
+      x:LANES[laneIndex],distance,meetDistance,speed,spawnRoll,advance:0,z:-999,prevZ:-999
     };
   }
   function staticCarZ(g,car){return-car.distance+(g.travel||0);}
