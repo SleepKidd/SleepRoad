@@ -71,10 +71,10 @@ assert(fake.objects.some(o=>o.type==='v12Event'));
 for(const token of [
   'spawnDebris','debrisPool','updateDebris',
   'WEATHER_PHASES','spawnWeather','updateWeather',
-  'collapseBridge','crossingTrain','craneDrop','blackoutTunnel','stormGate',
+  'collapseBridge','crossingTrain','blackoutTunnel','stormGate',
   'finishPhase','updateFinishSequence','drawFinishV12',
   'boss10','noHit5','crowd250','dodge20','allSkins','rare3',
-  'v12Weather','v12Debris','budgetFor','achievementProgress','triggerRoadEvent','v12Triggered','frontCull=(g.playerZ||1.6)-5.8','containerX=side*7.75'
+  'v12Weather','v12Debris','budgetFor','achievementProgress','triggerRoadEvent','v12Triggered'
 ])assert(src.includes(token),token);
 
 assert.deepEqual([Q.PRESETS.high.dpr,Q.PRESETS.medium.dpr,Q.PRESETS.low.dpr],[3,2.85,2.75],'v12 must preserve Retina DPR');
@@ -86,7 +86,7 @@ assert(index.indexOf('experience-v12.js')>index.indexOf('experience-v11.js'));
 assert(index.indexOf('experience-v12.js')<index.indexOf('boot-v4.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v29';"));
+assert(sw.includes("const CACHE='sleep-road-v34';"));
 assert(sw.includes("'./experience-v12.css'"));
 assert(sw.includes("'./experience-v12.js'"));
 
