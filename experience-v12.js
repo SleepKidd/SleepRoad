@@ -135,7 +135,7 @@
     else if(rare.id==='giantCrowd'){const bonus=12+Math.min(28,Math.floor(g.level/4));g.playerCount=clamp(g.playerCount+bonus,1,S.MAX_CROWD);g.visualCount=Math.max(g.visualCount,g.playerCount);g.setCrowdCount(g.playerCount,true);}
     else if(rare.id==='stormRun')s.weatherBoost=1.55;
     else if(rare.id==='speedRun'){g.baseSpeed*=1.11;g.speed=g.baseSpeed;}
-    else if(rare.id==='obstacleRush'){s.combosInstalled=false;installObstacleCombos(g,1);}
+    else if(rare.id==='obstacleRush')s.obstacleRush=true;
     else if(rare.id==='luckyRun'){
       let touched=0;for(const o of g.objects){if(o.type!=='gate'||o.risk||touched>=2)continue;for(const side of['left','right']){const x=o[side];if(x.op==='sub'||x.op==='div')o[side]={op:'add',value:8+Math.floor(g.level/5)};}touched++;}
     }
@@ -163,7 +163,8 @@
     }
   }
   function updateWeather(g,dt){
-    const s=ensure(g),phases=WEATHER_PHASES[g.biome?.id]||WEATHER_PHASES.meadow,idx=Math.floor(((g.travel||0)+(g.level||1)*17)/62)%phases.length,type=s.rare?.id==='stormRun'?(g.biome?.id==='desert'?'dust':g.biome?.id==='factory'?'steam':'rain'):phases[idx],wave=.48+.42*(Math.sin((g.travel||0)*.022+(g.level||1))*.5+.5),boost=s.weatherBoost||1,intensity=type==='clear'?0:clamp(wave*boost,0,1.6);
+    const s=ensure(g);if(g.state==='menu'||g.state==='complete'||g.state==='failed'){setWeather(g,'clear',0);for(const p of s.weatherPool)p.active=false;return;}
+    const phases=WEATHER_PHASES[g.biome?.id]||WEATHER_PHASES.meadow,idx=Math.floor(((g.travel||0)+(g.level||1)*17)/62)%phases.length,type=s.rare?.id==='stormRun'?(g.biome?.id==='desert'?'dust':g.biome?.id==='factory'?'steam':'rain'):phases[idx],wave=.48+.42*(Math.sin((g.travel||0)*.022+(g.level||1))*.5+.5),boost=s.weatherBoost||1,intensity=type==='clear'?0:clamp(wave*boost,0,1.6);
     setWeather(g,type,intensity);s.weatherClock-=dt;if(s.weatherClock<=0){spawnWeather(g,type,intensity);s.weatherClock=.055/Math.max(.35,intensity);}
     for(const p of s.weatherPool){if(!p.active)continue;p.life-=dt;if(p.life<=0||p.y<-.5){p.active=false;continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;if(p.kind==='steam'||p.kind==='mist')p.size+=dt*.05;}
   }
@@ -213,7 +214,7 @@
   const oldStart=P.startLevel;
   P.startLevel=function(level){
     oldStart.call(this,level);this.v12=null;const s=ensure(this);s.rare=rareEventFor(this.level);s.stats=loadStats();s.combosInstalled=false;s.eventInstalled=false;
-    installObstacleCombos(this,0);installRoadEvents(this);applyRareEvent(this,s.rare);checkSkinAchievement(this);markCrowd(this,this.playerCount);showRare(this,s.rare);
+    installObstacleCombos(this,s.rare?.id==='obstacleRush'?1:0);installRoadEvents(this);applyRareEvent(this,s.rare);checkSkinAchievement(this);markCrowd(this,this.playerCount);
   };
 
   const oldSetCount=P.setCrowdCount;
