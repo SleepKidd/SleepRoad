@@ -37,11 +37,16 @@ vm.runInThisContext(fs.readFileSync('visual-v9.js','utf8'),{filename:'visual-v9.
 const V=global.SleepRoadVisualV9;
 assert(V);
 assert(V.APPEARANCES.length>=8);
+assert.equal(V.TORSO_STYLES.length,3);
+assert.deepEqual(V.TORSO_STYLES.map(x=>x.id),['tee','hoodie','tank']);
 assert.equal(V.BOSS_THEMES.length,5);
 assert.deepEqual(Object.keys(V.WEATHER).sort(),['city','desert','factory','meadow','neon']);
 assert.equal(V.WEATHER.meadow,'pollen');
 assert.equal(V.WEATHER.city,'rain');
 assert.equal(V.roadsideCullDistance,5.2);
+assert.deepEqual(V.crowdOffset(17),V.crowdOffset(17));
+const off=V.crowdOffset(17);assert(Math.abs(off.x)<=.071&&Math.abs(off.z)<=.051);
+const vivid=[.08,.67,.91],soft=V.softenShirt(vivid);assert(Math.max(...soft)-Math.min(...soft)<Math.max(...vivid)-Math.min(...vivid));
 
 const high=V.roadDetailCount({},20);
 global.SleepRoadQualityV6.preset=()=>PRESETS.low;
@@ -57,7 +62,10 @@ const qsrc=fs.readFileSync('quality-v6.js','utf8');
 const esrc=fs.readFileSync('environment-v8.js','utf8');
 assert(esrc.includes("far=z<-66||Math.abs(x)>25"));
 const vsrc=fs.readFileSync('visual-v9.js','utf8');
+for(const token of ['dangerPad','safePad','warningBeacon','nearDecals','massSway','groupHalfWidth'])assert(vsrc.includes(token));
 for(const token of ["o.kind==='saw'","o.kind==='mines'","o.kind==='spikes'","o.kind==='hammer'","o.kind==='laser'","o.kind==='crusher'","o.kind==='movingWall'","drawBossArena","drawWeather","finishSpectator","drawGatePanel"])assert(vsrc.includes(token));
 for(const token of ['characterDetail:160','propDetail:1','weatherDensity:1','finishCrowd:18','characterDetail:48'])assert(qsrc.includes(token));
+const csrc=fs.readFileSync('visual-v9.css','utf8');
+assert(csrc.includes('.toast{bottom:36%'));
 for(const file of ['visual-v9.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: visual v9 characters, LOD, camera, weather and boss themes');
+console.log('PASS: visual v9.1 crowd spacing, torsos, shadows, obstacle readability, road detail and UI');
