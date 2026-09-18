@@ -18,19 +18,7 @@
 - управление свайпом, мышью, стрелками и `A/D`;
 - адаптивный мобильный интерфейс, звук, сохранение и офлайн-режим PWA.
 
-## Модель персонажа
 
-Игровой персонаж — браузерная адаптация оригинальной модели из MIT-репозитория [UnityToBrain/CountMaster](https://github.com/UnityToBrain/CountMaster):
-
-- источник: `Assets/3D Assets/CharacterFBX.fbx`;
-- зафиксированный commit: `ee410e558ca89f08f505157d47e6dbf0ac64b14c`;
-- SHA-256 исходного FBX: `c1143a8902be2a9433ecd50e9714c6a67b9292da2af3bc48052c15ddb4bb2518`;
-- результат: 1 465 вершин и 2 862 треугольника в `assets/models/countmaster-character.js`;
-- конвертер: `tools/convert_countmaster_fbx.py`.
-
-Конвертер сохраняет вершины, топологию и нормали модели, применяя поворот и масштаб Unity-префаба. Полный текст лицензии и атрибуция находятся в [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
-
-## Технологии
 
 Sleep Road работает без игрового фреймворка: проект использует собственный компактный WebGL-рендерер с instanced rendering, перспективной камерой и fallback с WebGL 2 на WebGL 1.
 
