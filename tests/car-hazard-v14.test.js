@@ -54,12 +54,17 @@ const meshGame={
 const gpu=V.buildCarMeshes(meshGame);
 assert.equal(gpu.length,6);
 assert.equal(meshCalls.length,6);
-for(const m of meshCalls){
+for(let i=0;i<meshCalls.length;i++){
+  const m=meshCalls[i],chunk=global.__SleepRoadCarChunks[i];
   assert(m.positions instanceof Float32Array);
   assert(m.normals instanceof Float32Array);
   assert(m.indices instanceof Uint16Array);
   assert.equal(m.positions.length,m.normals.length);
+  assert.equal(m.positions.length/3,chunk.verts);
+  assert.equal(m.indices.length/3,chunk.tris);
+  assert(Math.max(...m.indices)<chunk.verts,'mesh indices must stay inside the converted car chunk');
 }
+assert.strictEqual(V.buildCarMeshes(meshGame),gpu,'GPU car meshes must be reused across level restarts');
 
 const fake={
   level:12,levelLength:330,baseSpeed:10,playerZ:1.6,objects:[],
@@ -91,7 +96,10 @@ for(const token of [
   'ЩИТ СПАС ОТ МАШИНЫ',
   'renderer.createMesh',
   'Uint16Array',
-  'meetDistance'
+  'meetDistance',
+  'spawnRoll=Math.random()',
+  'spawnRoll>=CAR_CHANCE',
+  'if(g.__carGpuMeshes)return g.__carGpuMeshes'
 ])assert(src.includes(token),token);
 
 const index=fs.readFileSync('index.html','utf8');
