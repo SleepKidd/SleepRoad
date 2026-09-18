@@ -95,6 +95,11 @@ assert(index.includes('experience-v13.js'));
 assert(index.indexOf('experience-v13.js')>index.indexOf('experience-v12.js'));
 assert(index.indexOf('experience-v13.js')<index.indexOf('boot-v4.js'));
 
+const audio=fs.readFileSync('audio-v6.js','utf8');
+assert(audio.includes("bossPhase=1"));
+assert(audio.includes("phase>=3?.48:phase>=2?.58:.72"));
+assert(audio.includes("this.battleEnemy.v13Phase||1"));
+
 const sw=fs.readFileSync('sw.js','utf8');
 assert(sw.includes("const CACHE='sleep-road-v32';"));
 assert(sw.includes("'./experience-v13.js'"));
