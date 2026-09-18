@@ -49,11 +49,11 @@
   }
   function makeCar(g){
     const level=g.level||1;if(!carEventFor(level))return null;
-    const laneIndex=Math.floor(hash(level*33.19+7.4)*LANES.length)%LANES.length;
+    const laneIndex=Math.floor(hash(level*33.19+7.4)*LANES.length)%LANES.length,speed=10.8+hash(level*12.57+9.2)*3.4,meetDistance=pickDistance(g,level),roadSpeed=Math.max(1,g.baseSpeed||9.5),hitPlane=(g.playerZ||1.6)+.20;
+    const approachTravel=roadSpeed*(58+hitPlane)/(roadSpeed+speed),distance=meetDistance+58-approachTravel;
     return{
       active:true,started:false,done:false,hit:false,warned:false,
-      x:LANES[laneIndex],distance:pickDistance(g,level),
-      speed:10.8+hash(level*12.57+9.2)*3.4,advance:0,z:-999,prevZ:-999
+      x:LANES[laneIndex],distance,meetDistance,speed,advance:0,z:-999,prevZ:-999
     };
   }
   function staticCarZ(g,car){return-car.distance+(g.travel||0);}
