@@ -3,7 +3,7 @@
   const S=window.SleepRoadSystems,V13=window.SleepRoadExperienceV13,P=window.SleepRoad3D&&window.SleepRoad3D.prototype;
   if(!S||!P)throw new Error('Sleep Road Car Hazard v14 dependencies are missing');
   const {compose,clamp,COLORS}=S;
-  const CAR_CHANCE=.5,LANES=[-3.05,0,3.05],CAR_WIDTH=1.86,CAR_LENGTH=4.18,MODEL_TRIANGLES=360;
+  const CAR_CHANCE=.5,LANES=[-3.05,0,3.05],CAR_WIDTH=2.0,CAR_LENGTH=4.55,MODEL_TRIANGLES=696;
   const hash=n=>{const x=Math.sin(n*91.713+17.31)*43758.5453123;return x-Math.floor(x);};
 
   function carEventFor(level){
@@ -26,14 +26,13 @@
   }
   function buildCarMeshes(g){
     if(g.__carGpuMeshes)return g.__carGpuMeshes;
-    const chunks=window.__SleepRoadCarChunks||[],meta=window.SleepRoadCarModelMeta;
-    if(!meta||!chunks.length)return[];
-    const lo=meta.bounds.min,hi=meta.bounds.max;
-    g.__carGpuMeshes=chunks.map(chunk=>{
-      const qp=decodeU16(chunk.p),nb=decodeBytes(chunk.n),indices=decodeU16(chunk.i),positions=new Float32Array(qp.length),normals=new Float32Array(nb.length);
-      for(let i=0;i<qp.length;i++){const axis=i%3;positions[i]=lo[axis]+(qp[i]/65535)*(hi[axis]-lo[axis]);}
-      for(let i=0;i<nb.length;i++){const signed=nb[i]>127?nb[i]-256:nb[i];normals[i]=clamp(signed/127,-1,1);}
-      return{mesh:g.renderer.createMesh({positions,normals,indices}),color:chunk.color,group:chunk.group,tris:chunk.tris};
+    const model=window.SleepRoadCarModelGLB;if(!model?.meta||!model?.groups?.length)return[];
+    const lo=model.meta.bounds.min,hi=model.meta.bounds.max,qp=decodeU16(model.p),nb=decodeBytes(model.n),positions=new Float32Array(qp.length),normals=new Float32Array(nb.length);
+    for(let i=0;i<qp.length;i++){const axis=i%3;positions[i]=lo[axis]+(qp[i]/65535)*(hi[axis]-lo[axis]);}
+    for(let i=0;i<nb.length;i++){const signed=nb[i]>127?nb[i]-256:nb[i];normals[i]=clamp(signed/127,-1,1);}
+    g.__carGpuMeshes=model.groups.map(group=>{
+      const indices=decodeU16(group.i);
+      return{mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,tris:group.tris};
     });
     return g.__carGpuMeshes;
   }
@@ -109,11 +108,11 @@
   function drawCar(g){
     const car=ensure(g).car;if(!car||car.done)return;const z=currentCarZ(g,car);
     if(z<-92||z>19)return;const r=g.renderer,m=g.meshes,y=groundY(g,z),model=compose(car.x,y,z,0,0,0,1,1,1);
-    r.draw(m.box,compose(car.x,y-.012,z,0,0,0,1.65,.018,3.55),[.04,.045,.055],.18);
-    for(const part of buildCarMeshes(g))r.draw(part.mesh,model,part.color,part.group==='glass'?.76:1);
+    r.draw(m.cylinder,compose(car.x,y+.012,z-.08,0,0,0,1.02,.014,2.12),[.035,.04,.05],.15);
+    for(const part of buildCarMeshes(g))r.draw(part.mesh,model,part.color,1);
     if(z>-48){
-      for(const x of[-.56,.56])r.draw(m.sphere,compose(car.x+x,y+.55,z+1.96,0,0,0,.10,.08,.06),[1,.88,.58],.88);
-      if(z<-7)g.addWorldLabel?.([car.x,y+2.15,z+.35],'МАШИНА!','bad');
+      for(const x of[-.57,.57])r.draw(m.sphere,compose(car.x+x,y+.62,z+2.13,0,0,0,.085,.065,.045),[1,.90,.64],.82);
+      if(z<-7)g.addWorldLabel?.([car.x,y+2.34,z+.35],'МАШИНА!','bad');
     }
   }
 
