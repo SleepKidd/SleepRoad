@@ -41,6 +41,7 @@ assert.equal(V.BOSS_THEMES.length,5);
 assert.deepEqual(Object.keys(V.WEATHER).sort(),['city','desert','factory','meadow','neon']);
 assert.equal(V.WEATHER.meadow,'pollen');
 assert.equal(V.WEATHER.city,'rain');
+assert.equal(V.roadsideCullDistance,5.2);
 
 const high=V.roadDetailCount({},20);
 global.SleepRoadQualityV6.preset=()=>PRESETS.low;
