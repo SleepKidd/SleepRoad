@@ -29,7 +29,7 @@
   function push(g,p){ensure(g);g.v6Particles.push(p);const over=g.v6Particles.length-cap(g);if(over>0)g.v6Particles.splice(0,over);}
   function burst(g,x,y,z,color,count=12,opts={}){
     const n=Math.max(1,Math.round(count*Q.preset(g).trailRate));
-    for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=rnd(opts.minSpeed||1.1,opts.maxSpeed||4.2);push(g,{kind:opts.kind||'spark',x,y,z,vx:Math.cos(a)*s,vy:rnd(opts.minVy||1.0,opts.maxVy||4.2),vz:Math.sin(a)*s*.55,life:rnd(.34,.72),max:.72,size:rnd(.055,.15),color,gravity:opts.gravity==null?6.5:opts.gravity,spin:rnd(-7,7)});}}
+    for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=rnd(opts.minSpeed||1.1,opts.maxSpeed||4.2);push(g,{kind:opts.kind||'spark',x,y,z,vx:Math.cos(a)*s,vy:rnd(opts.minVy||1.0,opts.maxVy||4.2),vz:Math.sin(a)*s*.55,life:rnd(.34,.72),max:.72,size:rnd(.055,.15),color,gravity:opts.gravity==null?6.5:opts.gravity,spin:rnd(-7,7)});}
   }
   function ring(g,x,y,z,color,size=1.1){push(g,{kind:'ring',x,y,z,life:.48,max:.48,size,color,gravity:0});}
   function confetti(g,count=60){
@@ -79,7 +79,7 @@
     if((g.state==='running'||g.state==='intro')&&g.speed>0){
       f.dustClock-=dt;f.trailClock-=dt;
       if(f.dustClock<=0){f.dustClock=.065/Q.preset(g).trailRate;push(g,{kind:'dust',x:g.playerX+rnd(-.75,.75),y:.04,z:g.playerZ+rnd(.8,2.7),vx:rnd(-.18,.18),vy:rnd(.15,.55),vz:rnd(.4,1.4),life:.48,max:.48,size:rnd(.10,.22),color:[.78,.76,.70],gravity:.8});}
-      if(f.trailClock<=0){f.trailClock=.10/Q.preset(g).trailRate;push(g,{kind:'trail',x:g.playerX+rnd(-1.1,1.1),y:rnd(.18,.65),z:g.playerZ+rnd(1.2,3.4),vx:rnd(-.1,.1),vy:.16,vz:.7,life:.52,max:.52,size:rnd(.06,.12),color:skin.trail,gravity:.1});}
+      if(f.trailClock<=0){f.trailClock=(g.boostTimer>0?.045:.10)/Q.preset(g).trailRate;push(g,{kind:'trail',x:g.playerX+rnd(-1.1,1.1),y:rnd(.18,.65),z:g.playerZ+rnd(1.2,3.4),vx:rnd(-.1,.1),vy:g.boostTimer>0?.30:.16,vz:g.boostTimer>0?1.25:.7,life:g.boostTimer>0?.66:.52,max:g.boostTimer>0?.66:.52,size:rnd(.06,g.boostTimer>0?.16:.12),color:skin.trail,gravity:.1});}
     }
     for(const p of g.v6Particles){
       p.life-=dt;const age=1-clamp(p.life/Math.max(.001,p.max),0,1);p.age=age;
@@ -180,6 +180,12 @@
 
   const oldDrawMoon=P.drawMoon;
   P.drawMoon=function(o,z){oldDrawMoon.call(this,o,z);const skin=R.currentSkin(this),r=this.renderer,m=this.meshes,t=this.time*2.4+(o.spin||0),s=.07+(o.bonus?.035:0);for(let i=0;i<3;i++){const a=t+i*Math.PI*2/3;r.draw(m.sphere,compose(o.x+Math.cos(a)*.72,1.18+Math.sin(a*1.3)*.20,z+Math.sin(a)*.26,0,0,0,s,s,s),skin.moon,.75);}};
+
+  const oldDrawObstacle=P.drawObstacle;
+  P.drawObstacle=function(o,z){oldDrawObstacle.call(this,o,z);const r=this.renderer,m=this.meshes,t=this.time*(o.speed||1)+(o.phase||0);if(o.kind==='saw'){const x=o.baseX+Math.sin(t)*o.range;for(let i=0;i<4;i++){const a=t*5+i*Math.PI/2,s=.05+.025*(Math.sin(t*9+i)*.5+.5);r.draw(m.sphere,compose(x+Math.cos(a)*.82,.42+Math.sin(a*1.7)*.25,z+Math.sin(a)*.22,0,0,0,s,s,s),[1,.62,.12],.85);}}else if(o.kind==='fireline'){for(let i=-4;i<=4;i+=2){const y=.5+Math.abs(Math.sin(t*2+i))*.45,s=.10+.04*(i%3);r.draw(m.sphere,compose(i,y,z-.15,0,0,0,s,s*1.35,s),[.32,.30,.34],.34);}}};
+
+  const oldUpdateFinish=P.updateFinish;
+  P.updateFinish=function(dt){oldUpdateFinish.call(this,dt*.82);};
 
   window.SleepRoadPolishV6={CHAPTER_ATTACKS,burst,ring,confetti,registerPerfect,resetCombo,nearMiss,updateParticles,drawParticles,ensure,screenPulse,cinematic};
 })();
