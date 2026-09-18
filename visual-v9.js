@@ -284,7 +284,6 @@
 
   function finishSpectator(g,x,z,count,color){
     const r=g.renderer,m=g.meshes;for(let i=0;i<count;i++){const row=Math.floor(i/6),col=i%6,px=x+(col-2.5)*.34,py=.40+row*.36,pz=z+row*.34;r.draw(m.sphere,compose(px,py+.42,pz,0,0,0,.13,.15,.13),i%3?[.84,.50,.32]:[.72,.43,.28]);r.draw(m.box,compose(px,py+.18,pz,0,0,0,.22,.28,.16),i%2?color:mix(color,COLORS.white,.18));}}
-  }
   const oldFinish=P.drawFinishScene;
   P.drawFinishScene=function(){
     oldFinish.call(this);const r=this.renderer,m=this.meshes,p=this.biome.palette,q=qFor(this),spec=q.finishCrowd||8;
