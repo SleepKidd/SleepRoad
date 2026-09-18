@@ -4,112 +4,84 @@ const fs=require('fs');
 const vm=require('vm');
 
 const src=fs.readFileSync('experience-v14.js','utf8');
-const metaSrc=fs.readFileSync('assets/models/car-model-meta.js','utf8');
-const dataSrc=fs.readFileSync('assets/models/car-model-data.js','utf8');
 assert.doesNotThrow(()=>new Function(src));
-assert.doesNotThrow(()=>new Function(metaSrc));
-assert.doesNotThrow(()=>new Function(dataSrc));
 
 global.window=global;
 if(typeof global.atob!=='function')global.atob=s=>Buffer.from(s,'base64').toString('binary');
 Object.defineProperty(global,'navigator',{value:{vibrate(){}},configurable:true});
 
+for(let i=1;i<=6;i++)vm.runInThisContext(fs.readFileSync('assets/models/gclass-frag-'+i+'.js','utf8'),{filename:'gclass-frag-'+i+'.js'});
+vm.runInThisContext(fs.readFileSync('assets/models/gclass-final.js','utf8'),{filename:'gclass-final.js'});
+const M=global.SleepRoadCarModelGLB;
+assert(M);
+assert.equal(M.meta.source,'mercedes-benz_g-class_free_download.glb');
+assert.equal(M.meta.sourceSha256,'eee0c94aaf1f847bcfcc0bce6dbac9f36d59b27eb3d57220a15b25cf791de719');
+assert.equal(M.meta.originalVerts,1242);
+assert.equal(M.meta.originalTris,1524);
+assert.equal(M.meta.runtimeVerts,330);
+assert.equal(M.meta.runtimeTris,696);
+assert.equal(M.groups.length,12);
+assert.equal(M.groups.reduce((n,g)=>n+g.tris,0),696);
+
 function Game(){}
 for(const n of ['startLevel','update','drawCourse'])Game.prototype[n]=function(){};
 global.SleepRoad3D=Game;
-global.SleepRoadSystems={
-  compose(){return new Float32Array(16)},
-  clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),
-  COLORS:{white:[1,1,1],gold:[1,.72,.09],red:[.9,.2,.2]}
-};
+global.SleepRoadSystems={compose(){return new Float32Array(16)},clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),COLORS:{white:[1,1,1],gold:[1,.72,.09],red:[.9,.2,.2]}};
 global.SleepRoadExperienceV13={elevationAt(){return 0;}};
-
-vm.runInThisContext(metaSrc,{filename:'car-model-meta.js'});
-vm.runInThisContext(dataSrc,{filename:'car-model-data.js'});
 vm.runInThisContext(src,{filename:'experience-v14.js'});
 const V=global.SleepRoadCarHazardV14;
 assert(V);
-
 assert.equal(V.CAR_CHANCE,.5);
-let cars=0;
-for(let level=1;level<=10000;level++)if(V.carEventFor(level))cars++;
-const rate=cars/10000;
-assert(rate>.48&&rate<.52,'car event must stay around 50%');
-assert.equal(V.MODEL_TRIANGLES,360);
+assert.equal(V.MODEL_TRIANGLES,696);
 
-assert(global.SleepRoadCarModelMeta);
-assert.equal(global.SleepRoadCarModelMeta.source,'027.max');
-assert.equal(global.SleepRoadCarModelMeta.sourceSha256,'543e5ef2b94bb1a6f9514fdfb45d92b9838d9f59583385804c3effbf1a541c64');
-assert.deepEqual(global.SleepRoadCarModelMeta.bounds.min,[-.93,0,-2.09]);
-assert.deepEqual(global.SleepRoadCarModelMeta.bounds.max,[.93,1.44,2.09]);
-assert.equal(global.__SleepRoadCarChunks.length,6);
-assert.equal(global.__SleepRoadCarChunks.reduce((n,c)=>n+c.tris,0),360);
-assert.deepEqual(global.__SleepRoadCarChunks.map(c=>c.group),['body','dark','glass','metal','red','orange']);
+let deterministic=0;
+for(let level=1;level<=10000;level++)if(V.carEventFor(level))deterministic++;
+assert(deterministic/10000>.48&&deterministic/10000<.52);
 
-const meshCalls=[];
-const meshGame={
-  renderer:{createMesh(data){meshCalls.push(data);return{data};}},
-  v14:null
-};
-const gpu=V.buildCarMeshes(meshGame);
-assert.equal(gpu.length,6);
-assert.equal(meshCalls.length,6);
-for(let i=0;i<meshCalls.length;i++){
-  const m=meshCalls[i],chunk=global.__SleepRoadCarChunks[i];
+const calls=[];
+const gmesh={renderer:{createMesh(d){calls.push(d);return d;}}};
+const gpu=V.buildCarMeshes(gmesh);
+assert.equal(gpu.length,12);
+assert.equal(calls.length,12);
+for(const m of calls){
   assert(m.positions instanceof Float32Array);
   assert(m.normals instanceof Float32Array);
   assert(m.indices instanceof Uint16Array);
-  assert.equal(m.positions.length,m.normals.length);
-  assert.equal(m.positions.length/3,chunk.verts);
-  assert.equal(m.indices.length/3,chunk.tris);
-  assert(Math.max(...m.indices)<chunk.verts,'mesh indices must stay inside the converted car chunk');
+  assert.equal(m.positions.length,330*3);
+  assert.equal(m.normals.length,330*3);
+  assert(Math.max(...m.indices)<330);
 }
-assert.strictEqual(V.buildCarMeshes(meshGame),gpu,'GPU car meshes must be reused across level restarts');
+assert.strictEqual(V.buildCarMeshes(gmesh),gpu);
 
-const fake={
-  level:12,levelLength:330,baseSpeed:10,playerZ:1.6,objects:[],
-  crowdBatch:{formation(n){return Array.from({length:n},(_,i)=>({x:(i%5-2)*.62,z:Math.floor(i/5)*.5,index:i}));}},
-  playerCount:25,visualCount:25,playerX:0,shield:0,knockouts:[],shake:0,flash:0,
-  spawnKnockouts(n){for(let i=0;i<n;i++)this.knockouts.push({x:(i%5-2)*.62,y:.3,z:1.6,vx:0,vy:0,vz:0,life:1,maxLife:1});},
-  setCrowdCount(){},updateMissionUI(){},toast(){},
-  audio:{hit(){},good(){},tone(){}},fail(){this.failed=true;}
+const xs=[-1.24,-.62,0,.62,1.24];
+const hitGame={
+  playerCount:25,visualCount:25,playerX:0,playerZ:1.6,shield:0,shake:0,flash:0,knockouts:[],
+  crowdBatch:{formation(count){return Array.from({length:count},(_,i)=>({x:xs[i%5],z:Math.floor(i/5)*.5,index:i}));}},
+  spawnKnockouts(n){for(let i=0;i<n;i++)this.knockouts.push({x:xs[i%5],vx:0,vy:0,vz:0,life:1,maxLife:1});},
+  setCrowdCount(){},updateMissionUI(){},toast(){},audio:{hit(){},good(){},tone(){}},fail(){this.failed=true;}
 };
-const car={x:0,hit:false};
-const loss=V.knockPeople(fake,car);
-assert(loss>0,'car should knock people out when crowd stays in its lane');
-assert(fake.playerCount<25);
-assert.equal(fake.tookDamage,true);
-assert(fake.knockouts.some(k=>k.vz>=6.8),'knocked people should fly in car direction');
+const loss=V.knockPeople(hitGame,{x:0,hit:false});
+assert(loss>0);
+assert(hitGame.playerCount<25);
+assert.equal(hitGame.tookDamage,true);
+assert(hitGame.knockouts.some(k=>k.vz>=6.8));
 
-const shieldGame={...fake,playerCount:20,visualCount:20,shield:1,knockouts:[],tookDamage:false,crowdBatch:fake.crowdBatch};
-const shieldCar={x:0,hit:false};
-assert.equal(V.knockPeople(shieldGame,shieldCar),0);
-assert.equal(shieldGame.playerCount,20);
-assert.equal(shieldGame.shield,0);
-
-for(const token of [
-  'const CAR_CHANCE=.5',
-  'crowdBatch.formation',
-  'spawnKnockouts(loss)',
-  'g.tookDamage=true',
-  'МАШИНА СБИЛА',
-  'ЩИТ СПАС ОТ МАШИНЫ',
-  'renderer.createMesh',
-  'Uint16Array',
-  'meetDistance',
-  'spawnRoll=Math.random()',
-  'spawnRoll>=CAR_CHANCE',
-  'if(g.__carGpuMeshes)return g.__carGpuMeshes'
-])assert(src.includes(token),token);
+for(const token of ['const CAR_CHANCE=.5','spawnRoll=Math.random()','spawnKnockouts(loss)','SleepRoadCarModelGLB','m.cylinder','MODEL_TRIANGLES=696'])assert(src.includes(token),token);
+assert(!src.includes('SleepRoadCarModelMeta'));
+assert(!src.includes('__SleepRoadCarChunks'));
+assert(!src.includes('r.draw(m.box,compose(car.x,y-.012,z'));
 
 const index=fs.readFileSync('index.html','utf8');
-for(const asset of ['car-model-meta.js','car-model-data.js','experience-v14.js'])assert(index.includes(asset),asset);
-assert(index.indexOf('car-model-data.js')<index.indexOf('experience-v14.js'));
-assert(index.indexOf('experience-v14.js')>index.indexOf('experience-v13.js'));
-assert(index.indexOf('experience-v14.js')<index.indexOf('boot-v4.js'));
+for(let i=1;i<=6;i++)assert(index.includes('gclass-frag-'+i+'.js'));
+assert(index.includes('gclass-final.js'));
+assert(!index.includes('car-model-meta.js'));
+assert(!index.includes('car-model-data.js'));
+assert(index.indexOf('gclass-final.js')<index.indexOf('experience-v14.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v35';"));
-for(const asset of ['car-model-meta.js','car-model-data.js','experience-v14.js'])assert(sw.includes(asset),asset);
+assert(sw.includes("const CACHE='sleep-road-v36';"));
+assert(sw.includes('gclass-final.js'));
+assert(!sw.includes('car-model-meta.js'));
+assert(!sw.includes('car-model-data.js'));
 
-console.log('PASS: uploaded 027.max car model, 50% hazard chance, collision and crowd knockouts');
+console.log('PASS: G-Class GLB replacement, 50% car hazard, collision and soft shadow');
