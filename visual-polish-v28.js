@@ -170,7 +170,7 @@
       let color=null,x=0,y=.30,kind='spark';
       if(o.kind==='saw'){const a=this.time*o.speed+o.phase;x=o.baseX+Math.sin(a)*o.range;color=[1,.68,.24];y=.48;}
       else if(o.kind==='bladePair'){const a=this.time*o.speed+o.phase;x=-2.65+Math.sin(a)*o.range;color=[1,.66,.20];y=.50;}
-      else if(o.kind==='laser'){x=(Math.random()>.5?-1:1)*5.1;color=[1,.12,.08];y=1.15;kind='laser';}
+      else if(o.kind==='laser'){x=(Math.random()>.5?-1:1)*5.1;color=[1,.12,.08];y=1.15;}
       else if(o.kind==='fireline'){x=-4+Math.random()*8;color=[1,.42,.08];y=.22;}
       else if(o.kind==='shockwave'){x=o.safeX+(Math.random()-.5)*7;color=[1,.30,.08];y=.12;}
       if(!color)continue;
