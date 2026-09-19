@@ -89,12 +89,13 @@
   }
 
   function bossStrength(level,section){
-    const profile=profileForLevel(level),base=42+level*1.55+section*2.1;
-    return Math.round(base*(profile.endless?1+Math.min(.9,profile.endless*.008):1));
+    // Linear HP already scales indefinitely with level. The old extra endless multiplier
+    // could outgrow the shorter run-up economy and create mathematically unwinnable bosses.
+    return Math.round(42+level*1.55+section*2.1);
   }
   function finalBossStrength(level,section){
     const profile=profileForLevel(level),full=bossStrength(level,section);
-    return profile.bossLevel?full:Math.max(28,Math.round(full*.60));
+    return profile.bossLevel?full:Math.max(28,Math.round(full*.55));
   }
 
   function gateValues(level,rng,risk=false){
