@@ -22,8 +22,8 @@
   P.drawCrusher=function(o,z){const a=this.time*o.speed+o.phase,gapX=Math.sin(a)*2.7,leftEnd=gapX-1.35,rightStart=gapX+1.35,r=this.renderer,m=this.meshes;if(leftEnd>-5.2){const w=leftEnd+5.2;r.draw(m.box,compose(-5.2+w/2,.78,z,0,0,0,w,1.55,.76),COLORS.red);}if(rightStart<5.2){const w=5.2-rightStart;r.draw(m.box,compose(rightStart+w/2,.78,z,0,0,0,w,1.55,.76),COLORS.red);}for(const x of [-5.35,5.35])r.draw(m.cylinder,compose(x,1.03,z,0,0,0,.28,2.05,.28),COLORS.purple);this.addWorldLabel([gapX,1.92,z],'ПРОХОД','good');};
   P.drawPendulum=function(o,z){const a=this.time*o.speed+o.phase,x=Math.sin(a)*3.65,angle=Math.atan2(x,3.45),r=this.renderer,m=this.meshes;r.draw(m.cylinder,compose(-5.15,2.25,z,0,0,0,.25,4.5,.25),COLORS.purple);r.draw(m.cylinder,compose(5.15,2.25,z,0,0,0,.25,4.5,.25),COLORS.purple);r.draw(m.box,compose(0,4.45,z,0,0,0,10.55,.28,.32),COLORS.purple);r.draw(m.cylinder,compose(x*.5,2.65,z,0,0,-angle,.12,3.65,.12),COLORS.gray);r.draw(m.sphere,compose(x,.84,z,0,0,0,1.18,1.18,1.18),COLORS.orange);r.draw(m.sphere,compose(x,.84,z-.62,0,0,0,.34,.34,.34),COLORS.red);};
   P.drawEnemy=function(o,z){
-    if(o.boss&&window.SleepRoadGoblinBossV22?.draw(this,o,z)){
-      const label=window.SleepRoadGoblinBossV22.labelPosition(this,o,z);this.addWorldLabel(label,String(o.count),'boss');return;
+    if(o.boss&&window.SleepRoadGoblinBossV23?.draw(this,o,z)){
+      const label=window.SleepRoadGoblinBossV23.labelPosition(this,o,z);this.addWorldLabel(label,String(o.count),'boss');return;
     }
     const c=o.boss?COLORS.orange:[.91,.24,.34];this.crowdBatch.draw(Math.max(1,o.count),0,z-.8,c,this.time+1.1,{scale:o.boss?1.04:.92,direction:-1,enemy:true});this.addWorldLabel([0,2.35,z-.4],String(o.count),o.boss?'boss':'enemy');
   };

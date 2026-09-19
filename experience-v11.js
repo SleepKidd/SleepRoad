@@ -190,7 +190,7 @@
     if(warn&&cycle!==ensure(g).bossWarnCycle){ensure(g).bossWarnCycle=cycle;ui.warn.querySelector('b').textContent=type==='slam'?'УДАР СВЕРХУ':type==='stomp'?'ТОПОТ':type==='sweep'?'РАЗМАХ':'УДАР';ui.warn.querySelector('small').textContent='ПРИГОТОВЬСЯ';ui.warn.classList.remove('hidden');clearTimeout(g.__v11WarnHide);g.__v11WarnHide=setTimeout(()=>ui.warn.classList.add('hidden'),520);}
   }
   function drawBossVariant(g,o,z){
-    if(!o.boss||(window.SleepRoadGoblinBossV22&&!g.__goblinBossFailed))return;const variant=BOSS_VARIANTS[clamp(g.profile?.chapter||0,0,4)],r=g.renderer,m=g.meshes,scale=o.bossScale||3.25,rootZ=z-2.25,t=g.time;
+    if(!o.boss||(window.SleepRoadGoblinBossV23&&!g.__goblinBossV23Failed))return;const variant=BOSS_VARIANTS[clamp(g.profile?.chapter||0,0,4)],r=g.renderer,m=g.meshes,scale=o.bossScale||3.25,rootZ=z-2.25,t=g.time;
     if(variant.gear==='bands'){for(const x of[-.70,.70])r.draw(m.cylinder,compose(x*scale*.28,2.65,rootZ-.28,Math.PI/2,0,0,.18,.18,.18),variant.accent,.90);}
     else if(variant.gear==='bracers'){for(const x of[-.72,.72])r.draw(m.box,compose(x*scale*.30,2.65,rootZ-.26,0,0,0,.42,.30,.34),variant.accent,.88);}
     else if(variant.gear==='helmet'){r.draw(m.sphere,compose(0,4.45,rootZ,0,0,0,.92,.48,.82),variant.accent,.34);r.draw(m.box,compose(0,4.45,rootZ-.56,0,0,0,.72,.10,.08),[.12,.14,.16],.90);}
@@ -199,7 +199,7 @@
   }
   function drawBossCorpse(g){
     const c=ensure(g).corpse;if(!c||c.life<=0)return;
-    if(window.SleepRoadGoblinBossV22?.drawCorpse(g,c))return;
+    if(window.SleepRoadGoblinBossV23?.drawCorpse(g,c))return;
     const p=clamp(1-c.life/c.max,0,1),fall=Math.sin(Math.min(1,p)*Math.PI*.5),r=g.renderer,m=g.meshes,alpha=clamp(c.life/.28,0,1),rot=fall*1.38,scale=c.scale||3.3;
     const z=c.z-(g.travel-(c.travel||g.travel));r.draw(m.character,compose(0,.42+Math.cos(p*Math.PI)*.12,z,rot,0,Math.sin(p*Math.PI)*.08,scale,scale,scale),c.color,alpha);
     if(p>.52&&p<.72)for(let i=0;i<5;i++){const a=i*TAU/5;r.draw(m.sphere,compose(Math.cos(a)*1.4,.12,z+Math.sin(a)*.8,0,0,0,.10,.06,.10),[.60,.55,.48],.34);}
