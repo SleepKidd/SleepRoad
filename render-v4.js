@@ -28,12 +28,14 @@
   P.beginLabels=function(){this.labelCursor=0;this.labelLayout=[];};
   P.getLabel=function(){if(!this.labels[this.labelCursor]){const e=document.createElement('div');e.className='world-label';UI.labels.appendChild(e);this.labels.push(e);}return this.labels[this.labelCursor++];};
   P.addWorldLabel=function(pos,text,type){
+    // Do not show HUD-like captions while the actual obstacle/gate is still only a tiny
+    // shape on the horizon. On phones we reveal them a little later because the scene is
+    // narrower and overlapping text is much more noticeable.
+    const mobile=this.w/this.h<.72,revealZ=mobile?-34:-42;
+    if(pos[2]<revealZ)return;
     const p=this.renderer.project(pos,this.w,this.h);if(!p)return;
     const depth=clamp((1-p.z)*.7+.45,.55,1.4),font=clamp(11,18*depth,27),labelText=String(text),width=Math.max(50,Math.min(230,labelText.length*font*.61+22)),height=font+12,pad=5;
     const rect={l:p.x-width*.5-pad,r:p.x+width*.5+pad,t:p.y-height*.5-pad,b:p.y+height*.5+pad};
-    // Objects are rendered nearest-first, so reserve screen space for the readable labels
-    // and suppress farther labels that would overlap them. This keeps distant gate captions
-    // from turning into an unreadable pile of text.
     const occupied=this.labelLayout||(this.labelLayout=[]);
     if(occupied.some(q=>rect.l<q.r&&rect.r>q.l&&rect.t<q.b&&rect.b>q.t))return;
     occupied.push(rect);
