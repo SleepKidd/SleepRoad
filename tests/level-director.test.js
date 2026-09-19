@@ -62,6 +62,8 @@ for(let level=1;level<=500;level++){
   assert(state.levelLength>360,`level ${level} unexpectedly short`);
   assert(state.objects.length<420,`level ${level} object budget exceeded`);
   assert(state.objects.every((item,index,list)=>index===0||list[index-1].distance<=item.distance),`level ${level} is not sorted`);
+  const major=state.objects.filter(o=>['gate','obstacle','enemy','split','merge','jump','zone','rescue','bonusGate','finish'].includes(o.type));
+  for(let j=1;j<major.length;j++)assert(major[j].distance-major[j-1].distance>=2.5,`level ${level} stacks major objects too tightly`);
   const finish=state.objects.filter(x=>x.type==='finish');assert.equal(finish.length,1);assert.equal(finish[0].distance,state.levelLength);
   const boss=state.objects.filter(x=>x.type==='enemy'&&x.boss);assert.equal(boss.length,1,`boss rule broken on ${level}`);
   for(const o of state.objects.filter(x=>x.type==='obstacle')){
