@@ -42,6 +42,10 @@ assert(D.profileForLevel(51).sections>=D.profileForLevel(50).sections);
 assert(D.profileForLevel(51).baseSpeed>=D.profileForLevel(50).baseSpeed);
 assert(D.obstaclePool(D.profileForLevel(51)).includes('fireline'));
 assert(D.obstaclePool(D.profileForLevel(51)).includes('spinner'));
+const timedProfile=D.profileForLevel(14);
+assert(timedProfile.timed,'level 14 should be timed');
+const legacyTimedLimit=Math.max(46,Math.round((timedProfile.sections*timedProfile.spacing)/timedProfile.baseSpeed*1.16));
+assert.equal(timedProfile.timedLimit,Math.ceil(legacyTimedLimit*1.5),'timed mission limit must be exactly 1.5x the previous budget');
 
 const seenBiomes=new Set(),seenKinds=new Set(),seenTypes=new Set(),seenZones=new Set(),seenPowerups=new Set();
 let maxObjects=0,sawTimed=false,sawNoHit=false,sawBonus=false;

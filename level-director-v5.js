@@ -59,7 +59,8 @@
     const timed=!bossLevel&&level>=14&&level%7===0;
     const noHit=!bossLevel&&level>=18&&level%9===0;
     const title=bossLevel?`${biome.name} · BOSS`:bonusLevel?`${biome.name} · BONUS`:biome.name;
-    const timedLimit=timed?Math.max(46,Math.round((sections*spacing)/baseSpeed*1.16)):0;
+    const timedBase=timed?Math.max(46,Math.round((sections*spacing)/baseSpeed*1.16)):0;
+    const timedLimit=timed?Math.ceil(timedBase*1.5):0;
     return{level,biome,chapter,local,endless,intensity,sections,spacing,baseSpeed,finalBoss,bossLevel,eliteLevel,bonusLevel,timed,noHit,timedLimit,title};
   }
 
