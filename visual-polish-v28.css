@@ -1,0 +1,37 @@
+/* Sleep Road v28 visual polish: readability, hit feedback and hazard silhouettes. */
+.world-label{
+  border:1px solid rgba(255,255,255,.56);
+  box-shadow:0 5px 14px rgba(18,22,34,.18),inset 0 1px 0 rgba(255,255,255,.22);
+  text-shadow:0 2px 4px rgba(10,14,24,.48);
+  backdrop-filter:blur(5px);
+  will-change:transform,opacity,filter;
+  transition:opacity .08s linear,filter .08s linear;
+}
+.world-label.bad{border-radius:7px;background:linear-gradient(160deg,rgba(224,78,83,.96),rgba(160,45,60,.96))}
+.world-label.bad:before{content:"▲";display:inline-block;margin-right:5px;font-size:.70em;transform:translateY(-1px)}
+.world-label.enemy{background:linear-gradient(160deg,#d85b62,#a83a4b);border-radius:8px}
+.world-label.enemy:before{content:"◆";display:inline-block;margin-right:5px;font-size:.65em}
+.world-label.boss{background:linear-gradient(160deg,#db6b39,#a8422f);border-radius:9px;box-shadow:0 6px 18px rgba(95,31,18,.30),inset 0 1px 0 rgba(255,255,255,.24)}
+.world-label.boss:before{content:"◆";display:inline-block;margin-right:5px;font-size:.70em}
+.world-label.good{background:linear-gradient(160deg,rgba(81,202,190,.96),rgba(42,151,168,.96))}
+.world-label.powerup{box-shadow:0 0 15px rgba(75,205,255,.34),0 5px 14px rgba(18,22,34,.16)}
+
+.v6-screen-fx.bad{
+  background:
+    radial-gradient(circle at 50% 62%,rgba(255,78,58,.24),transparent 42%),
+    radial-gradient(ellipse at center,transparent 48%,rgba(120,0,10,.28) 100%);
+}
+.v6-screen-fx.good{
+  background:
+    radial-gradient(circle at 50% 65%,rgba(68,255,202,.20),transparent 50%),
+    radial-gradient(ellipse at center,transparent 65%,rgba(45,180,150,.12) 100%);
+}
+.v6-screen-fx.gold{
+  background:
+    radial-gradient(circle at 50% 55%,rgba(255,212,75,.27),transparent 54%),
+    radial-gradient(ellipse at center,transparent 67%,rgba(255,160,40,.10) 100%);
+}
+
+@media(max-width:520px){
+  .world-label{padding:5px 9px;box-shadow:0 4px 11px rgba(18,22,34,.16),inset 0 1px 0 rgba(255,255,255,.20)}
+}

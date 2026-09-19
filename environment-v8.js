@@ -301,12 +301,9 @@
 
   const oldObstacle=P.drawObstacle;
   P.drawObstacle=function(o,z){
-    oldObstacle.call(this,o,z);const r=this.renderer,m=this.meshes,p=this.biome.palette,cfg=envCfg(this),a=this.time*(o.speed||1)+(o.phase||0);
-    if(o.kind==='saw'){const x=o.baseX+Math.sin(a)*o.range;r.draw(m.cylinder,compose(x,.40,z,Math.PI/2,0,a*5,.31,.17,.31),[.18,.20,.23]);for(let i=0;i<8;i++){const t=i*TAU/8+a*5;r.draw(m.cone,compose(x+Math.cos(t)*.66,.40+Math.sin(t)*.66,z,0,0,-t,.15,.29,.15),[.73,.76,.79]);}shadow(this,x,z,.72,.22,.12);}
-    else if(o.kind==='hammer'){for(const x of[-2.8,2.8]){r.draw(m.box,compose(x,.18,z+.34,0,0,0,1.25,.16,.62),[.22,.23,.26]);if(Math.abs(Math.sin(a))>.88&&cfg.detail>0)for(let i=0;i<4;i++)r.draw(m.sphere,compose(x+(i-1.5)*.18,.18,z+rndDet(i+o.distance)*.28,0,0,0,.07,.07,.07),[.55,.48,.40],.52);}}
-    else if(o.kind==='laser'){for(const x of[-5.25,5.25]){r.draw(m.cylinder,compose(x,.78,z,0,0,0,.34,1.45,.34),p.structure);r.draw(m.sphere,compose(x,1.28,z-.16,0,0,0,.18,.18,.18),p.bad,.96);}}
-    else if(o.kind==='crusher'){for(const x of[-4.72,4.72]){r.draw(m.box,compose(x,1.05,z,0,0,0,.44,2.12,.65),p.structure);for(let y=.3;y<1.9;y+=.42)r.draw(m.box,compose(x,y,z-.35,0,0,.52,.50,.10,.08),p.stripe);}}
-    else if(o.kind==='mines'&&cfg.detail>0&&o.spikes){for(const mine of o.spikes.slice(0,10))r.draw(m.sphere,compose(mine.x,.22,z+mine.z-.24,0,0,0,.07,.07,.07),p.bad,.92);}
+    // v28/visual-v9 owns obstacle materials and mechanics. Keep the environment layer
+    // from drawing duplicate saws/emitters on top of the final industrial models.
+    return oldObstacle.call(this,o,z);
   };
 
   const oldFinishGate=P.drawFinishGate;
