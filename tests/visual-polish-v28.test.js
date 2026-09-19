@@ -55,6 +55,19 @@ const particlesBefore=g.v6Particles.length;P.hitObstacle.call(g,{kind:'saw'},fal
 const css=fs.readFileSync('visual-polish-v28.css','utf8');
 assert(css.includes('.world-label.bad:before'));
 assert(css.includes('radial-gradient'));
+const activeVisual=fs.readFileSync('visual-v9.js','utf8');
+assert(activeVisual.includes('rot=this.time*9.5'),'active saw renderer must use the faster mechanical blade spin');
+assert(activeVisual.includes('const x=o.baseX+Math.sin(t)*o.range'),'active saw path must preserve collision-matched movement');
+assert(activeVisual.includes("if(o.kind==='mines')"));
+assert(activeVisual.includes("if(o.kind==='spikes')"));
+assert(activeVisual.includes("if(o.kind==='laser')"));
+assert(activeVisual.includes("if(o.kind==='crusher')"));
+assert(activeVisual.includes("if(o.kind==='movingWall')"));
+const env=fs.readFileSync('environment-v8.js','utf8');
+const envObstacle=env.slice(env.indexOf('const oldObstacle=P.drawObstacle'),env.indexOf('const oldFinishGate=P.drawFinishGate'));
+assert(envObstacle.includes('return oldObstacle.call(this,o,z)'));
+assert(!envObstacle.includes("o.kind==='saw'"),'environment layer must not duplicate the final saw geometry');
+
 const engine=fs.readFileSync('engine.js','utf8');
 assert(engine.includes('float light=.36+d*.44+hemi*.20'));
 assert(engine.includes("float rim=pow(1.0-abs(n.y),3.0)*.055"));
@@ -65,4 +78,4 @@ assert(index.includes('./visual-polish-v28.js'));
 const sw=fs.readFileSync('sw.js','utf8');
 assert(sw.includes("'./visual-polish-v28.css'"));
 assert(sw.includes("'./visual-polish-v28.js'"));
-console.log('PASS: v28 obstacle, road, environment, label, FX and lighting polish hooks are active');
+console.log('PASS: v28 active obstacle renderer, road/environment detail, label fade, particles and lighting polish are wired without duplicate geometry');
