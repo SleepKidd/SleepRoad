@@ -36,27 +36,21 @@
   };
 
   A._fadeBossTrack=function(active){
+    active=!!active;
     if(!this.enabled){
       if(this._bossTrackSource){try{this._bossTrackSource.stop();}catch{}}
-      this._bossTrackSource=null;this._bossTrackGain=null;this._externalBossActive=false;return;
+      this._bossTrackSource=null;this._bossTrackGain=null;this._externalBossActive=false;this._bossTrackWanted=false;return;
     }
-    if(active){
-      this._externalBossActive=true;
-      if(!this._bossTrackBuffer){this._loadBossTrack();return;}
-      if(!this._startBossTrack())return;
-      const t=this.ac.currentTime;
-      this._bossTrackGain.gain.cancelScheduledValues(t);
-      this._bossTrackGain.gain.setValueAtTime(Math.max(.0001,this._bossTrackGain.gain.value||.0001),t);
-      this._bossTrackGain.gain.exponentialRampToValueAtTime(TRACK_GAIN,t+.28);
-    }else{
-      this._externalBossActive=false;
-      if(this._bossTrackGain&&this.ac){
-        const t=this.ac.currentTime;
-        this._bossTrackGain.gain.cancelScheduledValues(t);
-        this._bossTrackGain.gain.setValueAtTime(Math.max(.0001,this._bossTrackGain.gain.value||.0001),t);
-        this._bossTrackGain.gain.exponentialRampToValueAtTime(.0001,t+.46);
-      }
-    }
+    this._externalBossActive=active;
+    if(active&&!this._bossTrackBuffer){this._bossTrackWanted=true;this._loadBossTrack();return;}
+    if(active&&!this._bossTrackSource&&!this._startBossTrack())return;
+    if(this._bossTrackWanted===active&&this._bossTrackSource)return;
+    this._bossTrackWanted=active;
+    if(!this._bossTrackGain||!this.ac)return;
+    const t=this.ac.currentTime,gain=this._bossTrackGain.gain;
+    gain.cancelScheduledValues(t);
+    gain.setValueAtTime(Math.max(.0001,gain.value||.0001),t);
+    gain.exponentialRampToValueAtTime(active?TRACK_GAIN:.0001,t+(active?.28:.46));
   };
 
   A.musicStep=function(...args){
