@@ -71,23 +71,20 @@ vm.runInThisContext(src,{filename:'experience-v14.js'});
 const V=global.SleepRoadCarHazardV14;
 assert(V);
 assert.equal(V.CAR_CHANCE,1);
-assert.equal(V.SECOND_CAR_CHANCE,.75);
+assert.equal(V.SECOND_CAR_CHANCE,0);
 assert.equal(V.MODEL_TRIANGLES,13110);
 
 for(let level=1;level<=100;level++)assert.equal(V.carEventFor(level),true);
-let doubleCount=0;
-for(let level=1;level<=10000;level++)if(V.doubleCarEventFor(level))doubleCount++;
-assert(doubleCount/10000>.73&&doubleCount/10000<.77);
+for(let level=1;level<=100;level++)assert.equal(V.doubleCarEventFor(level),false);
 
 const oldRandom=Math.random;
 const carGame={level:12,levelLength:320,baseSpeed:9.5,playerZ:1.6,objects:[]};
 Math.random=()=>.50;
-const twoCars=V.makeCars(carGame);
-assert.equal(twoCars.length,2);
-assert(twoCars[0].meetDistance<twoCars[1].meetDistance);
-Math.random=()=>.90;
 const oneCar=V.makeCars(carGame);
 assert.equal(oneCar.length,1);
+assert.equal(oneCar[0].slot,0);
+Math.random=()=>.90;
+assert.equal(V.makeCars(carGame).length,1);
 Math.random=oldRandom;
 
 const calls=[];
@@ -119,7 +116,7 @@ assert.equal(hitGame.tookDamage,true);
 assert(hitGame.knockouts.some(k=>k.vz>=6.8));
 
 for(const token of [
-  'const CAR_CHANCE=1,SECOND_CAR_CHANCE=.75',
+  'const CAR_CHANCE=1,SECOND_CAR_CHANCE=0',
   'CAR_WIDTH=2.65',
   'MODEL_SCALE=.88',
   'MODEL_TRIANGLES=13110',
@@ -154,7 +151,7 @@ assert(index.indexOf('countmaster-character.js')<index.indexOf('systems-v4.js'))
 assert(index.indexOf('pickup-model.js')<index.indexOf('environment-v8.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v44';"));
+assert(sw.includes("const CACHE='sleep-road-v45';"));
 assert(sw.includes('countmaster-character.js'));
 assert(sw.includes('pickup-model.js'));
 assert(!sw.includes('ruby-character-v15.js'));
@@ -164,9 +161,9 @@ assert(!sw.includes('gclass-glb.js'));
 
 const v13=fs.readFileSync('experience-v13.js','utf8');
 assert.doesNotThrow(()=>new Function(v13));
+assert(v13.includes('const side=i%2?-1:1'));
+assert(v13.includes('const x=side*(9.35+(i%3)*.72)'));
+assert(v13.includes('const progress=(g.travel||0)*1.10+g.time*(8.2+i*.18)'));
 assert(v13.includes('E8.drawDecorCar(g,x,z,i,{scale:.68,groundY:ground+.015,yaw:0'));
-assert(v13.includes('const x=4.18+(i%2)*.28'));
-assert(v13.includes('const progress=(g.travel||0)*.38+g.time*(2.4+i*.14)'));
-assert(!v13.includes('const side=i%2?-1:1,z=10-'));
 assert(!v13.includes('1.15,.55,1.8),c,.82'));
-console.log('PASS: original people restored, detailed pickup cars face +Z and approach only in the right lane, x2 hazard remains 75%, cache wiring valid');
+console.log('PASS: decorative pickup traffic stays off-road on both sides and visibly approaches, exactly one collision car stays on-road, cache wiring valid');
