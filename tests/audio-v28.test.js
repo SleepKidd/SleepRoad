@@ -123,7 +123,7 @@ assert(jumpStat.size>6000,'jump audio asset is unexpectedly small');
 assert(jumpHead==='ID3'||jumpHead.charCodeAt(0)===255,'jump audio asset does not look like MP3 data');
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v57';"));
+assert(sw.includes("const CACHE='sleep-road-v58';"));
 assert(sw.includes("'./assets/audio/boss-battle-v28.mp3'"));
 assert(sw.includes("'./assets/audio/car-near-v29.mp3'"));
 assert(sw.includes("'./assets/audio/jump-loop-v30.mp3'"));

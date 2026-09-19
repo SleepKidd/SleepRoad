@@ -163,7 +163,7 @@ assert(index.indexOf('countmaster-character.js')<index.indexOf('systems-v4.js'))
 assert(index.indexOf('pickup-model.js')<index.indexOf('environment-v8.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v57';"));
+assert(sw.includes("const CACHE='sleep-road-v58';"));
 assert(sw.includes('countmaster-character.js'));
 assert(sw.includes('pickup-model.js'));
 assert(!sw.includes('ruby-character-v15.js'));

@@ -111,39 +111,47 @@
     r.draw(m.sphere,compose(x-.48*s,-.27+.22*s,z+.08*s,0,0,-w,.52*s,.44*s,.48*s),c2);
     r.draw(m.sphere,compose(x+.46*s,-.27+.24*s,z-.06*s,0,0,w,.58*s,.48*s,.52*s),c2);
   }
+  function buildTreeMeshes(g){
+    if(g.__treeGpuMeshes)return g.__treeGpuMeshes;
+    if(g.__treeModelDisabled)return[];
+    const asset=window.SleepRoadTreeModel;
+    if(!asset?.meta||typeof asset.expand!=='function')return[];
+    try{
+      const expanded=asset.expand(),groups=expanded?.groups||[];
+      if(groups.length!==2)throw new Error('tree material groups mismatch');
+      let tris=0,verts=0;
+      g.__treeGpuMeshes=groups.map(group=>{
+        const positions=group.positions,normals=group.normals,indices=group.indices;
+        if(!(positions instanceof Float32Array)||!(normals instanceof Float32Array)||!(indices instanceof Uint16Array))throw new Error('tree typed buffers are invalid');
+        if(positions.length!==normals.length||positions.length%3)throw new Error('tree vertex buffer mismatch');
+        if(indices.length!==(group.tris|0)*3)throw new Error('tree triangle count mismatch');
+        verts+=positions.length/3;tris+=indices.length/3;
+        return{mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,name:group.name,tris:group.tris};
+      });
+      if(verts!==(asset.meta.runtimeVerts|0)||tris!==(asset.meta.runtimeTris|0))throw new Error('tree full-resolution geometry mismatch');
+      return g.__treeGpuMeshes;
+    }catch(err){
+      console.error('Sleep Road Tree.blend model disabled:',err);
+      g.__treeModelDisabled=true;
+      return[];
+    }
+  }
+  function drawTreeModel(g,x,z,s=1,tone=0){
+    const parts=buildTreeMeshes(g);if(!parts.length)return false;
+    const yaw=(hash((tone+1)*19.731)-.5)*TAU,ground=-.28;
+    shadow(g,x,z,1.48*s,1.10*s,.18);
+    const model=compose(x,ground,z,0,yaw,0,s,s,s);
+    for(const part of parts)g.renderer.draw(part.mesh,model,part.color,1);
+    return true;
+  }
   function tree(g,x,z,s=1,variant=0,tone=0){
-    const r=g.renderer,m=g.meshes,p=g.biome.palette,wind=Math.sin(g.time*.72+variant*1.7+x*.04+z*.015)*.035,leafA=tone%2?mix(p.groundDark,p.good,.23):mix(p.groundDark,p.ground,.31),leafB=scale(leafA,1.13),leafC=mix(leafA,p.stripe,.09),trunk=tone%2?[.34,.22,.12]:[.29,.19,.11],far=z<-66||Math.abs(x)>25;
-    if(!far)shadow(g,x,z,1.15*s,.66*s,.18);
-    const trunkH=(variant===1?2.7:variant===3?1.65:2.15)*s;
-    r.draw(m.cylinder,compose(x,-.23+trunkH*.48,z,0,0,wind*.35,(far?.19:.24)*s,trunkH,(far?.19:.24)*s),trunk);
-    if(far){
-      if(variant===1)r.draw(m.cone,compose(x,1.40*s,z,0,0,wind,1.30*s,2.35*s,1.30*s),leafA);
-      else r.draw(m.sphere,compose(x,1.05*s,z,0,0,wind,1.25*s,.92*s,1.10*s),leafA);
-      return;
-    }
-    if(variant===0){
-      r.draw(m.sphere,compose(x,.85*s,z,0,0,wind,1.25*s,1.08*s,1.15*s),leafA);
-      r.draw(m.sphere,compose(x-.55*s,1.18*s,z+.03*s,0,0,-wind,.82*s,.72*s,.78*s),leafB);
-      r.draw(m.sphere,compose(x+.55*s,1.12*s,z-.08*s,0,0,wind,.86*s,.75*s,.80*s),leafC);
-    }else if(variant===1){
-      r.draw(m.cone,compose(x,1.25*s,z,0,0,wind,1.55*s,2.75*s,1.55*s),leafA);
-      r.draw(m.cone,compose(x,2.02*s,z,0,0,-wind,1.17*s,2.05*s,1.17*s),leafB);
-    }else if(variant===2){
-      r.draw(m.sphere,compose(x,1.00*s,z,0,0,wind,1.65*s,.80*s,1.30*s),leafA);
-      r.draw(m.sphere,compose(x-.74*s,1.22*s,z,0,0,-wind,.88*s,.72*s,.82*s),leafB);
-      r.draw(m.sphere,compose(x+.74*s,1.20*s,z,0,0,wind,.92*s,.70*s,.84*s),leafC);
-    }else if(variant===3){
-      r.draw(m.sphere,compose(x,.74*s,z,0,0,wind,.92*s,.96*s,.88*s),leafB);
-      r.draw(m.sphere,compose(x,.01*s,1.25*s,z,0,0,-wind,.70*s,.70*s,.66*s),leafC);
-    }else{
-      r.draw(m.sphere,compose(x-.40*s,1.02*s,z,0,0,wind,1.00*s,.88*s,.82*s),leafA);
-      r.draw(m.sphere,compose(x+.48*s,1.07*s,z,0,0,-wind,1.08*s,.91*s,.88*s),leafB);
-      r.draw(m.sphere,compose(x,1.55*s,z,0,0,wind,.82*s,.72*s,.76*s),leafC);
-    }
-    if(envCfg(g).detail>0&&variant!==1){
-      r.draw(m.cylinder,compose(x-.38*s,.52*s,z,0,0,1.00,.09*s,.75*s,.09*s),trunk);
-      r.draw(m.cylinder,compose(x+.35*s,.59*s,z,0,0,-1.02,.085*s,.68*s,.085*s),trunk);
-    }
+    // Never downgrade Tree.blend to a low-poly/far LOD: density may change, mesh quality does not.
+    if(drawTreeModel(g,x,z,s,tone+variant*17))return;
+    // Emergency fallback only if the asset failed to load.
+    const r=g.renderer,m=g.meshes,p=g.biome.palette,leaf=mix(p.groundDark,p.good,.23),trunk=[.29,.19,.11];
+    shadow(g,x,z,1.15*s,.66*s,.18);
+    r.draw(m.cylinder,compose(x,.74*s,z,0,0,0,.24*s,2.15*s,.24*s),trunk);
+    r.draw(m.sphere,compose(x,2.25*s,z,0,0,0,1.25*s,1.08*s,1.15*s),leaf);
   }
 
   const MEADOW_BOUNDS={roadEdge:6.55,grassOuter:15.6,transitionOuter:23.5,terrainOuter:52,grassLength:246,farTerrainStart:24.5};
@@ -334,5 +342,5 @@
     oldRender.call(this);
   };
 
-  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock,buildDecorCarMeshes,drawDecorCar};
+  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock,buildTreeMeshes,drawTreeModel,buildDecorCarMeshes,drawDecorCar};
 })();

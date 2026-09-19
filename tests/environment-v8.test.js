@@ -19,6 +19,28 @@ function Game(){}
 for(const n of ['drawGate','drawObstacle','drawFinishGate','drawFinishScene','render'])Game.prototype[n]=function(){};
 global.SleepRoad3D=Game;
 
+vm.runInThisContext(fs.readFileSync('assets/models/tree-model-v31.js','utf8'),{filename:'tree-model-v31.js'});
+const T=global.SleepRoadTreeModel;
+assert(T);
+assert.equal(T.meta.source,'Tree.blend');
+assert.equal(T.meta.sourceBlendSha256,'9d3a3f2b0c472629adb8061f79b16c13741506eb078662a3b0be2cc5dcb84dc7');
+assert.equal(T.meta.sourceObjects,7);
+assert.equal(T.meta.sourceVerts,480);
+assert.equal(T.meta.sourcePolygons,684);
+assert.equal(T.meta.runtimeVerts,1548);
+assert.equal(T.meta.runtimeTris,912);
+assert(T.meta.geometry.includes('no decimation'));
+const expanded=T.expand();
+assert.equal(expanded.groups.length,2);
+assert.equal(expanded.groups.reduce((n,g)=>n+g.positions.length/3,0),1548);
+assert.equal(expanded.groups.reduce((n,g)=>n+g.indices.length/3,0),912);
+for(const group of expanded.groups){
+  assert(group.positions instanceof Float32Array);
+  assert(group.normals instanceof Float32Array);
+  assert(group.indices instanceof Uint16Array);
+  assert.equal(group.positions.length,group.normals.length);
+}
+
 vm.runInThisContext(fs.readFileSync('environment-v8.js','utf8'),{filename:'environment-v8.js'});
 const E=global.SleepRoadEnvironmentV8;
 assert(E);
@@ -44,6 +66,10 @@ assert(E.MEADOW_BOUNDS.grassLength<250);
 assert(high.detail>medium.detail&&medium.detail>low.detail);
 const envSrc=fs.readFileSync('environment-v8.js','utf8');
 assert(envSrc.includes('DECOR_CAR_COLORS'));
+assert(envSrc.includes('buildTreeMeshes'));
+assert(envSrc.includes('drawTreeModel'));
+assert(envSrc.includes('Never downgrade Tree.blend'));
+assert(!envSrc.includes("const r=g.renderer,m=g.meshes,p=g.biome.palette,wind=Math.sin(g.time*.72"),'old procedural tree implementation must be replaced');
 assert(envSrc.includes("part.name==='car_main'?bodyTint:part.color"));
 assert(envSrc.includes('Math.floor(hash((index+1)*31.731)*DECOR_CAR_COLORS.length)'));
 assert(!envSrc.includes('Math.floor(z*.1)'),'decorative car color must not change with position/time');
@@ -62,5 +88,5 @@ assert(css.includes('.mission-hud'));
 assert(css.includes('--hud-accent'));
 assert(css.includes('.crowd-count'));
 
-for(const file of ['environment-v8.js','engine.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: environment v8, stable non-blue/non-purple decorative car colors, adaptive density and syntax');
+for(const file of ['assets/models/tree-model-v31.js','environment-v8.js','engine.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
+console.log('PASS: full-resolution Tree.blend geometry, environment v8 tree integration, decorative car colors, adaptive density and syntax');
