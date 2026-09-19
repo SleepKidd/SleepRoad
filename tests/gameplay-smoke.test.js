@@ -66,7 +66,7 @@ const generatedKinds=new Set(),collisionBatch=new systems.CrowdBatch({},{});
 for(let level=1;level<=100;level++){
   const levelState=Object.assign(Object.create(game),{level,time:0,playerX:0,playerZ:1.6,playerCount:80,baseSpeed:9,objects:[]});
   game.generateLevel.call(levelState,level);
-  assert(levelState.levelLength>500);
+  assert(levelState.levelLength>360);
   assert(levelState.objects.length<420);
   assert(levelState.objects.every((item,index,list)=>index===0||list[index-1].distance<=item.distance));
   const finish=levelState.objects.filter(item=>item.type==='finish');
@@ -77,15 +77,15 @@ for(let level=1;level<=100;level++){
     for(const opt of [gate.left,gate.right])assert(['add','sub','mul','div'].includes(opt.op));
   }
   const bosses=levelState.objects.filter(item=>item.type==='enemy'&&item.boss);
-  assert.equal(bosses.length,level%10===0?1:0);
+  assert.equal(bosses.length,1);
   for(const obstacle of levelState.objects.filter(item=>item.type==='obstacle')){
     generatedKinds.add(obstacle.kind);
     const hits=game.obstacleHits.call(levelState,obstacle,collisionBatch.formation(80));
     assert(Number.isInteger(hits)&&hits>=0&&hits<=80);
   }
 }
-assert(generatedKinds.size>=15);
-for(const kind of ['movingWall','fallingBlock','fireline'])assert(generatedKinds.has(kind));
+assert(generatedKinds.size>=19);
+for(const kind of ['movingWall','fallingBlock','fireline','bladePair','slamGate','slalom','shockwave'])assert(generatedKinds.has(kind));
 
 for(let count=1;count<=999;count+=7){
   const step=systems.finishStepForCount(count);
@@ -149,4 +149,4 @@ game.update.call(timedUpdate,1);
 assert.equal(timedUpdate.levelTimeRemaining,20,'timer must freeze immediately when timed mission objective is complete');
 assert.notEqual(timedUpdate.state,'failed');
 
-console.log('PASS: model, Level Director, 15+ obstacles, crowd pickup, income, timed mission latch/freeze, finish multiplier');
+console.log('PASS: model, shorter/harder Level Director, 19+ obstacle kinds, crowd pickup, income, timed mission latch/freeze, finish multiplier');

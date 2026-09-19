@@ -40,6 +40,10 @@ assert(D.profileForLevel(200).intensity>1);
 assert(D.profileForLevel(200).sections>=D.profileForLevel(50).sections);
 assert(D.profileForLevel(51).sections>=D.profileForLevel(50).sections);
 assert(D.profileForLevel(51).baseSpeed>=D.profileForLevel(50).baseSpeed);
+assert(D.profileForLevel(1).sections<=8);
+assert(D.profileForLevel(10).sections<D.profileForLevel(9).sections,'boss run should trim pre-boss sections');
+assert.equal(D.profileForLevel(9).finalBoss,true);
+assert.equal(D.profileForLevel(10).finalBoss,true);
 assert(D.obstaclePool(D.profileForLevel(51)).includes('fireline'));
 assert(D.obstaclePool(D.profileForLevel(51)).includes('spinner'));
 const timedProfile=D.profileForLevel(14);
@@ -55,11 +59,13 @@ for(let level=1;level<=500;level++){
   seenBiomes.add(state.biome.id);maxObjects=Math.max(maxObjects,state.objects.length);
   sawTimed ||= state.profile.timed;sawNoHit ||= state.profile.noHit;sawBonus ||= state.profile.bonusLevel;
   for(const obj of state.objects){seenTypes.add(obj.type);if(obj.type==='zone')seenZones.add(obj.kind);if(obj.type==='powerup')seenPowerups.add(obj.kind);}
-  assert(state.levelLength>500,`level ${level} too short`);
+  assert(state.levelLength>360,`level ${level} unexpectedly short`);
   assert(state.objects.length<420,`level ${level} object budget exceeded`);
   assert(state.objects.every((item,index,list)=>index===0||list[index-1].distance<=item.distance),`level ${level} is not sorted`);
+  const major=state.objects.filter(o=>['gate','obstacle','enemy','split','merge','jump','zone','rescue','bonusGate','finish'].includes(o.type));
+  for(let j=1;j<major.length;j++)assert(major[j].distance-major[j-1].distance>=2.5,`level ${level} stacks major objects too tightly`);
   const finish=state.objects.filter(x=>x.type==='finish');assert.equal(finish.length,1);assert.equal(finish[0].distance,state.levelLength);
-  const boss=state.objects.filter(x=>x.type==='enemy'&&x.boss);assert.equal(boss.length,level%10===0?1:0,`boss rule broken on ${level}`);
+  const boss=state.objects.filter(x=>x.type==='enemy'&&x.boss);assert.equal(boss.length,1,`boss rule broken on ${level}`);
   for(const o of state.objects.filter(x=>x.type==='obstacle')){
     seenKinds.add(o.kind);let safe=false;
     for(const t of [0,.5,1,1.5,2.25]){state.time=t;for(const x of [-4,-3.1,-2,0,2,3.1,4]){state.playerX=x;const hits=game.obstacleHits.call(state,o,batch.formation(1));assert(Number.isInteger(hits)&&hits>=0&&hits<=1);if(hits===0){safe=true;break;}}if(safe)break;}
@@ -74,7 +80,7 @@ for(const type of ['rescue','jump','split','merge','bonusGate','powerup','zone']
 for(const zone of ['boost','slow'])assert(seenZones.has(zone),`missing zone ${zone}`);
 for(const power of ['shield','magnet','double','invuln'])assert(seenPowerups.has(power),`missing powerup ${power}`);
 assert(sawTimed&&sawNoHit&&sawBonus,'special level profiles did not appear');
-for(const required of ['movingWall','fallingBlock','fireline','laser','pendulum','crusher','hammer','roller','saw','mines'])assert(seenKinds.has(required),`missing ${required}`);
+for(const required of ['movingWall','fallingBlock','fireline','laser','pendulum','crusher','hammer','roller','saw','mines','bladePair','slamGate','slalom','shockwave'])assert(seenKinds.has(required),`missing ${required}`);
 for(const level of [10,20,30,40,50,60,100]){const p=D.profileForLevel(level);assert(p.bossLevel);assert(D.bossName(level));assert(D.bossStrength(level,p.sections)>0);}
 assert(maxObjects<420);
 
@@ -100,4 +106,4 @@ for(let level=1;level<=500;level++){
     else if(o.type==='enemy'){count=surviveEnemy(count,o);assert(count>0,`level ${level} has a forced enemy defeat on an ideal route`);}
   }
 }
-console.log(`PASS: Level Director 1-500, ${seenKinds.size} obstacle kinds, max ${maxObjects} objects`);
+console.log(`PASS: shorter/harder Level Director 1-500, ${seenKinds.size} obstacle kinds, max ${maxObjects} objects`);

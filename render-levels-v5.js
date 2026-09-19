@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const S=window.SleepRoadSystems,{compose,UI,COLORS,clamp,lerp,isGoodGate,gateLabel}=S,P=window.SleepRoad3D.prototype;
+  const S=window.SleepRoadSystems,{compose,UI,COLORS,clamp,lerp,isGoodGate,gateLabel}=S,P=window.SleepRoad3D.prototype,mixColor=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
   P.render=function(){this.setCamera();const p=this.biome?.palette||{sky:[.48,.73,.94]};if(this.biome?.lightDir)this.renderer.lightDir=this.biome.lightDir.slice();this.renderer.clear(p.sky[0],p.sky[1],p.sky[2],1);this.beginLabels();this.drawEnvironment();if(this.state==='finish'||this.state==='complete')this.drawFinishScene();else this.drawCourse();this.drawKnockouts();this.endLabels();this.updateCrowdLabel();UI.canvas.style.filter=this.flash>0?`brightness(${1+this.flash*.82}) saturate(${1+this.flash*.52})`:'none';};
   P.drawEnvironment=function(){const r=this.renderer,m=this.meshes,b=this.biome,p=b.palette,span=286,wrap=v=>((v%span)+span)%span;r.draw(m.box,compose(0,-.72,-122,0,0,0,80,.9,286),p.ground);r.draw(m.box,compose(0,-.22,-122,0,0,0,12,.45,286),p.road);r.draw(m.box,compose(-6.18,-.02,-122,0,0,0,.34,.55,286),p.roadEdge);r.draw(m.box,compose(6.18,-.02,-122,0,0,0,.34,.55,286),p.roadEdge);r.draw(m.box,compose(-5.77,.025,-122,0,0,0,.10,.06,286),p.accent);r.draw(m.box,compose(5.77,.025,-122,0,0,0,.10,.06,286),p.accent);for(let i=0;i<35;i++){const z=10-wrap(i*8.35-this.travel);r.draw(m.box,compose(0,.025,z,0,0,0,.15,.045,3.0),p.stripe);}for(let i=0;i<18;i++){const z=10-wrap(i*15.4-this.travel*.96),side=i%2?-1:1,x=side*(8.2+(i%4)*2.7);this.drawBiomeDecor(b.decor,x,z,i,p);}for(let i=0;i<14;i++){const z=8-wrap(i*19.2-this.travel*.98),side=i%2?-1:1,x=side*6.72;r.draw(m.cylinder,compose(x,.47,z,0,0,0,.10,.84,.10),p.roadEdge);r.draw(m.box,compose(x,.63,z,0,0,0,.24,.22,.16),i%3?p.bad:p.accent);}};
   P.drawBiomeDecor=function(kind,x,z,i,p){const r=this.renderer,m=this.meshes;if(kind==='trees'){const s=.62+(i%4)*.13;r.draw(m.cylinder,compose(x,.35*s,z,0,0,0,.30*s,1.5*s,.30*s),[.31,.21,.12]);r.draw(m.cone,compose(x,1.50*s,z,0,0,0,1.45*s,2.55*s,1.45*s),i%3?p.groundDark:[.18,.45,.27]);if(i%4===0)r.draw(m.cone,compose(x+(x<0?-1:1)*1.2,.23,z-1.4,0,0,0,.55,.85,.55),p.structure);return;}if(kind==='desert'){if(i%3===0){r.draw(m.cylinder,compose(x,.70,z,0,0,0,.26,1.4,.26),[.16,.45,.25]);r.draw(m.cylinder,compose(x+(x<0?-.35:.35),.85,z,0,0,Math.PI/2,.18,.70,.18),[.16,.45,.25]);}else r.draw(m.sphere,compose(x,.28,z,0,0,0,1.2,.55,.9),i%2?[.55,.34,.19]:[.67,.43,.24]);return;}if(kind==='factory'){const h=2.5+(i%4)*1.25;r.draw(m.box,compose(x,h*.5-.1,z,0,0,0,2.2,h,2.2),i%2?[.27,.29,.31]:[.34,.35,.36]);if(i%3===0){r.draw(m.cylinder,compose(x+(x<0?-1.5:1.5),2.0,z-.3,0,0,0,.48,4.2,.48),[.24,.24,.26]);r.draw(m.sphere,compose(x+(x<0?-1.5:1.5),4.0,z-.3,0,0,0,.52,.22,.52),p.stripe);}return;}if(kind==='city'){const h=4+(i%5)*1.8;r.draw(m.box,compose(x,h*.5-.15,z,0,0,0,3.3,h,3.3),i%2?[.08,.10,.19]:[.12,.14,.24]);for(let y=1;y<h-1;y+=1.4)r.draw(m.box,compose(x+(x<0?1.68:-1.68),y,z,0,0,0,.08,.36,.58),i%3?p.accent:[.95,.42,.78]);return;}const h=2.2+(i%4)*.8;r.draw(m.cylinder,compose(x,h*.5,z,0,0,0,.22,h,.22),p.structure);r.draw(m.sphere,compose(x,h+.2,z,0,0,0,.48,.48,.48),i%2?p.accent:p.good);r.draw(m.box,compose(x,h*.58,z,0,0,i*.4,.14,2.2,.55),i%2?[.20,.78,1]:[.95,.24,.76]);};
@@ -14,11 +14,55 @@
   P.drawSplit=function(o,z){const r=this.renderer,m=this.meshes,p=this.biome.palette;for(const[x,value]of[[-2.55,o.leftRatio],[2.55,o.rightRatio]]){r.draw(m.box,compose(x,1.25,z,0,0,0,4.8,2.2,.24),p.structure);this.addWorldLabel([x,1.35,z+.18],`${Math.round(value*100)}%`,'step');}this.addWorldLabel([0,3.0,z],'РАЗДЕЛЕНИЕ','powerup');};
   P.drawMerge=function(o,z){const r=this.renderer,m=this.meshes,p=this.biome.palette;r.draw(m.box,compose(-5.0,1.6,z,0,0,0,.35,3.2,.35),p.good);r.draw(m.box,compose(5.0,1.6,z,0,0,0,.35,3.2,.35),p.good);r.draw(m.box,compose(0,3.0,z,0,0,0,10.3,.35,.35),p.good);this.addWorldLabel([0,2.2,z],'ОБЪЕДИНЕНИЕ','good');};
   const oldDrawObstacle=P.drawObstacle;
-  P.drawObstacle=function(o,z){if(o.kind==='movingWall')this.drawMovingWall(o,z);else if(o.kind==='fallingBlock')this.drawFallingBlock(o,z);else if(o.kind==='fireline')this.drawFireline(o,z);else oldDrawObstacle.call(this,o,z);};
+  P.drawObstacle=function(o,z){
+    if(o.kind==='movingWall')this.drawMovingWall(o,z);
+    else if(o.kind==='fallingBlock')this.drawFallingBlock(o,z);
+    else if(o.kind==='fireline')this.drawFireline(o,z);
+    else if(o.kind==='bladePair')this.drawBladePair(o,z);
+    else if(o.kind==='slamGate')this.drawSlamGate(o,z);
+    else if(o.kind==='slalom')this.drawSlalom(o,z);
+    else if(o.kind==='shockwave')this.drawShockwave(o,z);
+    else oldDrawObstacle.call(this,o,z);
+  };
   P.drawLaser=function(o,z){const r=this.renderer,m=this.meshes,a=this.time*(o.speed||1)+(o.phase||0),safeX=o.dynamic?Math.sin(a)*3.05:o.safeX,leftEnd=safeX-1.05,rightStart=safeX+1.05;r.draw(m.box,compose(-5.25,.82,z,0,0,0,.46,1.62,.55),COLORS.purple);r.draw(m.box,compose(5.25,.82,z,0,0,0,.46,1.62,.55),COLORS.purple);r.draw(m.sphere,compose(-5.25,1.20,z-.30,0,0,0,.24,.24,.24),COLORS.red);r.draw(m.sphere,compose(5.25,1.20,z-.30,0,0,0,.24,.24,.24),COLORS.red);if(leftEnd>-5.05)r.draw(m.box,compose((-5.05+leftEnd)/2,.72,z,0,0,0,leftEnd+5.05,.12,.12),[1,.08,.12]);if(rightStart<5.05)r.draw(m.box,compose((rightStart+5.05)/2,.72,z,0,0,0,5.05-rightStart,.12,.12),[1,.08,.12]);this.addWorldLabel([safeX,1.85,z],'БЕЗОПАСНО','good');};
   P.drawMovingWall=function(o,z){const a=this.time*o.speed+o.phase,gapX=Math.sin(a)*3.05,g=o.gapWidth||1.45,leftEnd=gapX-g,rightStart=gapX+g,r=this.renderer,m=this.meshes,p=this.biome.palette;if(leftEnd>-5.2){const w=leftEnd+5.2;r.draw(m.box,compose(-5.2+w/2,.9,z,0,0,0,w,1.8,.58),p.structure);}if(rightStart<5.2){const w=5.2-rightStart;r.draw(m.box,compose(rightStart+w/2,.9,z,0,0,0,w,1.8,.58),p.structure);}r.draw(m.box,compose(gapX,1.7,z,0,0,0,g*2,.16,.65),p.accent);this.addWorldLabel([gapX,2.12,z],'ПРОХОД','good');};
   P.drawFallingBlock=function(o,z){const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,p=this.biome.palette;for(let i=0;i<o.blockXs.length;i++){const down=Math.sin(a+i*1.35)>.05,y=down?.82:3.35;r.draw(m.box,compose(o.blockXs[i],y,z,0,0,0,1.25,1.5,1.05),i%2?p.bad:p.accent);r.draw(m.box,compose(o.blockXs[i],4.3,z,0,0,0,.15,1.9,.15),p.structure);}this.addWorldLabel([0,4.0,z],'ПАДАЮЩИЕ БЛОКИ','bad');};
   P.drawFireline=function(o,z){const a=this.time*o.speed+o.phase,gapX=Math.sin(a)*3.05,g=o.gapWidth||1.2,leftEnd=gapX-g,rightStart=gapX+g,r=this.renderer,m=this.meshes;if(leftEnd>-5.1){const w=leftEnd+5.1;r.draw(m.box,compose(-5.1+w/2,.12,z,0,0,0,w,.22,.75),[1,.18,.05]);}if(rightStart<5.1){const w=5.1-rightStart;r.draw(m.box,compose(rightStart+w/2,.12,z,0,0,0,w,.22,.75),[1,.18,.05]);}for(let i=-5;i<=5;i++){if(Math.abs(i-gapX)<g)continue;const flame=.35+Math.abs(Math.sin(this.time*7+i))*.45;r.draw(m.cone,compose(i,.22+flame*.5,z,0,0,0,.28,flame,.28),i%2?COLORS.orange:COLORS.red);}this.addWorldLabel([gapX,1.35,z],'ОГОНЬ','bad');};
+  P.drawBladePair=function(o,z){
+    const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,p=this.biome.palette,centers=[-2.65+Math.sin(a)*o.range,2.65-Math.sin(a*1.13+1.15)*o.range];
+    r.draw(m.box,compose(0,.045,z,0,0,0,10.1,.07,.20),p.structure,.92);
+    for(let i=0;i<2;i++){
+      const x=centers[i],spin=this.time*(i?6.0:-6.5);
+      r.draw(m.cylinder,compose(x,.58,z,Math.PI/2,0,spin,1.02,.18,1.02),i?p.accent:p.bad);
+      for(let k=0;k<10;k++){const t=k*Math.PI/5+spin;r.draw(m.cone,compose(x+Math.cos(t)*.93,.58+Math.sin(t)*.93,z,0,0,-t,.24,.43,.24),i?p.accent:p.bad);}
+      r.draw(m.cylinder,compose(x,.58,z+.10,Math.PI/2,0,0,.31,.23,.31),COLORS.white);
+    }
+  };
+  P.drawSlamGate=function(o,z){
+    const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,p=this.biome.palette,lanes=o.lanes||[-3.15,0,3.15];
+    r.draw(m.box,compose(0,4.05,z,0,0,0,10.6,.28,.42),p.structure);
+    for(let i=0;i<lanes.length;i++){
+      const down=Math.sin(a+i*2.15)>.18,y=down?1.05:3.35,c=i%2?p.accent:p.bad;
+      r.draw(m.box,compose(lanes[i],y,z,0,0,0,1.48,2.05,.82),c,.97);
+      r.draw(m.box,compose(lanes[i],4.0,z,0,0,0,.18,1.95,.18),p.structure);
+      r.draw(m.box,compose(lanes[i],down?2.0:2.35,z-.44,0,0,0,1.05,.15,.08),COLORS.white);
+    }
+    this.addWorldLabel([0,4.45,z],'ПРЕССЫ','bad');
+  };
+  P.drawSlalom=function(o,z){
+    const r=this.renderer,m=this.meshes,p=this.biome.palette,safe=o.safeX,leftEnd=safe-1.08,rightStart=safe+1.08;
+    if(leftEnd>-5.0){const w=leftEnd+5.0;r.draw(m.box,compose(-5+w/2,.62,z,0,0,.10,w,1.20,.62),p.bad);}
+    if(rightStart<5.0){const w=5.0-rightStart;r.draw(m.box,compose(rightStart+w/2,.62,z,0,0,-.10,w,1.20,.62),p.accent);}
+    for(const x of[-4.7,-2.35,0,2.35,4.7])if(Math.abs(x-safe)>1.25)r.draw(m.cone,compose(x,1.32,z-.18,0,0,0,.30,.72,.30),COLORS.white);
+    this.addWorldLabel([safe,1.75,z],'КОРИДОР','good');
+  };
+  P.drawShockwave=function(o,z){
+    const a=this.time*o.speed+o.phase,active=Math.sin(a)>.06,r=this.renderer,m=this.meshes,p=this.biome.palette,safe=o.safeX,g=1.05,leftEnd=safe-g,rightStart=safe+g,c=active?[1,.24,.08]:mixColor(p.accent,COLORS.white,.35);
+    if(leftEnd>-5.15){const w=leftEnd+5.15;r.draw(m.box,compose(-5.15+w/2,.08,z,0,0,0,w,.12,1.10),c,active?.96:.45);}
+    if(rightStart<5.15){const w=5.15-rightStart;r.draw(m.box,compose(rightStart+w/2,.08,z,0,0,0,5.15-rightStart,.12,1.10),c,active?.96:.45);}
+    for(let i=-5;i<=5;i++){if(Math.abs(i-safe)<g)continue;const h=active?.50:.22;r.draw(m.cone,compose(i,.10+h*.5,z,0,0,0,.23,h,.23),active?COLORS.orange:p.accent,active?.92:.52);}
+    this.addWorldLabel([safe,.92,z],active?'ВОЛНА!':'ГОТОВЬСЯ','bad');
+  };
   P.drawEnemy=function(o,z){
     const c=o.boss?(o.majorBoss?[1,.30,.08]:[.94,.24,.18]):o.elite?[.72,.10,.72]:[.91,.24,.34];
     if(o.boss){
