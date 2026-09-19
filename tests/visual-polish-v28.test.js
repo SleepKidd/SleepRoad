@@ -10,6 +10,7 @@ const labels=[];
 Game.prototype.drawEnvironment=function(){this.__oldEnv=true;};
 Game.prototype.update=function(){};
 Game.prototype.drawObstacle=function(){};
+Game.prototype.hitObstacle=function(){return{damage:true,contact:true}};
 Game.prototype.addWorldLabel=function(pos,text,type){this.labels.push({style:{},pos,text,type});this.labelCursor++;};
 const window={
   SleepRoad3D:Game,
@@ -49,6 +50,7 @@ assert.equal(g.labelCursor,1);assert(Number(g.labels[0].style.opacity)>.2);asser
 
 P.drawObstacle.call(g,{kind:'saw'},-9);
 assert(calls.length>before,'obstacle wrapper should keep drawing and add grounded shadow');
+const particlesBefore=g.v6Particles.length;P.hitObstacle.call(g,{kind:'saw'},false);assert(g.v6Particles.length>=particlesBefore+10,'damaging obstacle hit should emit metallic sparks');
 
 const css=fs.readFileSync('visual-polish-v28.css','utf8');
 assert(css.includes('.world-label.bad:before'));
