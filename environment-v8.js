@@ -104,6 +104,42 @@
       r.draw(part.mesh,model,color,part.alpha);
     }
   }
+  const COFFEE_HOUSE_DECOR={x:19,scale:.82,span:310,offset:112,travelFactor:.956,yaw:-.22};
+  function buildCoffeeHouseMeshes(g){
+    if(g.__coffeeHouseGpuMeshes)return g.__coffeeHouseGpuMeshes;
+    if(g.__coffeeHouseModelDisabled)return[];
+    const asset=window.SleepRoadCoffeeHouseModel;
+    if(!asset?.ready||typeof asset.expand!=='function')return[];
+    try{
+      const expanded=asset.expand(),positions=expanded.positions,normals=expanded.normals,groups=expanded.groups||[];
+      if(!(positions instanceof Float32Array)||!(normals instanceof Float32Array)||positions.length!==normals.length)throw new Error('coffee-house vertex buffers are invalid');
+      if(positions.length!==(asset.meta.runtimeVerts|0)*3)throw new Error('coffee-house vertex count mismatch');
+      let tris=0;
+      g.__coffeeHouseGpuMeshes=groups.map(group=>{
+        const indices=group.indices;
+        if(!(indices instanceof Uint16Array)||indices.length!==(group.tris|0)*3)throw new Error('coffee-house index buffer mismatch: '+group.name);
+        tris+=indices.length/3;
+        return{mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,emissive:group.emissive||0,name:group.name,tris:group.tris};
+      });
+      if(tris!==(asset.meta.runtimeTris|0))throw new Error('coffee-house triangle count mismatch');
+      return g.__coffeeHouseGpuMeshes;
+    }catch(err){
+      console.error('Sleep Road coffee-house decor disabled:',err);
+      g.__coffeeHouseModelDisabled=true;
+      return[];
+    }
+  }
+  function drawCoffeeHouse(g,x,z,s=COFFEE_HOUSE_DECOR.scale,yaw=COFFEE_HOUSE_DECOR.yaw){
+    const parts=buildCoffeeHouseMeshes(g);if(!parts.length)return false;
+    shadow(g,x,z,4.2*s,3.6*s,.18);
+    const model=compose(x,-.28,z,0,yaw,0,s,s,s);
+    for(const part of parts){
+      let color=part.color;
+      if(part.emissive>0)color=color.map(v=>clamp(v*(1+part.emissive*.25)+part.emissive*.07,0,1));
+      g.renderer.draw(part.mesh,model,color,1);
+    }
+    return true;
+  }
   function bush(g,x,z,s=1,tone=0){
     const r=g.renderer,m=g.meshes,p=g.biome.palette,c1=tone%2?mix(p.groundDark,p.good,.17):mix(p.groundDark,p.ground,.35),c2=scale(c1,1.10),w=Math.sin(g.time*1.35+x*.1+z*.03)*.035;
     shadow(g,x,z,.82*s,.52*s,.13);
@@ -155,6 +191,7 @@
   }
 
   const MEADOW_BOUNDS={roadEdge:6.55,grassOuter:15.6,transitionOuter:23.5,terrainOuter:52,grassLength:246,farTerrainStart:24.5};
+  const coffeeHouseRoadClearance=()=>COFFEE_HOUSE_DECOR.x-Math.max(4.073522,4.018871)*COFFEE_HOUSE_DECOR.scale-MEADOW_BOUNDS.roadEdge;
 
   function drawMeadowGround(g,p){
     const r=g.renderer,m=g.meshes,grassZ=-116,grassLength=MEADOW_BOUNDS.grassLength;
@@ -239,6 +276,9 @@
     for(let i=0;i<bushCount;i++){const z=7-wrap(i*(307/Math.max(1,bushCount))-g.travel*.97+hash(i*5.2)*10,307),side=i%2?-1:1,x=side*(7.8+hash(i*9.7)*4.70),s=.55+hash(i*3.4)*.75;bush(g,x,z,s,i);}
     const treeCount=Math.round(12*cfg.density);
     for(let i=0;i<treeCount;i++){const z=8-wrap(i*(300/Math.max(1,treeCount))-g.travel*.956+hash(i*5.6)*11,300),side=i%2?-1:1,x=side*(10.0+hash(i*8.8)*5.25),s=.66+hash(i*2.1)*.72;tree(g,x,z,s,i%5,i);}
+    // Decorative coffee house: render-only, far outside road/car lanes, no gameplay object or hitbox.
+    const houseZ=8-wrap(COFFEE_HOUSE_DECOR.offset-g.travel*COFFEE_HOUSE_DECOR.travelFactor,COFFEE_HOUSE_DECOR.span);
+    drawCoffeeHouse(g,COFFEE_HOUSE_DECOR.x,houseZ);
     if(cfg.detail>0){
       const flowerCount=Math.round(16*cfg.density);for(let i=0;i<flowerCount;i++){const z=7-wrap(i*(300/flowerCount)-g.travel*.986+hash(i*7.1)*8,300),side=i%2?-1:1,x=side*(6.45+hash(i*4.5)*3.45);flower(g,x,z,.65+hash(i)*.5,i);}
       const rockCount=Math.round(8*cfg.density);for(let i=0;i<rockCount;i++){const z=5-wrap(i*(304/rockCount)-g.travel*.97+hash(i*8.1)*13,304),side=i%2?-1:1,x=side*(7.7+hash(i*3.2)*5.2);rock(g,x,z,.5+hash(i*6.1)*.55,i);}
@@ -342,5 +382,5 @@
     oldRender.call(this);
   };
 
-  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,envCfg,hash,tree,bush,grassTuft,flower,rock,buildTreeMeshes,drawTreeModel,buildDecorCarMeshes,drawDecorCar};
+  window.SleepRoadEnvironmentV8={MEADOW_BOUNDS,COFFEE_HOUSE_DECOR,coffeeHouseRoadClearance,envCfg,hash,tree,bush,grassTuft,flower,rock,buildCoffeeHouseMeshes,drawCoffeeHouse,buildTreeMeshes,drawTreeModel,buildDecorCarMeshes,drawDecorCar};
 })();

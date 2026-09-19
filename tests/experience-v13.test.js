@@ -108,7 +108,7 @@ const polish=fs.readFileSync('polish-v6.js','utf8');assert(polish.includes("cycl
 const v11=fs.readFileSync('experience-v11.js','utf8');assert(v11.includes("attackCycle=e.v13Phase>=3?13:e.v13Phase>=2?15:18"));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v58';"));
+assert(sw.includes("const CACHE='sleep-road-v59';"));
 assert(sw.includes("'./experience-v13.js'"));
 
 console.log('PASS: Experience v13 boss AI/phases/death, crowd feel, elevation, setpieces, living world, destruction, reflections and Rare Run v2');

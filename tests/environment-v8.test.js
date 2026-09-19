@@ -41,6 +41,24 @@ for(const group of expanded.groups){
   assert.equal(group.positions.length,group.normals.length);
 }
 
+const houseLoader=fs.readFileSync('assets/models/coffee-house-model-v32.js','utf8');
+assert.doesNotThrow(()=>new Function(houseLoader));
+for(const part of ['data0','data1','data2']){
+  const file=`assets/models/coffee-house-v32-${part}.js`;
+  const chunk=fs.readFileSync(file,'utf8');
+  assert.doesNotThrow(()=>new Function(chunk),file);
+}
+assert(houseLoader.includes('"source":"untitled1.blend"'));
+assert(houseLoader.includes('"sourceArchive":"кофедом.zip"'));
+assert(houseLoader.includes('"sourceBlendSha256":"0b58f54cdcfd9ccfb608d5d75905d89e821ec40c7dadbd10424ca4f2fa5e8d79"'));
+assert(houseLoader.includes('"sourceObjects":18'));
+assert(houseLoader.includes('"sourceVerts":924'));
+assert(houseLoader.includes('"sourcePolygons":844'));
+assert(houseLoader.includes('"runtimeTris":1736'));
+assert(houseLoader.includes('"materialGroups":9'));
+assert(houseLoader.includes('"collision":false'));
+assert(houseLoader.includes('packed.length!==17532'));
+
 vm.runInThisContext(fs.readFileSync('environment-v8.js','utf8'),{filename:'environment-v8.js'});
 const E=global.SleepRoadEnvironmentV8;
 assert(E);
@@ -63,11 +81,19 @@ assert(E.MEADOW_BOUNDS.transitionOuter>E.MEADOW_BOUNDS.grassOuter);
 assert(E.MEADOW_BOUNDS.terrainOuter>=50);
 assert(E.MEADOW_BOUNDS.grassLength<250);
 
+assert(E.COFFEE_HOUSE_DECOR);
+assert.equal(E.COFFEE_HOUSE_DECOR.x,19);
+assert.equal(E.COFFEE_HOUSE_DECOR.scale,.82);
+assert(E.coffeeHouseRoadClearance()>9,'coffee house must remain well outside the road and car lanes');
+
 assert(high.detail>medium.detail&&medium.detail>low.detail);
 const envSrc=fs.readFileSync('environment-v8.js','utf8');
 assert(envSrc.includes('DECOR_CAR_COLORS'));
 assert(envSrc.includes('buildTreeMeshes'));
 assert(envSrc.includes('drawTreeModel'));
+assert(envSrc.includes('buildCoffeeHouseMeshes'));
+assert(envSrc.includes('drawCoffeeHouse'));
+assert(envSrc.includes('no gameplay object or hitbox'));
 assert(envSrc.includes('Never downgrade Tree.blend'));
 assert(!envSrc.includes("const r=g.renderer,m=g.meshes,p=g.biome.palette,wind=Math.sin(g.time*.72"),'old procedural tree implementation must be replaced');
 assert(envSrc.includes("part.name==='car_main'?bodyTint:part.color"));
@@ -88,5 +114,5 @@ assert(css.includes('.mission-hud'));
 assert(css.includes('--hud-accent'));
 assert(css.includes('.crowd-count'));
 
-for(const file of ['assets/models/tree-model-v31.js','environment-v8.js','engine.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: full-resolution Tree.blend geometry, environment v8 tree integration, decorative car colors, adaptive density and syntax');
+for(const file of ['assets/models/tree-model-v31.js','assets/models/coffee-house-v32-data0.js','assets/models/coffee-house-v32-data1.js','assets/models/coffee-house-v32-data2.js','assets/models/coffee-house-model-v32.js','environment-v8.js','engine.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
+console.log('PASS: Tree.blend + decorative coffee house assets, >9-unit road clearance, environment integration and syntax');
