@@ -43,6 +43,8 @@ assert(levelRender.includes('const goblin=window.SleepRoadGoblinBossV23'));
 assert(levelRender.includes('drawn=!!goblin?.draw(this,o,z)'));
 assert(levelRender.includes('if(!drawn){'));
 assert(levelRender.includes('goblin.labelPosition(this,o,z)'));
+assert(!levelRender.includes('barW=4.8'),'legacy 3D boss HP bar must be removed');
+assert(!levelRender.includes('fillW=Math.max(.06,barW*hp)'),'boss HP fill bar must be removed');
 
 const render=fs.readFileSync('render-v4.js','utf8');
 assert(render.includes('SleepRoadGoblinBossV23?.draw(this,o,z)'));
@@ -57,7 +59,7 @@ assert(!index.includes('boss-goblin-v22.js'));
 assert(index.indexOf('visual-v9.js')<index.indexOf('boss-goblin-v23.js'));
 assert(index.indexOf('boss-goblin-v23.js')<index.indexOf('experience-v11.js'));
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v51';"));
+assert(sw.includes("const CACHE='sleep-road-v52';"));
 assert(sw.includes("'./boss-goblin-v23.js'"));
 assert(!sw.includes('goblin-boss-v22.js'));
 assert(!sw.includes('boss-goblin-v22.js'));
