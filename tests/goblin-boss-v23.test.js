@@ -1,0 +1,57 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const src=fs.readFileSync('boss-goblin-v23.js','utf8');
+assert.doesNotThrow(()=>new Function(src));
+global.window=global;
+if(typeof global.atob!=='function')global.atob=s=>Buffer.from(s,'base64').toString('binary');
+function Game(){}
+function compose(x=0,y=0,z=0,rx=0,ry=0,rz=0,sx=1,sy=1,sz=1){const m=new Float32Array(16);m[0]=sx;m[5]=sy;m[10]=sz;m[12]=x;m[13]=y;m[14]=z;m[15]=1;return m;}
+global.SleepRoadSystems={compose,clamp:(v,a,b)=>Math.max(a,Math.min(b,v))};
+global.SleepRoad3D=Game;
+global.SleepRoadExperienceV13={elevationAt:()=>.1};
+vm.runInThisContext(src,{filename:'boss-goblin-v23.js'});
+const A=global.SleepRoadGoblinBossAssetV23,B=global.SleepRoadGoblinBossV23;
+assert(A&&B);
+assert.equal(A.meta.source,'Fantasy Goblin Guard Character_basic_shaded.glb');
+assert.equal(A.meta.sourceSha256,'51870802aadab325d6aa386d865df05b290a4154cebe638b73abbee7bbbb5392');
+assert.equal(A.meta.sourceVerts,50205);
+assert.equal(A.meta.sourceTris,40000);
+assert.equal(A.meta.runtimeTris,40000);
+assert.equal(A.meta.drawGroups,48);
+assert(A.meta.geometry.includes('no decimation or triangle removal'));
+assert.equal(A.groups.length,48);
+assert.equal(A.groups.reduce((n,g)=>n+g.tris,0),40000);
+assert.equal(A.groups.reduce((n,g)=>n+g.verts,0),74337);
+assert(!src.includes('._program('),'v23 must use the game renderer instead of a custom shader path');
+assert(src.includes('g.renderer.createMesh(d)'));
+assert(src.includes('g.renderer.draw(part.mesh,model,part.color,alpha)'));
+
+const gl={CULL_FACE:1,isEnabled:()=>true,disable(){},enable(){}};
+const renderer={gl,created:0,draws:0,createMesh(d){this.created++;assert.equal(d.positions.length,d.normals.length);assert.equal(d.indices.length%3,0);let max=0;for(const x of d.indices)if(x>max)max=x;assert(max<d.positions.length/3);return{count:d.indices.length};},draw(){this.draws++;}};
+const g={renderer,meshes:{cylinder:{}},time:1,travel:20,state:'battle'};
+const o={boss:true,bossScale:3.25,v13Phase:2,battleTicks:8,v11AttackType:'punch',v11Stagger:0};
+assert.equal(B.draw(g,o,-8),true);
+assert.equal(renderer.created,48);
+assert.equal(renderer.draws,49);
+const label=B.labelPosition(g,o,-8);
+assert(label[1]>4&&label[2]<-9);
+assert.equal(B.drawCorpse(g,{life:.5,max:1,z:-10,travel:20,scale:3.25}),true);
+
+const render=fs.readFileSync('render-v4.js','utf8');
+assert(render.includes('SleepRoadGoblinBossV23?.draw(this,o,z)'));
+assert(!render.includes('SleepRoadGoblinBossV22'));
+const v11=fs.readFileSync('experience-v11.js','utf8');
+assert(v11.includes('SleepRoadGoblinBossV23?.drawCorpse(g,c)'));
+assert(v11.includes('window.SleepRoadGoblinBossV23&&!g.__goblinBossV23Failed'));
+const index=fs.readFileSync('index.html','utf8');
+assert(index.includes('./boss-goblin-v23.js'));
+assert(!index.includes('goblin-boss-v22.js'));
+assert(!index.includes('boss-goblin-v22.js'));
+assert(index.indexOf('visual-v9.js')<index.indexOf('boss-goblin-v23.js'));
+assert(index.indexOf('boss-goblin-v23.js')<index.indexOf('experience-v11.js'));
+const sw=fs.readFileSync('sw.js','utf8');
+assert(sw.includes("const CACHE='sleep-road-v49';"));
+assert(sw.includes("'./boss-goblin-v23.js'"));
+assert(!sw.includes('goblin-boss-v22.js'));
+assert(!sw.includes('boss-goblin-v22.js'));
+console.log('PASS: shaded goblin v23 uses existing renderer, preserves all 40k source triangles, replaces boss/corpse hooks and cache wiring');
