@@ -92,7 +92,7 @@
   }
   function finalBossStrength(level,section){
     const profile=profileForLevel(level),full=bossStrength(level,section);
-    return profile.bossLevel?full:Math.max(28,Math.round(full*.72));
+    return profile.bossLevel?full:Math.max(28,Math.round(full*.60));
   }
 
   function gateValues(level,rng,risk=false){
