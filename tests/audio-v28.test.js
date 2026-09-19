@@ -102,7 +102,7 @@ assert(carStat.size>9000,'car audio asset is unexpectedly small');
 assert(carHead==='ID3'||carHead.charCodeAt(0)===255,'car audio asset does not look like MP3 data');
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v55';"));
+assert(sw.includes("const CACHE='sleep-road-v56';"));
 assert(sw.includes("'./assets/audio/boss-battle-v28.mp3'"));
 assert(sw.includes("'./assets/audio/car-near-v29.mp3'"));
 assert(sw.includes("'./audio-v28.js'"));

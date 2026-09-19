@@ -78,6 +78,10 @@ for(let level=1;level<=100;level++){
   }
   const bosses=levelState.objects.filter(item=>item.type==='enemy'&&item.boss);
   assert.equal(bosses.length,1);
+  const protections=levelState.objects.filter(item=>item.type==='powerup'&&(item.kind==='shield'||item.kind==='invuln'));
+  assert(protections.length>=Math.floor((levelState.profile.sections+1)/3),'protective pickups should appear regularly');
+  assert(protections.some(item=>item.kind==='shield'),'level must contain shield pickups');
+  assert(protections.some(item=>item.kind==='invuln'),'level must contain invulnerability pickups');
   for(const obstacle of levelState.objects.filter(item=>item.type==='obstacle')){
     generatedKinds.add(obstacle.kind);
     const hits=game.obstacleHits.call(levelState,obstacle,collisionBatch.formation(80));
@@ -149,4 +153,33 @@ game.update.call(timedUpdate,1);
 assert.equal(timedUpdate.levelTimeRemaining,20,'timer must freeze immediately when timed mission objective is complete');
 assert.notEqual(timedUpdate.state,'failed');
 
-console.log('PASS: model, shorter/harder Level Director, 19+ obstacle kinds, crowd pickup, income, timed mission latch/freeze, finish multiplier');
+const protectionState=Object.assign(Object.create(game),{
+  shield:0,invulnTimer:0,time:10,shake:0,flash:0,playerCount:30,visualCount:30,
+  audio:{good(){},battle(){}},toast(){},updateMissionUI(){},setCrowdCount(){},persistSoon(){},
+  save:{moons:0,upgrades:{magnet:0}},levelMoons:0,level:5,baseSpeed:9,speed:0,state:'battle'
+});
+game.collectPowerup.call(protectionState,{kind:'shield'});
+game.collectPowerup.call(protectionState,{kind:'shield'});
+game.collectPowerup.call(protectionState,{kind:'shield'});
+assert.equal(protectionState.shield,2,'shield pickups should stack to two charges');
+game.collectPowerup.call(protectionState,{kind:'invuln'});
+assert.equal(protectionState.invulnTimer,7,'invulnerability should last seven seconds');
+game.collectPowerup.call(protectionState,{kind:'invuln'});
+assert.equal(protectionState.invulnTimer,12,'invulnerability extension should cap at twelve seconds');
+assert.equal(game.tryBlockDamage.call(protectionState,'battle'),true);
+assert.equal(protectionState.shield,2,'invulnerability must block before consuming a shield');
+protectionState.invulnTimer=0;
+assert.equal(game.tryBlockDamage.call(protectionState,'battle'),true);
+assert.equal(protectionState.shield,1,'shield should consume one charge per blocked hit');
+
+protectionState.battleEnemy={boss:true,count:100,maxCount:100,battleTicks:0,name:'BOSS'};
+protectionState.battleTimer=0;protectionState.playerCount=30;protectionState.visualCount=30;protectionState.shield=1;protectionState.invulnTimer=0;
+game.updateBattle.call(protectionState,.17);
+assert.equal(protectionState.playerCount,30,'shield must block boss damage');
+assert.equal(protectionState.shield,0,'boss hit must consume one shield charge');
+protectionState.battleEnemy.battleTicks=0;protectionState.battleTimer=0;protectionState.invulnTimer=2;
+const protectedCount=protectionState.playerCount;
+game.updateBattle.call(protectionState,.17);
+assert.equal(protectionState.playerCount,protectedCount,'invulnerability must block boss damage');
+
+console.log('PASS: model, Level Director, obstacles, pickups, protection frequency, shield/invulnerability coverage, timed mission and finish multiplier');

@@ -86,7 +86,7 @@ assert(index.indexOf('experience-v12.js')>index.indexOf('experience-v11.js'));
 assert(index.indexOf('experience-v12.js')<index.indexOf('boot-v4.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v54';"));
+assert(sw.includes("const CACHE='sleep-road-v56';"));
 assert(sw.includes("'./experience-v12.css'"));
 assert(sw.includes("'./experience-v12.js'"));
 

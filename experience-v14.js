@@ -84,11 +84,16 @@
     for(const q of formation)if(Math.abs((g.playerX||0)+q.x-car.x)<radius)hits++;
     return Math.ceil(hits*count/formation.length);
   }
+  function protectionBlocks(g){
+    if(typeof g.tryBlockDamage==='function')return !!g.tryBlockDamage('car');
+    if((g.invulnTimer||0)>0){g.toast?.('НЕУЯЗВИМОСТЬ БЛОКИРУЕТ МАШИНУ!',650);g.updateMissionUI?.();return true;}
+    if((g.shield||0)>0){g.shield=Math.max(0,(g.shield||0)-1);g.toast?.('ЩИТ СПАС ОТ МАШИНЫ!',950);g.audio?.good?.();g.shake=Math.max(g.shake||0,6);g.flash=Math.max(g.flash||0,.18);g.updateMissionUI?.();return true;}
+    return false;
+  }
   function knockPeople(g,car){
     car.hit=true;const raw=laneHitCount(g,car);
     if(raw<=0){g.toast?.('МАШИНА МИМО!',700);g.audio?.tone?.(390,.06,'triangle',.012,1.25);return 0;}
-    if(g.shield>0){
-      g.shield=0;g.toast?.('ЩИТ СПАС ОТ МАШИНЫ!',950);g.audio?.good?.();g.shake=Math.max(g.shake,6);g.flash=Math.max(g.flash,.18);
+    if(protectionBlocks(g)){
       try{navigator.vibrate?.([18,20,18]);}catch{}return 0;
     }
     const maxLoss=Math.max(1,Math.ceil(g.playerCount*.40)),loss=clamp(raw,1,maxLoss),start=g.knockouts?.length||0;
@@ -177,6 +182,6 @@
   P.drawCourse=function(){const out=oldCourse.call(this);drawCars(this);return out;};
 
   window.SleepRoadCarHazardV14={
-    CAR_CHANCE,SECOND_CAR_CHANCE,LANES,CAR_WIDTH,CAR_LENGTH,MODEL_TRIANGLES,carEventFor,doubleCarEventFor,ensure,makeCar,makeCars,staticCarZ,currentCarZ,laneHitCount,knockPeople,buildCarMeshes
+    CAR_CHANCE,SECOND_CAR_CHANCE,LANES,CAR_WIDTH,CAR_LENGTH,MODEL_TRIANGLES,carEventFor,doubleCarEventFor,ensure,makeCar,makeCars,staticCarZ,currentCarZ,laneHitCount,protectionBlocks,knockPeople,buildCarMeshes
   };
 })();

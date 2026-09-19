@@ -115,6 +115,18 @@ assert(hitGame.playerCount<25);
 assert.equal(hitGame.tookDamage,true);
 assert(hitGame.knockouts.some(k=>k.vz>=6.8));
 
+hitGame.playerCount=25;hitGame.visualCount=25;hitGame.tookDamage=false;hitGame.invulnTimer=5;hitGame.shield=2;
+hitGame.tryBlockDamage=function(source){assert.equal(source,'car');if(this.invulnTimer>0)return true;if(this.shield>0){this.shield--;return true;}return false;};
+const invulnLoss=V.knockPeople(hitGame,{x:0,hit:false});
+assert.equal(invulnLoss,0);
+assert.equal(hitGame.playerCount,25,'invulnerability must block the car');
+assert.equal(hitGame.shield,2,'invulnerability must not consume a shield');
+hitGame.invulnTimer=0;
+const shieldLoss=V.knockPeople(hitGame,{x:0,hit:false});
+assert.equal(shieldLoss,0);
+assert.equal(hitGame.playerCount,25,'shield must block the car');
+assert.equal(hitGame.shield,1,'car must consume exactly one shield charge');
+
 for(const token of [
   'const CAR_CHANCE=1,SECOND_CAR_CHANCE=0',
   'CAR_WIDTH=2.65',
@@ -151,7 +163,7 @@ assert(index.indexOf('countmaster-character.js')<index.indexOf('systems-v4.js'))
 assert(index.indexOf('pickup-model.js')<index.indexOf('environment-v8.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v54';"));
+assert(sw.includes("const CACHE='sleep-road-v56';"));
 assert(sw.includes('countmaster-character.js'));
 assert(sw.includes('pickup-model.js'));
 assert(!sw.includes('ruby-character-v15.js'));

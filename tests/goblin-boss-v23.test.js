@@ -59,7 +59,7 @@ assert(!index.includes('boss-goblin-v22.js'));
 assert(index.indexOf('visual-v9.js')<index.indexOf('boss-goblin-v23.js'));
 assert(index.indexOf('boss-goblin-v23.js')<index.indexOf('experience-v11.js'));
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v54';"));
+assert(sw.includes("const CACHE='sleep-road-v56';"));
 assert(sw.includes("'./boss-goblin-v23.js'"));
 assert(!sw.includes('goblin-boss-v22.js'));
 assert(!sw.includes('boss-goblin-v22.js'));
