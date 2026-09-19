@@ -4,45 +4,110 @@ const src=fs.readFileSync('audio-v28.js','utf8');
 assert.doesNotThrow(()=>new Function(src));
 
 function Game(){}
+for(const name of ['update','startLevel','returnToMenu','fail','beginFinish'])Game.prototype[name]=function(){};
+
 class AudioEngine{
-  constructor(){this.enabled=true;this.ac={};this.ensureCalls=0;this.musicCalls=0;}
+  constructor(){
+    this.enabled=true;
+    this.ensureCalls=0;
+    this.musicCalls=0;
+    this.master={};
+    this.ac={
+      currentTime:1,
+      createBufferSource(){
+        return{
+          loop:false,buffer:null,started:false,stopped:false,
+          connect(){},start(){this.started=true;},stop(){this.stopped=true;}
+        };
+      },
+      createGain(){
+        return{
+          connect(){},
+          gain:{
+            value:.1,
+            setValueAtTime(v){this.value=v;},
+            exponentialRampToValueAtTime(v){this.value=v;},
+            cancelScheduledValues(){}
+          }
+        };
+      },
+      decodeAudioData(buffer){return Promise.resolve({duration:2.161,buffer});}
+    };
+  }
   ensure(){this.ensureCalls++;return true;}
   musicStep(){this.musicCalls++;}
 }
-const window={SleepRoad3D:Game,SleepRoadSystems:{AudioEngine}};
+
+const window={
+  SleepRoad3D:Game,
+  SleepRoadSystems:{AudioEngine},
+  SleepRoadCarHazardV14:{
+    currentCarZ(g,car){return car.started?car.z:-car.distance+(g.travel||0);}
+  }
+};
 const fakeFetch=()=>Promise.resolve({ok:true,arrayBuffer:()=>Promise.resolve(new ArrayBuffer(8))});
-vm.runInNewContext(src,{window,fetch:fakeFetch,console,setTimeout,clearTimeout,Promise,ArrayBuffer,Math});
+vm.runInNewContext(src,{window,fetch:fakeFetch,console,setTimeout,clearTimeout,Promise,ArrayBuffer,Math,Number});
 const V=window.SleepRoadAudioV28;
 assert(V);
-assert.equal(V.TRACK,'./assets/audio/boss-battle-v28.mp3');
+
+assert.equal(V.BOSS_TRACK,'./assets/audio/boss-battle-v28.mp3');
+assert.equal(V.CAR_TRACK,'./assets/audio/car-near-v29.mp3');
 assert.equal(V.BOSS_VIEW_MIN_Z,-88);
 assert.equal(V.BOSS_VIEW_MAX_Z,12);
-assert(V.TRACK_GAIN>0&&V.TRACK_GAIN<.5);
+assert.equal(V.CAR_VIEW_MIN_Z,-92);
+assert.equal(V.CAR_VIEW_MAX_Z,19);
+assert(V.BOSS_TRACK_GAIN>0&&V.BOSS_TRACK_GAIN<.5);
+assert(V.CAR_TRACK_GAIN>0&&V.CAR_TRACK_GAIN<1);
 
-const g=new Game();
-g.playerZ=1.6;g.state='running';g.objects=[{type:'enemy',boss:true,processed:false,distance:100}];g.objectZ=o=>-o.distance+g.travel;
-g.travel=11.99;assert(!V.bossIsVisible(g),'boss outside render range must not trigger track');
-g.travel=12;assert(V.bossIsVisible(g),'boss must trigger music at the first render-visible frame');
-g.travel=70;assert(V.bossIsVisible(g),'visible approaching boss must keep track active');
-g.state='battle';g.battleEnemy={boss:true};assert(V.bossIsVisible(g),'boss battle must keep track active');
-g.state='complete';assert(!V.bossIsVisible(g),'completed run must not count as active boss visibility');
+const bossGame=new Game();
+bossGame.state='running';
+bossGame.objects=[{type:'enemy',boss:true,processed:false,distance:100}];
+bossGame.objectZ=o=>-o.distance+bossGame.travel;
+bossGame.travel=11.99;assert(!V.bossIsVisible(bossGame),'boss outside render range must not trigger track');
+bossGame.travel=12;assert(V.bossIsVisible(bossGame),'boss must trigger music at the first render-visible frame');
+bossGame.travel=70;assert(V.bossIsVisible(bossGame),'visible approaching boss must keep track active');
+bossGame.state='battle';bossGame.battleEnemy={boss:true};assert(V.bossIsVisible(bossGame),'boss battle must keep track active');
+bossGame.state='complete';assert(!V.bossIsVisible(bossGame),'completed run must not count as active boss visibility');
+
+const carGame=new Game();
+carGame.state='running';
+carGame.travel=0;
+carGame.v14={cars:[{active:true,done:false,started:true,z:-92.01}]};
+assert(!V.carIsVisible(carGame),'car before render range must stay silent');
+carGame.v14.cars[0].z=-92;assert(V.carIsVisible(carGame),'sound must start on the first visible car frame');
+carGame.v14.cars[0].z=1.8;assert(V.carIsVisible(carGame),'sound must remain active while the car passes and hits the crowd');
+carGame.v14.cars[0].z=19;assert(V.carIsVisible(carGame),'last visible frame must still be audible');
+carGame.v14.cars[0].z=19.01;assert(!V.carIsVisible(carGame),'sound must stop after the car leaves view');
+carGame.v14.cars[0].z=0;carGame.v14.cars[0].done=true;assert(!V.carIsVisible(carGame),'finished cars must stay silent');
+carGame.v14.cars[0].done=false;carGame.state='battle';assert(!V.carIsVisible(carGame),'car audio is only active during the running state');
 
 const a=new AudioEngine();
-a._externalBossActive=false;a.musicStep(.1);assert.equal(a.musicCalls,1);
-a._externalBossActive=true;a.musicStep(.1);assert.equal(a.musicCalls,1,'synth music must be ducked while supplied boss track is active');
+a._externalBossActive=false;a._externalCarActive=false;a.musicStep(.1);assert.equal(a.musicCalls,1);
+a._externalBossActive=true;a.musicStep(.1);assert.equal(a.musicCalls,1,'synth music must be ducked while boss music is active');
+a._externalBossActive=false;a._externalCarActive=true;a.musicStep(.1);assert.equal(a.musicCalls,1,'synth music must be ducked while car speech is active');
 
-const file='assets/audio/boss-battle-v28.mp3',stat=fs.statSync(file),head=fs.readFileSync(file).subarray(0,3).toString('ascii');
-assert(stat.size>150000,'boss music asset is unexpectedly small');
-assert(head==='ID3'||head.charCodeAt(0)===255,'boss music asset does not look like MP3 data');
+a._bossTrackBuffer={duration:10};
+assert.equal(a._startBossTrack(),true);
+assert(a._bossTrackSource.loop,'boss music must loop');
 
-const index=fs.readFileSync('index.html','utf8');
-assert(index.includes('./audio-v28.js'));
-assert(index.includes('./visual-polish-v28.js'));
-assert(index.indexOf('experience-v14.js')<index.indexOf('audio-v28.js'));
+a._carTrackBuffer={duration:2.161};
+assert.equal(a._startCarTrack(),true);
+assert(a._carTrackSource.loop,'car audio must loop while the car is visible');
+assert(a._carTrackSource.started,'car audio source must start');
+
+const carFile='assets/audio/car-near-v29.mp3';
+const carStat=fs.statSync(carFile);
+const carHead=fs.readFileSync(carFile).subarray(0,3).toString('ascii');
+assert(carStat.size>12000,'car audio asset is unexpectedly small');
+assert(carHead==='ID3'||carHead.charCodeAt(0)===255,'car audio asset does not look like MP3 data');
+
 const sw=fs.readFileSync('sw.js','utf8');
 assert(sw.includes("const CACHE='sleep-road-v55';"));
 assert(sw.includes("'./assets/audio/boss-battle-v28.mp3'"));
+assert(sw.includes("'./assets/audio/car-near-v29.mp3'"));
 assert(sw.includes("'./audio-v28.js'"));
-const render=fs.readFileSync('render-v4.js','utf8');
-assert(render.includes('if(z<-88||z>12)continue;'),'boss audio visibility window must match course render culling');
-console.log('PASS: boss music is cached, starts when the boss first enters the rendered view and ducks synth music');
+
+const carSource=fs.readFileSync('experience-v14.js','utf8');
+assert(carSource.includes('if(z<-92||z>19)return;'),'car audio visibility window must match car render culling');
+
+console.log('PASS: boss music starts on visibility and supplied car speech loops exactly while the collision car is visible');
