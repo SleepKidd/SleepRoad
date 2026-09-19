@@ -3,14 +3,11 @@
   const S=window.SleepRoadSystems,V13=window.SleepRoadExperienceV13,P=window.SleepRoad3D&&window.SleepRoad3D.prototype;
   if(!S||!P)throw new Error('Sleep Road Car Hazard v14 dependencies are missing');
   const {compose,clamp,COLORS}=S;
-  const CAR_CHANCE=1,SECOND_CAR_CHANCE=.75,LANES=[-3.05,0,3.05],CAR_WIDTH=2.65,CAR_LENGTH=4.66,MODEL_SCALE=.88,MODEL_TRIANGLES=13110;
+  const CAR_CHANCE=1,SECOND_CAR_CHANCE=0,LANES=[-3.05,0,3.05],CAR_WIDTH=2.65,CAR_LENGTH=4.66,MODEL_SCALE=.88,MODEL_TRIANGLES=13110;
   const hash=n=>{const x=Math.sin(n*91.713+17.31)*43758.5453123;return x-Math.floor(x);};
 
   function carEventFor(){return true;}
-  function doubleCarEventFor(level){
-    level=Math.max(1,Math.floor(level||1));
-    return hash(level*57.119+2.7)<SECOND_CAR_CHANCE;
-  }
+  function doubleCarEventFor(){return false;}
   function ensure(g){
     if(!g.v14)g.v14={car:null,cars:[],gpuMeshes:null,modelReady:false};
     return g.v14;
@@ -77,11 +74,7 @@
       x:LANES[laneIndex],distance,meetDistance,speed,spawnRoll,advance:0,z:-999,prevZ:-999
     };
   }
-  function makeCars(g){
-    const cars=[makeCar(g,0)];
-    if(Math.random()<SECOND_CAR_CHANCE)cars.push(makeCar(g,1));
-    return cars;
-  }
+  function makeCars(g){return[makeCar(g,0)];}
   function staticCarZ(g,car){return-car.distance+(g.travel||0);}
   function currentCarZ(g,car){return car.started?car.z:staticCarZ(g,car);}
   function laneHitCount(g,car){
