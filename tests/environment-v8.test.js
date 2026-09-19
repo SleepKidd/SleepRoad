@@ -45,7 +45,7 @@ assert(high.detail>medium.detail&&medium.detail>low.detail);
 const envSrc=fs.readFileSync('environment-v8.js','utf8');
 assert(envSrc.includes('DECOR_CAR_COLORS'));
 assert(envSrc.includes("part.name==='car_main'?bodyTint:part.color"));
-assert(envSrc.includes('opts.color||DECOR_CAR_COLORS[Math.abs(index)%DECOR_CAR_COLORS.length]'));
+assert(envSrc.includes('Math.floor(hash((index+1)*31.731)*DECOR_CAR_COLORS.length)'));
 assert(!envSrc.includes('Math.floor(z*.1)'),'decorative car color must not change with position/time');
 const paletteBlock=envSrc.slice(envSrc.indexOf('const DECOR_CAR_COLORS=['),envSrc.indexOf('function shadow'));
 assert(!paletteBlock.includes('[.18,.62,.92]'),'blue decorative car color must stay excluded');
