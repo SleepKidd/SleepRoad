@@ -77,7 +77,7 @@ for(let level=1;level<=100;level++){
     for(const opt of [gate.left,gate.right])assert(['add','sub','mul','div'].includes(opt.op));
   }
   const bosses=levelState.objects.filter(item=>item.type==='enemy'&&item.boss);
-  assert.equal(bosses.length,level%10===0?1:0);
+  assert.equal(bosses.length,1);
   for(const obstacle of levelState.objects.filter(item=>item.type==='obstacle')){
     generatedKinds.add(obstacle.kind);
     const hits=game.obstacleHits.call(levelState,obstacle,collisionBatch.formation(80));
