@@ -200,11 +200,17 @@
   }
 
   function drawLivingWorld(g){
-    if(g.state==='menu')return;const r=g.renderer,m=g.meshes,p=g.biome.palette,detail=qualityDetail(g),front=(g.playerZ||1.6)-6.0,count=detail>.7?6:4,span=92;
+    if(g.state==='menu')return;const r=g.renderer,m=g.meshes,p=g.biome.palette,detail=qualityDetail(g),front=(g.playerZ||1.6)-6.0,count=detail>.7?5:3,span=96;
     for(let i=0;i<count;i++){
-      const side=i%2?-1:1,z=10-(((i*17.3-(g.travel||0)*(.45+i*.025)+g.time*(1.2+i*.22))%span)+span)%span;if(z>=front)continue;
-      const x=side*(9.6+(i%3)*1.25),ground=elevationAt(g,(g.travel||0)-z),yaw=side<0?Math.PI:0;
-      E8.drawDecorCar(g,x,z,i,{scale:.68,groundY:ground+.015,yaw,shadow:false});
+      // Oncoming decorative traffic always uses the player's right lane.
+      // The pickup source points toward +Z, so yaw=0 means its nose faces the player
+      // while z increases toward the camera/player. This avoids the old "driving backwards"
+      // illusion and keeps traffic off the desert/grass shoulder.
+      const progress=(g.travel||0)*.38+g.time*(2.4+i*.14);
+      const z=-86+(((i*20.5+progress)%span)+span)%span;
+      if(z>=front)continue;
+      const x=4.18+(i%2)*.28,ground=elevationAt(g,(g.travel||0)-z);
+      E8.drawDecorCar(g,x,z,i,{scale:.68,groundY:ground+.015,yaw:0,shadow:false});
     }
     if(g.biome?.id==='factory'||g.biome?.id==='neon')for(const side of[-1,1]){const x=side*10.8,z=-28-((g.travel*.35)%42),a=g.time*1.6*side;r.draw(m.cylinder,compose(x,2.0,z,0,0,0,.18,4,.18),p.structure,.88);for(let i=0;i<4;i++)r.draw(m.box,compose(x+Math.cos(a+i*TAU/4)*.75,3.2+Math.sin(a+i*TAU/4)*.75,z,0,0,a+i*TAU/4,1.15,.09,.12),p.accent,.68);}
   }
