@@ -22,11 +22,16 @@
   P.drawEnemy=function(o,z){
     const c=o.boss?(o.majorBoss?[1,.30,.08]:[.94,.24,.18]):o.elite?[.72,.10,.72]:[.91,.24,.34];
     if(o.boss){
-      const r=this.renderer,m=this.meshes,scale=o.bossScale||3.25,rootZ=z-2.25,hp=clamp(o.count/Math.max(1,o.maxCount||o.count),0,1),barW=4.8,fillW=Math.max(.06,barW*hp),fillX=-(barW-fillW)*.5;
-      this.crowdBatch.draw(1,0,rootZ,c,this.time+1.1,{scale,direction:-1,enemy:true});
-      r.draw(m.box,compose(0,5.18,rootZ-.08,0,0,0,barW,.16,.16),[.13,.05,.07],.92);
-      r.draw(m.box,compose(fillX,5.18,rootZ-.18,0,0,0,fillW,.10,.08),c,.98);
-      this.addWorldLabel([0,5.72,rootZ],`${o.name} · HP ${Math.max(0,o.count)}`,'boss');
+      const r=this.renderer,m=this.meshes,rootZ=z-2.25,hp=clamp(o.count/Math.max(1,o.maxCount||o.count),0,1),barW=4.8,fillW=Math.max(.06,barW*hp),fillX=-(barW-fillW)*.5;
+      const goblin=window.SleepRoadGoblinBossV23,drawn=!!goblin?.draw(this,o,z);
+      if(!drawn){
+        const scale=o.bossScale||3.25;
+        this.crowdBatch.draw(1,0,rootZ,c,this.time+1.1,{scale,direction:-1,enemy:true});
+      }
+      const labelPos=drawn&&goblin?.labelPosition?goblin.labelPosition(this,o,z):[0,5.72,rootZ],barY=Math.max(4.35,labelPos[1]-.48);
+      r.draw(m.box,compose(0,barY,rootZ-.08,0,0,0,barW,.16,.16),[.13,.05,.07],.92);
+      r.draw(m.box,compose(fillX,barY,rootZ-.18,0,0,0,fillW,.10,.08),c,.98);
+      this.addWorldLabel(labelPos,`${o.name} · HP ${Math.max(0,o.count)}`,'boss');
       return;
     }
     this.crowdBatch.draw(Math.max(1,o.count),0,z-.8,c,this.time+1.1,{scale:o.elite?.98:.92,direction:-1,enemy:true});
