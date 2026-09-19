@@ -56,7 +56,7 @@
     const spacing=level<=50?Math.max(34,39-chapter*.70):Math.max(33,36-Math.min(3,endless*.010));
     const baseSpeed=level<=50?Math.min(12.0,9.35+chapter*.48+(local-1)*.050):Math.min(13.2,11.65+endless*.010);
     const bossLevel=level%10===0;
-    const finalBoss=bossLevel;
+    const finalBoss=true;
     const eliteLevel=!bossLevel&&level%5===0;
     const bonusLevel=!bossLevel&&level>5&&level%15===5;
     const timed=!bossLevel&&level>=14&&level%7===0;
