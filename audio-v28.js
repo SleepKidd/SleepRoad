@@ -5,9 +5,11 @@
 
   const BOSS_TRACK='./assets/audio/boss-battle-v28.mp3';
   const CAR_TRACK='./assets/audio/car-near-v29.mp3';
+  const JUMP_TRACK='./assets/audio/jump-loop-v30.mp3';
   const BOSS_VIEW_MIN_Z=-88,BOSS_VIEW_MAX_Z=12,BOSS_TRACK_GAIN=.34;
   const CAR_VIEW_MIN_Z=-92,CAR_VIEW_MAX_Z=19,CAR_TRACK_GAIN=.58;
-  const CAR_FADE_IN=.06,CAR_FADE_OUT=.16;
+  const JUMP_TRACK_GAIN=.56;
+  const CAR_FADE_IN=.06,CAR_FADE_OUT=.16,JUMP_FADE_IN=.035,JUMP_FADE_OUT=.10;
   const oldEnsure=A.ensure,oldMusicStep=A.musicStep;
 
   A._loadBossTrack=function(){
@@ -30,11 +32,22 @@
     return this._carTrackPromise;
   };
 
+  A._loadJumpTrack=function(){
+    if(this._jumpTrackBuffer||this._jumpTrackPromise||!this.ac)return this._jumpTrackPromise;
+    this._jumpTrackPromise=fetch(JUMP_TRACK,{cache:'force-cache'})
+      .then(r=>{if(!r.ok)throw new Error('Jump audio HTTP '+r.status);return r.arrayBuffer();})
+      .then(b=>this.ac.decodeAudioData(b))
+      .then(buf=>{this._jumpTrackBuffer=buf;return buf;})
+      .catch(err=>{console.warn('Jump audio unavailable:',err);this._jumpTrackPromise=null;return null;});
+    return this._jumpTrackPromise;
+  };
+
   A.ensure=function(){
     const ok=oldEnsure.call(this);
     if(ok){
       this._loadBossTrack();
       this._loadCarTrack();
+      this._loadJumpTrack();
     }
     return ok;
   };
@@ -133,8 +146,53 @@
     }
   };
 
+  A._stopJumpTrack=function(){
+    if(this._jumpTrackStopTimer){clearTimeout(this._jumpTrackStopTimer);this._jumpTrackStopTimer=0;}
+    const src=this._jumpTrackSource;
+    this._jumpTrackSource=null;this._jumpTrackGain=null;
+    if(src){try{src.stop();}catch{}}
+  };
+
+  A._startJumpTrack=function(){
+    if(!this.enabled||!this.ensure()||!this._jumpTrackBuffer)return false;
+    if(this._jumpTrackSource)return true;
+    const src=this.ac.createBufferSource(),gain=this.ac.createGain(),t=this.ac.currentTime;
+    src.buffer=this._jumpTrackBuffer;src.loop=true;
+    gain.gain.setValueAtTime(.0001,t);
+    gain.gain.exponentialRampToValueAtTime(JUMP_TRACK_GAIN,t+JUMP_FADE_IN);
+    src.connect(gain);gain.connect(this.master);
+    src.onended=()=>{if(this._jumpTrackSource===src){this._jumpTrackSource=null;this._jumpTrackGain=null;}};
+    src.start(t);
+    this._jumpTrackSource=src;this._jumpTrackGain=gain;
+    return true;
+  };
+
+  A._fadeJumpTrack=function(active){
+    active=!!active;
+    this._externalJumpActive=active;
+    if(!this.enabled){
+      this._externalJumpActive=false;this._jumpTrackWanted=false;this._stopJumpTrack();return;
+    }
+    if(active&&this._jumpTrackStopTimer){clearTimeout(this._jumpTrackStopTimer);this._jumpTrackStopTimer=0;}
+    if(active&&!this._jumpTrackBuffer){this._jumpTrackWanted=true;this._loadJumpTrack();return;}
+    if(active&&!this._jumpTrackSource&&!this._startJumpTrack())return;
+    this._jumpTrackWanted=active;
+    const src=this._jumpTrackSource,gainNode=this._jumpTrackGain;
+    if(!src||!gainNode||!this.ac)return;
+    const t=this.ac.currentTime,gain=gainNode.gain;
+    gain.cancelScheduledValues(t);
+    gain.setValueAtTime(Math.max(.0001,gain.value||.0001),t);
+    gain.exponentialRampToValueAtTime(active?JUMP_TRACK_GAIN:.0001,t+(active?JUMP_FADE_IN:JUMP_FADE_OUT));
+    if(!active&&!this._jumpTrackStopTimer){
+      this._jumpTrackStopTimer=setTimeout(()=>{
+        this._jumpTrackStopTimer=0;
+        if(!this._jumpTrackWanted&&this._jumpTrackSource===src)this._stopJumpTrack();
+      },Math.ceil((JUMP_FADE_OUT+.05)*1000));
+    }
+  };
+
   A.musicStep=function(...args){
-    if(this._externalBossActive||this._externalCarActive)return;
+    if(this._externalBossActive||this._externalCarActive||this._externalJumpActive)return;
     return oldMusicStep?.apply(this,args);
   };
 
@@ -161,19 +219,26 @@
     return false;
   }
 
+  function jumpIsActive(g){
+    return g.state==='running'&&(g.jumpTimer||0)>0;
+  }
+
   const oldUpdate=P.update;
   P.update=function(dt){
     oldUpdate.call(this,dt);
     const enabled=!!this.audio?.enabled;
     const bossActive=enabled&&bossIsVisible(this)&&this.state!=='failed'&&this.state!=='complete'&&this.state!=='menu';
     const carActive=enabled&&carIsVisible(this);
+    const jumpActive=enabled&&jumpIsActive(this);
     this.audio?._fadeBossTrack?.(!!bossActive);
     this.audio?._fadeCarTrack?.(!!carActive);
+    this.audio?._fadeJumpTrack?.(!!jumpActive);
   };
 
   const stopExternalTracks=function(g){
     g.audio?._fadeBossTrack?.(false);
     g.audio?._fadeCarTrack?.(false);
+    g.audio?._fadeJumpTrack?.(false);
   };
 
   const oldStart=P.startLevel;
@@ -190,9 +255,9 @@
 
   window.SleepRoadAudioV28={
     TRACK:BOSS_TRACK,
-    BOSS_TRACK,CAR_TRACK,
+    BOSS_TRACK,CAR_TRACK,JUMP_TRACK,
     BOSS_VIEW_MIN_Z,BOSS_VIEW_MAX_Z,CAR_VIEW_MIN_Z,CAR_VIEW_MAX_Z,
-    TRACK_GAIN:BOSS_TRACK_GAIN,BOSS_TRACK_GAIN,CAR_TRACK_GAIN,
-    bossIsVisible,bossIsNear:bossIsVisible,carIsVisible
+    TRACK_GAIN:BOSS_TRACK_GAIN,BOSS_TRACK_GAIN,CAR_TRACK_GAIN,JUMP_TRACK_GAIN,
+    bossIsVisible,bossIsNear:bossIsVisible,carIsVisible,jumpIsActive
   };
 })();
