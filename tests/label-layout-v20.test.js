@@ -13,14 +13,16 @@ global.SleepRoadSystems={
 function Game(){}
 global.SleepRoad3D=Game;
 const src=fs.readFileSync('render-v4.js','utf8');assert.doesNotThrow(()=>new Function(src));vm.runInThisContext(src,{filename:'render-v4.js'});
-const g=Object.assign(new Game(),{labels:[],labelCursor:0,labelLayout:[],w:390,h:844,renderer:{project:p=>({x:p[0],y:p[1],z:p[2]})}});
+const g=Object.assign(new Game(),{labels:[],labelCursor:0,labelLayout:[],w:390,h:844,renderer:{project:p=>({x:p[0],y:p[1],z:.94})}});
 g.beginLabels();
-g.addWorldLabel([150,120,.93],'РАЗДЕЛЕНИЕ','powerup');
-g.addWorldLabel([154,124,.94],'ОБЪЕДИНЕНИЕ','good');
-assert.equal(g.labelCursor,1,'overlapping distant label must be suppressed');
-g.addWorldLabel([310,300,.94],'+33','good');
-assert.equal(g.labelCursor,2,'non-overlapping label should remain visible');
+g.addWorldLabel([150,120,-40],'СЛИШКОМ ДАЛЕКО','powerup');
+assert.equal(g.labelCursor,0,'mobile labels must stay hidden until the obstacle is visually close');
+g.addWorldLabel([150,120,-20],'РАЗДЕЛЕНИЕ','powerup');
+g.addWorldLabel([154,124,-19],'ОБЪЕДИНЕНИЕ','good');
+assert.equal(g.labelCursor,1,'overlapping close label must be suppressed');
+g.addWorldLabel([310,300,-18],'+33','good');
+assert.equal(g.labelCursor,2,'non-overlapping close label should remain visible');
 assert.equal(g.labelLayout.length,2);
 g.endLabels();
 const css=fs.readFileSync('style.css','utf8');assert(css.includes('white-space:nowrap'));
-console.log('PASS: projected world labels reserve screen space and suppress overlaps');
+console.log('PASS: far labels stay hidden; close labels reserve screen space and suppress overlaps');
