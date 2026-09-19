@@ -204,7 +204,7 @@
     for(let i=0;i<count;i++){
       const side=i%2?-1:1,z=10-(((i*17.3-(g.travel||0)*(.45+i*.025)+g.time*(1.2+i*.22))%span)+span)%span;if(z>=front)continue;
       const x=side*(9.6+(i%3)*1.25),ground=elevationAt(g,(g.travel||0)-z),yaw=side<0?Math.PI:0;
-      E8.drawDecorCar(g,x,z,i,{scale:.42,groundY:ground+.015,yaw,shadow:false});
+      E8.drawDecorCar(g,x,z,i,{scale:.68,groundY:ground+.015,yaw,shadow:false});
     }
     if(g.biome?.id==='factory'||g.biome?.id==='neon')for(const side of[-1,1]){const x=side*10.8,z=-28-((g.travel*.35)%42),a=g.time*1.6*side;r.draw(m.cylinder,compose(x,2.0,z,0,0,0,.18,4,.18),p.structure,.88);for(let i=0;i<4;i++)r.draw(m.box,compose(x+Math.cos(a+i*TAU/4)*.75,3.2+Math.sin(a+i*TAU/4)*.75,z,0,0,a+i*TAU/4,1.15,.09,.12),p.accent,.68);}
   }
