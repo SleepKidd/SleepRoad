@@ -2,7 +2,7 @@
 (() => {
   const S=window.SleepRoadSystems,P=window.SleepRoad3D&&window.SleepRoad3D.prototype,A=S&&S.AudioEngine&&S.AudioEngine.prototype;
   if(!P||!A)throw new Error('Sleep Road v28 boss-music dependencies are missing');
-  const TRACK='./assets/audio/boss-battle-v28.mp3',NEAR_BOSS_Z=12.5,TRACK_GAIN=.34;
+  const TRACK='./assets/audio/boss-battle-v28.mp3',BOSS_VIEW_MIN_Z=-88,BOSS_VIEW_MAX_Z=12,TRACK_GAIN=.34;
   const oldEnsure=A.ensure,oldMusicStep=A.musicStep;
 
   A._loadBossTrack=function(){
@@ -58,15 +58,14 @@
     return oldMusicStep?.apply(this,args);
   };
 
-  function bossIsNear(g){
+  function bossIsVisible(g){
     if(g.state==='battle'&&g.battleEnemy?.boss)return true;
     if(g.state!=='running'&&g.state!=='intro')return false;
     const list=g.objects||[];
     for(const o of list){
       if(o.processed||o.type!=='enemy'||!o.boss)continue;
       const z=g.objectZ?.(o);if(z==null)continue;
-      const dz=z-g.playerZ;
-      if(dz>=-NEAR_BOSS_Z&&dz<=3.5)return true;
+      if(z>=BOSS_VIEW_MIN_Z&&z<=BOSS_VIEW_MAX_Z)return true;
     }
     return false;
   }
@@ -74,7 +73,7 @@
   const oldUpdate=P.update;
   P.update=function(dt){
     oldUpdate.call(this,dt);
-    const active=this.audio?.enabled&&bossIsNear(this)&&this.state!=='failed'&&this.state!=='complete'&&this.state!=='menu';
+    const active=this.audio?.enabled&&bossIsVisible(this)&&this.state!=='failed'&&this.state!=='complete'&&this.state!=='menu';
     this.audio?._fadeBossTrack?.(!!active);
   };
 
@@ -85,5 +84,5 @@
   const oldFinish=P.beginFinish;
   P.beginFinish=function(...a){this.audio?._fadeBossTrack?.(false);return oldFinish.apply(this,a);};
 
-  window.SleepRoadAudioV28={TRACK,NEAR_BOSS_Z,TRACK_GAIN,bossIsNear};
+  window.SleepRoadAudioV28={TRACK,BOSS_VIEW_MIN_Z,BOSS_VIEW_MAX_Z,TRACK_GAIN,bossIsVisible,bossIsNear:bossIsVisible};
 })();
