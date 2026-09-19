@@ -39,58 +39,57 @@
     g.renderer.draw(g.meshes.sphere,compose(x,-.27+.21*s,z,0,hash(x+z)*TAU,0,.70*s,.42*s,.56*s),c);
   }
 
-  function decodeModelBytes(b64){
+  function decodeCarBytes(b64){
     const raw=atob(b64),out=new Uint8Array(raw.length);
     for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i)&255;
     return out;
   }
-  function decodeModelU16(b64){
-    const bytes=decodeModelBytes(b64),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),out=new Uint16Array(bytes.byteLength>>1);
+  function decodeCarF32(b64){
+    const bytes=decodeCarBytes(b64);
+    if(bytes.byteLength%4)throw new Error('Invalid roadside car float buffer');
+    const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),out=new Float32Array(bytes.byteLength>>2);
+    for(let i=0;i<out.length;i++)out[i]=view.getFloat32(i*4,true);
+    return out;
+  }
+  function decodeCarU16(b64){
+    const bytes=decodeCarBytes(b64);
+    if(bytes.byteLength%2)throw new Error('Invalid roadside car index buffer');
+    const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),out=new Uint16Array(bytes.byteLength>>1);
     for(let i=0;i<out.length;i++)out[i]=view.getUint16(i*2,true);
     return out;
   }
   function buildDecorCarMeshes(g){
-    if(g.__decorCarMeshes)return g.__decorCarMeshes;
-    const model=window.SleepRoadDecorCarModel;
-    if(!model?.meta||!model.p||!model.i||!model.groups?.length)return[];
-    const q=decodeModelU16(model.p),src=decodeModelU16(model.i),half=model.meta.halfVerts|0,total=half*2,lo=model.lo,hi=model.hi,positions=new Float32Array(total*3);
-    if(q.length!==half*3)throw new Error('Invalid SuperSport car position buffer');
-    for(let i=0;i<half;i++){
-      const x=lo[0]+q[i*3]/65535*(hi[0]-lo[0]),y=lo[1]+q[i*3+1]/65535*(hi[1]-lo[1]),z=lo[2]+q[i*3+2]/65535*(hi[2]-lo[2]);
-      positions[i*3]=x;positions[i*3+1]=y;positions[i*3+2]=z;
-      const j=half+i;positions[j*3]=-x;positions[j*3+1]=y;positions[j*3+2]=z;
+    if(g.__carGpuMeshes)return g.__carGpuMeshes;
+    const model=window.SleepRoadCarModel;
+    if(!model?.meta||!model?.groups?.length||!model.p32||!model.n32)return[];
+    try{
+      const positions=model.__positions||(model.__positions=decodeCarF32(model.p32));
+      const normals=model.__normals||(model.__normals=decodeCarF32(model.n32));
+      const expected=(model.meta.runtimeVerts|0)*3;
+      if(positions.length!==expected||normals.length!==expected)throw new Error('roadside car vertex count mismatch');
+      g.__carGpuMeshes=model.groups.map(group=>{
+        const indices=group.__indices||(group.__indices=decodeCarU16(group.i));
+        if(indices.length!==(group.tris|0)*3)throw new Error('roadside car material index mismatch: '+group.name);
+        return{mesh:g.renderer.createMesh({positions,normals,indices}),color:group.color,alpha:group.alpha??1,emissive:group.emissive||0,name:group.name,tris:group.tris};
+      });
+      return g.__carGpuMeshes;
+    }catch(err){
+      console.error('Sleep Road roadside car model disabled:',err);
+      g.__decorCarDisabled=true;
+      return[];
     }
-    const groups=model.groups.map(group=>{
-      const base=group.offset|0,count=(group.tris|0)*3,indices=new Uint16Array(count*2);
-      for(let k=0;k<count;k++)indices[k]=src[base+k];
-      for(let t=0;t<group.tris;t++){
-        const a=src[base+t*3],b=src[base+t*3+1],c=src[base+t*3+2],o=count+t*3;
-        indices[o]=half+a;indices[o+1]=half+c;indices[o+2]=half+b;
-      }
-      return{indices,color:group.color,tris:group.tris*2,name:group.name};
-    });
-    const normals=new Float32Array(positions.length);
-    for(const group of groups){
-      const ii=group.indices;
-      for(let k=0;k<ii.length;k+=3){
-        const ia=ii[k]*3,ib=ii[k+1]*3,ic=ii[k+2]*3;
-        const abx=positions[ib]-positions[ia],aby=positions[ib+1]-positions[ia+1],abz=positions[ib+2]-positions[ia+2];
-        const acx=positions[ic]-positions[ia],acy=positions[ic+1]-positions[ia+1],acz=positions[ic+2]-positions[ia+2];
-        const nx=aby*acz-abz*acy,ny=abz*acx-abx*acz,nz=abx*acy-aby*acx;
-        for(const i of[ia,ib,ic]){normals[i]+=nx;normals[i+1]+=ny;normals[i+2]+=nz;}
-      }
-    }
-    for(let i=0;i<total;i++){const o=i*3,l=Math.hypot(normals[o],normals[o+1],normals[o+2])||1;normals[o]/=l;normals[o+1]/=l;normals[o+2]/=l;}
-    g.__decorCarMeshes=groups.map(group=>({mesh:g.renderer.createMesh({positions,normals,indices:group.indices}),color:group.color,name:group.name,tris:group.tris}));
-    return g.__decorCarMeshes;
   }
   function drawDecorCar(g,x,z,index=0,opts={}){
-    const r=g.renderer,body=buildDecorCarMeshes(g);
-    if(!body.length)return;
-    const side=x<0?-1:1,scale=opts.scale??.42,y=opts.groundY??-.205,yaw=opts.yaw??(side<0?.035:-.035);
-    if(opts.shadow!==false)shadow(g,x,z,1.28*scale/.42,.78*scale/.42,.16);
-    const model=compose(x,y,z,0,yaw,0,scale,scale,scale);
-    for(const part of body)r.draw(part.mesh,model,part.color,1);
+    if(g.__decorCarDisabled)return;
+    const parts=buildDecorCarMeshes(g);if(!parts.length)return;
+    const r=g.renderer,asset=window.SleepRoadCarModel,bounds=asset?.meta?.bounds,lo=bounds?.min||[-1.579805,.234096,-3.017546],hi=bounds?.max||[1.353162,3.296137,2.274039];
+    const side=x<0?-1:1,s=opts.scale??.68,ground=opts.groundY??-.205,yaw=opts.yaw??(side<0?Math.PI:0),cx=(lo[0]+hi[0])*.5,cz=(lo[2]+hi[2])*.5,c=Math.cos(yaw),sn=Math.sin(yaw),rcx=c*cx+sn*cz,rcz=-sn*cx+c*cz;
+    if(opts.shadow!==false)shadow(g,x,z,.94*s/.68,1.62*s/.68,.15);
+    const model=compose(x-rcx*s,ground-lo[1]*s,z-rcz*s,0,yaw,0,s,s,s);
+    for(const part of parts){
+      const color=part.emissive>0?part.color.map(v=>clamp(v*(1+part.emissive*.28)+part.emissive*.08,0,1)):part.color;
+      r.draw(part.mesh,model,color,part.alpha);
+    }
   }
   function bush(g,x,z,s=1,tone=0){
     const r=g.renderer,m=g.meshes,p=g.biome.palette,c1=tone%2?mix(p.groundDark,p.good,.17):mix(p.groundDark,p.ground,.35),c2=scale(c1,1.10),w=Math.sin(g.time*1.35+x*.1+z*.03)*.035;
@@ -269,7 +268,7 @@
     for(let i=0;i<14;i++){const z=8-wrap(i*21.8-this.travel*.982,span),side=i%2?-1:1,x=side*6.92;r.draw(m.cylinder,compose(x,.31,z,0,0,0,.08,.72,.08),p.roadEdge);r.draw(m.box,compose(x,.50,z,0,0,0,.21,.19,.14),i%3?p.bad:p.accent);shadow(this,x,z,.20,.16,.08);}
 
     if(b.id!=='meadow'&&cfg.detail>0){
-      const accents=Math.round(12*cfg.density);for(let i=0;i<accents;i++){const z=5-wrap(i*(300/accents)-this.travel*.96+hash(i*4.2)*9,300),side=i%2?-1:1,x=side*(8+hash(i*8.1)*10);if(b.id==='factory')rock(this,x,z,.7+hash(i)*.5,i);else if(b.id==='city')drawDecorCar(this,x,z,i);else if(b.id==='neon')r.draw(m.sphere,compose(x,.32,z,0,0,0,.18,.18,.18),i%2?p.accent:p.good,.75);}
+      const accents=Math.round(12*cfg.density);for(let i=0;i<accents;i++){const z=5-wrap(i*(300/accents)-this.travel*.96+hash(i*4.2)*9,300),side=i%2?-1:1,x=side*(8+hash(i*8.1)*10);if(b.id==='factory')rock(this,x,z,.7+hash(i)*.5,i);else if(b.id==='city'){if(i%2===0)drawDecorCar(this,x,z,i);}else if(b.id==='neon')r.draw(m.sphere,compose(x,.32,z,0,0,0,.18,.18,.18),i%2?p.accent:p.good,.75);}
     }
 
     const skyFog=mix(p.sky,p.ground,.12);
