@@ -19,7 +19,7 @@ assert.equal(V.NEAR_BOSS_Z,12.5);
 assert(V.TRACK_GAIN>0&&V.TRACK_GAIN<.5);
 
 const g=new Game();
-g.playerZ=1.6;g.state='running';g.objects=[{type:'enemy',boss:true,processed:false,distance:100}];g.travel=88;g.objectZ=o=>-o.distance+g.travel;
+g.playerZ=1.6;g.state='running';g.objects=[{type:'enemy',boss:true,processed:false,distance:100}];g.travel=90;g.objectZ=o=>-o.distance+g.travel;
 assert(V.bossIsNear(g),'boss should trigger music when crowd is close');
 g.travel=70;assert(!V.bossIsNear(g),'distant boss must not trigger track');
 g.state='battle';g.battleEnemy={boss:true};assert(V.bossIsNear(g),'boss battle must keep track active');
