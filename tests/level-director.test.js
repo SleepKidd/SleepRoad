@@ -42,7 +42,7 @@ assert(D.profileForLevel(51).sections>=D.profileForLevel(50).sections);
 assert(D.profileForLevel(51).baseSpeed>=D.profileForLevel(50).baseSpeed);
 assert(D.profileForLevel(1).sections<=8);
 assert(D.profileForLevel(10).sections<D.profileForLevel(9).sections,'boss run should trim pre-boss sections');
-assert.equal(D.profileForLevel(9).finalBoss,false);
+assert.equal(D.profileForLevel(9).finalBoss,true);
 assert.equal(D.profileForLevel(10).finalBoss,true);
 assert(D.obstaclePool(D.profileForLevel(51)).includes('fireline'));
 assert(D.obstaclePool(D.profileForLevel(51)).includes('spinner'));
@@ -63,7 +63,7 @@ for(let level=1;level<=500;level++){
   assert(state.objects.length<420,`level ${level} object budget exceeded`);
   assert(state.objects.every((item,index,list)=>index===0||list[index-1].distance<=item.distance),`level ${level} is not sorted`);
   const finish=state.objects.filter(x=>x.type==='finish');assert.equal(finish.length,1);assert.equal(finish[0].distance,state.levelLength);
-  const boss=state.objects.filter(x=>x.type==='enemy'&&x.boss);assert.equal(boss.length,level%10===0?1:0,`boss rule broken on ${level}`);
+  const boss=state.objects.filter(x=>x.type==='enemy'&&x.boss);assert.equal(boss.length,1,`boss rule broken on ${level}`);
   for(const o of state.objects.filter(x=>x.type==='obstacle')){
     seenKinds.add(o.kind);let safe=false;
     for(const t of [0,.5,1,1.5,2.25]){state.time=t;for(const x of [-4,-3.1,-2,0,2,3.1,4]){state.playerX=x;const hits=game.obstacleHits.call(state,o,batch.formation(1));assert(Number.isInteger(hits)&&hits>=0&&hits<=1);if(hits===0){safe=true;break;}}if(safe)break;}
