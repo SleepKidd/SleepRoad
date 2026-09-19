@@ -37,6 +37,13 @@ const label=B.labelPosition(g,o,-8);
 assert(label[1]>4&&label[2]<-9);
 assert.equal(B.drawCorpse(g,{life:.5,max:1,z:-10,travel:20,scale:3.25}),true);
 
+const levelRender=fs.readFileSync('render-levels-v5.js','utf8');
+assert.doesNotThrow(()=>new Function(levelRender));
+assert(levelRender.includes('const goblin=window.SleepRoadGoblinBossV23'));
+assert(levelRender.includes('drawn=!!goblin?.draw(this,o,z)'));
+assert(levelRender.includes('if(!drawn){'));
+assert(levelRender.includes('goblin.labelPosition(this,o,z)'));
+
 const render=fs.readFileSync('render-v4.js','utf8');
 assert(render.includes('SleepRoadGoblinBossV23?.draw(this,o,z)'));
 assert(!render.includes('SleepRoadGoblinBossV22'));
@@ -50,8 +57,8 @@ assert(!index.includes('boss-goblin-v22.js'));
 assert(index.indexOf('visual-v9.js')<index.indexOf('boss-goblin-v23.js'));
 assert(index.indexOf('boss-goblin-v23.js')<index.indexOf('experience-v11.js'));
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v49';"));
+assert(sw.includes("const CACHE='sleep-road-v50';"));
 assert(sw.includes("'./boss-goblin-v23.js'"));
 assert(!sw.includes('goblin-boss-v22.js'));
 assert(!sw.includes('boss-goblin-v22.js'));
-console.log('PASS: shaded goblin v23 uses existing renderer, preserves all 40k source triangles, replaces boss/corpse hooks and cache wiring');
+console.log('PASS: active render-levels boss path calls shaded goblin v23, preserves all 40k source triangles, corpse hook and cache wiring valid');
