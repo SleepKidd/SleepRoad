@@ -200,16 +200,16 @@
   }
 
   function drawLivingWorld(g){
-    if(g.state==='menu')return;const r=g.renderer,m=g.meshes,p=g.biome.palette,detail=qualityDetail(g),front=(g.playerZ||1.6)-6.0,count=detail>.7?5:3,span=96;
+    if(g.state==='menu')return;const r=g.renderer,m=g.meshes,p=g.biome.palette,detail=qualityDetail(g),front=(g.playerZ||1.6)-6.0,count=detail>.7?6:4,span=112;
     for(let i=0;i<count;i++){
-      // Oncoming decorative traffic always uses the player's right lane.
-      // The pickup source points toward +Z, so yaw=0 means its nose faces the player
-      // while z increases toward the camera/player. This avoids the old "driving backwards"
-      // illusion and keeps traffic off the desert/grass shoulder.
-      const progress=(g.travel||0)*.38+g.time*(2.4+i*.14);
-      const z=-86+(((i*20.5+progress)%span)+span)%span;
+      // Decorative traffic stays completely off the gameplay road on BOTH shoulders.
+      // Static scenery advances at roughly g.travel speed; these cars advance faster than
+      // that baseline so they visibly approach the player instead of appearing to drift away.
+      const side=i%2?-1:1;
+      const progress=(g.travel||0)*1.10+g.time*(8.2+i*.18);
+      const z=-96+(((i*19.0+progress)%span)+span)%span;
       if(z>=front)continue;
-      const x=4.18+(i%2)*.28,ground=elevationAt(g,(g.travel||0)-z);
+      const x=side*(9.35+(i%3)*.72),ground=elevationAt(g,(g.travel||0)-z);
       E8.drawDecorCar(g,x,z,i,{scale:.68,groundY:ground+.015,yaw:0,shadow:false});
     }
     if(g.biome?.id==='factory'||g.biome?.id==='neon')for(const side of[-1,1]){const x=side*10.8,z=-28-((g.travel*.35)%42),a=g.time*1.6*side;r.draw(m.cylinder,compose(x,2.0,z,0,0,0,.18,4,.18),p.structure,.88);for(let i=0;i<4;i++)r.draw(m.box,compose(x+Math.cos(a+i*TAU/4)*.75,3.2+Math.sin(a+i*TAU/4)*.75,z,0,0,a+i*TAU/4,1.15,.09,.12),p.accent,.68);}
