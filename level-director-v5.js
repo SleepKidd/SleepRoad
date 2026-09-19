@@ -55,7 +55,7 @@
     const sections=level<=50?Math.max(7,7+chapter+Math.min(1,Math.floor((local-1)/5))-bossRunCut):12+Math.min(2,Math.floor(Math.max(0,endless-1)/80));
     // Keep encounters compact but never stack the next gate on top of the previous trap.
     // Difficulty comes from denser packs and faster hazards, not unreadable object overlap.
-    const spacing=level<=50?Math.max(44,46-chapter*.40):Math.max(42,44-Math.min(2,endless*.004));
+    const spacing=level<=50?Math.max(45,46-chapter*.25):45;
     const baseSpeed=level<=50?Math.min(12.0,9.35+chapter*.48+(local-1)*.050):Math.min(13.2,11.75+endless*.010);
     const bossLevel=level%10===0;
     const finalBoss=true;
