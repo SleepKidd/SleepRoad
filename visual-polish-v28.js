@@ -132,21 +132,21 @@
     // subtle asphalt wear and tyre marks
     r.draw(m.box,compose(-1.45,.014,-132,0,0,0,.13,.018,316),[.16,.17,.19],.16);
     r.draw(m.box,compose(1.45,.014,-132,0,0,0,.13,.018,316),[.16,.17,.19],.16);
-    const cracks=d>.55?14:7;
+    const cracks=d>.78?10:d>.48?6:3;
     for(let i=0;i<cracks;i++){
       const z=9-wrap(i*(294/cracks)+hash(i*7.7)*8-this.travel*.995,span),x=(hash(i*3.2)-.5)*8.4,rot=(hash(i*5.4)-.5)*.52,len=.55+hash(i*9.1)*1.35;
       r.draw(m.box,compose(x,.034,z,0,rot,0,.035,.018,len),[.095,.10,.11],.50);
       if(d>.75&&i%3===0)r.draw(m.box,compose(x+.14,.033,z+.18,0,rot+.7,0,.025,.017,len*.42),[.095,.10,.11],.38);
     }
     // reflective lane/edge studs
-    const studs=d>.45?26:14;
+    const studs=d>.78?16:d>.48?10:6;
     for(let i=0;i<studs;i++){
       const z=7-wrap(i*(300/studs)-this.travel,span),blink=.80+.20*Math.sin(this.time*2+i);
       r.draw(m.sphere,compose(0,.055,z,0,0,0,.045,.025,.065),p.stripe||COLORS.white,.55*blink);
       if(i%2===0){for(const x of[-5.72,5.72])r.draw(m.sphere,compose(x,.055,z,0,0,0,.052,.030,.072),p.roadEdge||COLORS.white,.62*blink);}
     }
     // shoulder clutter: rocks, cones, signs, discarded blocks - safely outside the road
-    const roadside=d>.70?12:d>.35?7:4;
+    const roadside=d>.78?8:d>.48?5:3;
     for(let i=0;i<roadside;i++){
       const z=5-wrap(i*(292/roadside)+hash(i*13.2)*9-this.travel*.97,span),side=i%2?-1:1,x=side*(7.35+hash(i*2.8)*2.1),kind=i%4;
       if(kind===0){r.draw(m.box,compose(x,.36,z,0,hash(i)*.5,0,.46,.65,.42),mix(p.ground||[.5,.4,.3],STEEL_DARK,.22));}
