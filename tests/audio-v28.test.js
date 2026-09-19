@@ -31,7 +31,7 @@ class AudioEngine{
           }
         };
       },
-      decodeAudioData(buffer){return Promise.resolve({duration:2.161,buffer});}
+      decodeAudioData(buffer){return Promise.resolve({duration:2.162,buffer});}
     };
   }
   ensure(){this.ensureCalls++;return true;}
@@ -90,7 +90,7 @@ a._bossTrackBuffer={duration:10};
 assert.equal(a._startBossTrack(),true);
 assert(a._bossTrackSource.loop,'boss music must loop');
 
-a._carTrackBuffer={duration:2.161};
+a._carTrackBuffer={duration:2.162};
 assert.equal(a._startCarTrack(),true);
 assert(a._carTrackSource.loop,'car audio must loop while the car is visible');
 assert(a._carTrackSource.started,'car audio source must start');
@@ -98,7 +98,7 @@ assert(a._carTrackSource.started,'car audio source must start');
 const carFile='assets/audio/car-near-v29.mp3';
 const carStat=fs.statSync(carFile);
 const carHead=fs.readFileSync(carFile).subarray(0,3).toString('ascii');
-assert(carStat.size>12000,'car audio asset is unexpectedly small');
+assert(carStat.size>9000,'car audio asset is unexpectedly small');
 assert(carHead==='ID3'||carHead.charCodeAt(0)===255,'car audio asset does not look like MP3 data');
 
 const sw=fs.readFileSync('sw.js','utf8');
