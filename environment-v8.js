@@ -12,6 +12,9 @@
     return{density,shadows:q.environmentShadows!==false,detail:q.id==='high'?2:q.id==='medium'?1:0};
   };
   const wrap=(v,span=300)=>((v%span)+span)%span;
+  const DECOR_CAR_COLORS=[
+    [.18,.62,.92],[.91,.22,.18],[.96,.62,.12],[.47,.32,.82],[.88,.84,.28],[.22,.72,.50],[.92,.45,.68],[.78,.82,.88]
+  ];
 
   function shadow(g,x,z,sx,sz,alpha=.17){
     const c=envCfg(g);if(!c.shadows)return;
@@ -86,8 +89,10 @@
     const side=x<0?-1:1,s=opts.scale??.68,ground=opts.groundY??-.205,yaw=opts.yaw??(side<0?Math.PI:0),cx=(lo[0]+hi[0])*.5,cz=(lo[2]+hi[2])*.5,c=Math.cos(yaw),sn=Math.sin(yaw),rcx=c*cx+sn*cz,rcz=-sn*cx+c*cz;
     if(opts.shadow!==false)shadow(g,x,z,.94*s/.68,1.62*s/.68,.15);
     const model=compose(x-rcx*s,ground-lo[1]*s,z-rcz*s,0,yaw,0,s,s,s);
+    const bodyTint=opts.color||DECOR_CAR_COLORS[(index*5+Math.abs(Math.floor(z*.1)))%DECOR_CAR_COLORS.length];
     for(const part of parts){
-      const color=part.emissive>0?part.color.map(v=>clamp(v*(1+part.emissive*.28)+part.emissive*.08,0,1)):part.color;
+      let color=part.name==='car_main'?bodyTint:part.color;
+      if(part.emissive>0)color=color.map(v=>clamp(v*(1+part.emissive*.28)+part.emissive*.08,0,1));
       r.draw(part.mesh,model,color,part.alpha);
     }
   }
