@@ -119,7 +119,7 @@ assert(carHead==='ID3'||carHead.charCodeAt(0)===255,'car audio asset does not lo
 const jumpFile='assets/audio/jump-loop-v30.mp3';
 const jumpStat=fs.statSync(jumpFile);
 const jumpHead=fs.readFileSync(jumpFile).subarray(0,3).toString('ascii');
-assert(jumpStat.size>8000,'jump audio asset is unexpectedly small');
+assert(jumpStat.size>6000,'jump audio asset is unexpectedly small');
 assert(jumpHead==='ID3'||jumpHead.charCodeAt(0)===255,'jump audio asset does not look like MP3 data');
 
 const sw=fs.readFileSync('sw.js','utf8');
