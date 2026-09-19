@@ -7,7 +7,7 @@ button{font:inherit;border:0}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hidden{display:none!important}
 .world-labels{position:absolute;inset:0;z-index:8;pointer-events:none;overflow:hidden}
-.world-label{position:absolute;transform:translate(-50%,-50%);min-width:50px;padding:5px 10px;border-radius:9px;color:#fff;text-align:center;font-weight:1000;line-height:1;letter-spacing:-.03em;text-shadow:0 2px 3px rgba(30,35,60,.34);border:1px solid rgba(255,255,255,.68);box-shadow:0 4px 10px rgba(55,61,90,.14)}
+.world-label{position:absolute;transform:translate(-50%,-50%);min-width:50px;padding:5px 10px;border-radius:9px;color:#fff;text-align:center;font-weight:1000;line-height:1;letter-spacing:-.03em;white-space:nowrap;text-shadow:0 2px 3px rgba(30,35,60,.34);border:1px solid rgba(255,255,255,.68);box-shadow:0 4px 10px rgba(55,61,90,.14)}
 .world-label.good{background:linear-gradient(#70d9d3,#46b7c3)}
 .world-label.bad{background:linear-gradient(#e97982,#c64e69)}
 .world-label.enemy{background:#d5525c;border-radius:11px;padding:6px 12px}
