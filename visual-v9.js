@@ -282,49 +282,68 @@
   }
   const oldObstacle=P.drawObstacle;
   P.drawObstacle=function(o,z){
-    const r=this.renderer,m=this.meshes,p=this.biome.palette,t=this.time*(o.speed||1)+(o.phase||0);
+    const r=this.renderer,m=this.meshes,p=this.biome.palette,t=this.time*(o.speed||1)+(o.phase||0),steel=[.57,.61,.66],steelHi=[.78,.81,.84],dark=[.14,.16,.19],rubber=[.055,.065,.075],hazard=[.98,.61,.06],warning=[.78,.08,.055];
     if(o.kind==='saw'){
-      const x=o.baseX+Math.sin(t)*o.range,rot=this.time*5.4;dangerPad(this,o.baseX,z,Math.max(2.4,o.range*2+1.6),1.32,.20);warningBeacon(this,x,.94,z-.52,p.bad);
-      r.draw(m.box,compose(0,.09,z,0,0,0,9.7,.12,.62),shade(p.road,.65));
-      warningStripe(this,0,.16,z-.34,9.4,.16,.08,[.20,.21,.24],p.stripe);
-      r.draw(m.box,compose(x,.42,z+.02,0,0,0,1.55,.70,.72),[.20,.22,.25]);
-      r.draw(m.cylinder,compose(x,.70,z-.25,Math.PI/2,0,rot,1.05,.18,1.05),[.66,.69,.72]);
-      for(let i=0;i<12;i++){const a=rot+i*TAU/12;r.draw(m.cone,compose(x+Math.cos(a)*.96,.70+Math.sin(a)*.96,z-.25,0,0,-a,.20,.42,.20),i%2?[.82,.84,.86]:[.58,.60,.63]);}
-      r.draw(m.cylinder,compose(x,.70,z-.36,Math.PI/2,0,0,.34,.22,.34),p.bad);r.draw(m.sphere,compose(x,.70,z-.50,0,0,0,.10,.10,.10),[1,.36,.12],.92);
+      const x=o.baseX+Math.sin(t)*o.range,rot=this.time*9.5;dangerPad(this,o.baseX,z,Math.max(2.4,o.range*2+1.6),1.38,.18);warningBeacon(this,x,1.02,z-.60,p.bad);
+      r.draw(m.box,compose(0,.055,z,0,0,0,10.0,.10,.38),dark);r.draw(m.box,compose(0,.105,z-.12,0,0,0,9.7,.05,.07),steel);r.draw(m.box,compose(0,.105,z+.12,0,0,0,9.7,.05,.07),steel);
+      for(let q=-4.5;q<=4.5;q+=1.5)r.draw(m.box,compose(q,.045,z,0,0,0,.34,.07,.58),Math.round(q*2)%3?dark:hazard);
+      r.draw(m.box,compose(x,.27,z,0,0,0,.96,.34,.76),dark);r.draw(m.cylinder,compose(x,.60,z-.24,Math.PI/2,0,rot,1.06,.13,1.06),steel);r.draw(m.cylinder,compose(x,.60,z-.31,Math.PI/2,0,rot,.78,.07,.78),steelHi);
+      for(let i=0;i<12;i++){const a=rot+i*TAU/12;r.draw(m.cone,compose(x+Math.cos(a)*.99,.60+Math.sin(a)*.99,z-.24,0,0,-a,.21,.43,.21),i%2?steelHi:steel);}
+      r.draw(m.cylinder,compose(x,.60,z-.39,Math.PI/2,0,0,.31,.24,.31),warning);r.draw(m.sphere,compose(x,.60,z-.52,0,0,0,.09,.09,.09),[1,.40,.10],.95);
       return;
     }
     if(o.kind==='mines'){
-      for(let i=0;i<o.spikes.length;i++){const a=o.spikes[i],zz=z+a.z;dangerPad(this,a.x,zz,1.18,1.18,.18);const pulse=.09+.04*(Math.sin(this.time*6+i)*.5+.5);r.draw(m.cylinder,compose(a.x,.10,zz,0,0,0,.70,.18,.70),[.12,.15,.19]);r.draw(m.sphere,compose(a.x,.23,zz,0,0,0,.52,.26,.52),[.25,.28,.31]);for(let k=0;k<6;k++){const ang=k*TAU/6;r.draw(m.cone,compose(a.x+Math.cos(ang)*.40,.27,zz+Math.sin(ang)*.40,0,0,-ang,.11,.25,.11),[.42,.44,.46]);}r.draw(m.sphere,compose(a.x,.40,zz,0,0,0,pulse,pulse,pulse),p.bad,.98);}
+      for(let i=0;i<o.spikes.length;i++){
+        const a=o.spikes[i],zz=z+a.z,pulse=.10+(.5+.5*Math.sin(this.time*7+i*1.7))*.055;dangerPad(this,a.x,zz,1.20,1.20,.16);
+        r.draw(m.cylinder,compose(a.x,.075,zz,0,0,0,.70,.15,.70),rubber);r.draw(m.cylinder,compose(a.x,.17,zz,0,0,0,.57,.17,.57),dark);r.draw(m.sphere,compose(a.x,.25,zz,0,0,0,.41,.22,.41),[.30,.33,.36]);
+        for(let k=0;k<8;k++){const ang=k*TAU/8;r.draw(m.cone,compose(a.x+Math.cos(ang)*.48,.23,zz+Math.sin(ang)*.48,0,ang,0,.10,.31,.10),steel);}
+        r.draw(m.cylinder,compose(a.x,.35,zz,0,0,0,.15,.08,.15),warning);r.draw(m.sphere,compose(a.x,.42,zz,0,0,0,pulse,pulse,pulse),[1,.12,.05],.98);
+      }
       return;
     }
     if(o.kind==='spikes'){
-      for(const a of o.spikes){const zz=z+a.z;dangerPad(this,a.x,zz,1.18,1.18,.20);r.draw(m.box,compose(a.x,.06,zz,0,0,0,1.05,.10,1.05),[.18,.20,.23]);for(let k=-1;k<=1;k++)r.draw(m.cone,compose(a.x+k*.26,.36,zz+(k%2)*.12,0,0,0,.23,.76,.23),k===0?[.78,.80,.82]:[.60,.62,.65]);r.draw(m.box,compose(a.x,.10,zz-.54,0,0,.45,.72,.08,.04),p.stripe);}
+      for(const a of o.spikes){
+        const zz=z+a.z;dangerPad(this,a.x,zz,1.20,1.20,.18);
+        r.draw(m.box,compose(a.x,.07,zz,0,0,0,1.04,.14,.90),dark);r.draw(m.box,compose(a.x,.15,zz-.37,0,0,0,.88,.08,.07),hazard);
+        r.draw(m.cone,compose(a.x,.55,zz,0,0,0,.43,.90,.43),steelHi);r.draw(m.cone,compose(a.x-.29,.40,zz+.07,0,0,-.18,.24,.59,.24),steel);r.draw(m.cone,compose(a.x+.29,.40,zz+.07,0,0,.18,.24,.59,.24),steel);
+      }
       return;
     }
     if(o.kind==='hammer'){
-      const centers=[-2.7+Math.sin(t)*o.range,2.7-Math.sin(t)*o.range];for(const cx of centers){dangerPad(this,cx,z,1.72,1.35,.20);warningBeacon(this,cx,1.72,z-.58,p.bad);}
-      for(let i=0;i<2;i++){const side=i?1:-1,anchor=side*5.25,x=centers[i],mid=(anchor+x)/2;r.draw(m.box,compose(anchor,1.22,z,0,0,0,.62,2.45,.82),[.23,.25,.28]);r.draw(m.cylinder,compose(mid,1.72,z,0,0,Math.PI/2,Math.abs(anchor-x)*.52,.15,.15),[.40,.42,.44]);r.draw(m.box,compose(x,1.03,z,0,0,0,1.55,1.45,1.05),[.27,.29,.31]);warningStripe(this,x,1.04,z-.56,1.25,.24,.05,p.stripe,[.16,.17,.19]);for(const bx of[-.46,.46])r.draw(m.sphere,compose(x+bx,1.48,z-.54,0,0,0,.08,.08,.08),[.78,.80,.82]);}
+      const centers=[-2.7+Math.sin(t)*o.range,2.7-Math.sin(t)*o.range];
+      for(const cx of centers){dangerPad(this,cx,z,1.78,1.40,.18);warningBeacon(this,cx,1.80,z-.62,p.bad);}
+      for(let i=0;i<2;i++){
+        const side=i?1:-1,anchor=side*5.28,x=centers[i],mid=(anchor+x)/2,len=Math.abs(anchor-x);
+        r.draw(m.box,compose(anchor,.10,z,0,0,0,.78,.20,.96),dark);r.draw(m.cylinder,compose(anchor,1.42,z,0,0,0,.30,2.80,.30),dark);r.draw(m.cylinder,compose(anchor,2.55,z,Math.PI/2,0,0,.40,.23,.40),hazard);
+        r.draw(m.box,compose(mid,1.82,z,0,0,Math.sin(t+i*Math.PI)*.07,len,.18,.27),steel);r.draw(m.box,compose(mid,1.82,z-.15,0,0,Math.sin(t+i*Math.PI)*.07,len,.06,.08),dark);
+        r.draw(m.box,compose(x,1.02,z,0,0,0,1.28,1.50,.96),dark);warningStripe(this,x,1.03,z-.52,1.03,.28,.06,hazard,warning);
+        for(const bx of[-.44,.44])r.draw(m.sphere,compose(x+bx,1.51,z-.54,0,0,0,.075,.075,.075),steelHi);
+      }
       return;
     }
     if(o.kind==='laser'){
-      const safeX=o.dynamic?Math.sin(t)*3.05:o.safeX,gap=1.05,left=safeX-gap,right=safeX+gap;safePad(this,safeX,z,gap*2.0,1.55,.48);
-      for(const side of[-1,1]){const x=side*5.20;r.draw(m.box,compose(x,.85,z,0,0,0,.78,1.76,.92),[.20,.19,.31]);r.draw(m.cylinder,compose(x,1.20,z-.36,Math.PI/2,0,0,.32,.24,.32),p.accent);r.draw(m.sphere,compose(x,1.20,z-.62,0,0,0,.18,.18,.18),[1,.10,.16],.98);}
-      if(left>-5.02)r.draw(m.box,compose((-5.02+left)/2,.74,z-.22,0,0,0,left+5.02,.08,.08),[1,.06,.12],.96);
-      if(right<5.02)r.draw(m.box,compose((right+5.02)/2,.74,z-.22,0,0,0,5.02-right,.08,.08),[1,.06,.12],.96);
-      this.addWorldLabel([safeX,1.90,z],'БЕЗОПАСНО','good');return;
+      const safeX=o.dynamic?Math.sin(t)*3.05:o.safeX,gap=1.05,left=safeX-gap,right=safeX+gap,pulse=.66+.34*Math.sin(this.time*12);safePad(this,safeX,z,gap*2.0,1.58,.42);
+      for(const side of[-1,1]){
+        const x=side*5.20;r.draw(m.box,compose(x,.10,z,0,0,0,.78,.20,.84),dark);r.draw(m.cylinder,compose(x,.78,z,0,0,0,.30,1.48,.30),dark);r.draw(m.cylinder,compose(x,1.20,z-.28,Math.PI/2,0,0,.32,.22,.32),steel);r.draw(m.sphere,compose(x,1.20,z-.50,0,0,0,.20,.20,.20),[1,.055,.08],.98);r.draw(m.sphere,compose(x,1.20,z-.54,0,0,0,.34,.34,.12),[1,.10,.08],.18+.14*pulse);
+      }
+      const beam=(cx,w)=>{if(w<=0)return;r.draw(m.box,compose(cx,.74,z-.18,0,0,0,w,.065,.065),[1,.05,.08],.99);r.draw(m.box,compose(cx,.74,z-.17,0,0,0,w,.16,.13),[1,.14,.14],.14+.08*pulse);};
+      if(left>-5.02)beam((-5.02+left)/2,left+5.02);if(right<5.02)beam((right+5.02)/2,5.02-right);
+      this.addWorldLabel([safeX,1.92,z],'БЕЗОПАСНО','good');return;
     }
     if(o.kind==='crusher'){
-      const gapX=Math.sin(t)*2.7,left=gapX-1.35,right=gapX+1.35;safePad(this,gapX,z,2.55,1.45,.46);
-      for(const side of[-1,1]){const x=side*5.28;r.draw(m.box,compose(x,1.42,z,0,0,0,.50,2.9,.88),[.20,.22,.25]);r.draw(m.cylinder,compose(x-side*.34,1.42,z,0,0,0,.12,2.42,.12),[.58,.60,.62]);}
-      if(left>-5.1){const w=left+5.1;r.draw(m.box,compose(-5.1+w/2,.82,z,0,0,0,w,1.62,.80),[.44,.18,.16]);warningStripe(this,-5.1+w/2,1.32,z-.42,w*.88,.18,.05,p.stripe,[.12,.13,.15]);}
-      if(right<5.1){const w=5.1-right;r.draw(m.box,compose(right+w/2,.82,z,0,0,0,w,1.62,.80),[.44,.18,.16]);warningStripe(this,right+w/2,1.32,z-.42,w*.88,.18,.05,p.stripe,[.12,.13,.15]);}
-      return;
+      const gapX=Math.sin(t)*2.7,left=gapX-1.35,right=gapX+1.35;safePad(this,gapX,z,2.55,1.48,.42);
+      for(const side of[-1,1]){const x=side*5.28;r.draw(m.box,compose(x,.11,z,0,0,0,.86,.22,1.14),dark);r.draw(m.cylinder,compose(x,1.36,z,0,0,0,.28,2.62,.28),steel);r.draw(m.cylinder,compose(x,2.50,z,Math.PI/2,0,0,.38,.20,.38),hazard);}
+      r.draw(m.box,compose(0,2.62,z,0,0,0,10.65,.30,.52),dark);
+      const panel=(cx,w)=>{r.draw(m.box,compose(cx,.84,z,0,0,0,w,1.66,.82),dark);warningStripe(this,cx,1.30,z-.43,w*.88,.17,.05,hazard,warning);};
+      if(left>-5.1){const w=left+5.1;panel(-5.1+w/2,w);}if(right<5.1){const w=5.1-right;panel(right+w/2,w);}
+      this.addWorldLabel([gapX,2.08,z],'ПРОХОД','good');return;
     }
     if(o.kind==='movingWall'){
-      const gapX=Math.sin(t)*3.05,g=o.gapWidth||1.45,left=gapX-g,right=gapX+g;safePad(this,gapX,z,g*1.75,1.50,.48);
-      const panel=(cx,w)=>{r.draw(m.box,compose(cx,.92,z,0,0,0,w,1.84,.72),[.21,.24,.29]);for(let yy=.35;yy<1.65;yy+=.42)r.draw(m.box,compose(cx,yy,z-.39,0,0,0,w*.86,.07,.04),yy<.9?p.accent:p.structure,.72);};
+      const gapX=Math.sin(t)*3.05,g=o.gapWidth||1.45,left=gapX-g,right=gapX+g;safePad(this,gapX,z,g*1.78,1.52,.44);
+      for(const side of[-1,1]){const x=side*5.30;r.draw(m.box,compose(x,.12,z,0,0,0,.58,.24,1.12),dark);r.draw(m.cylinder,compose(x,1.18,z,0,0,0,.18,2.18,.18),steel);}
+      const panel=(cx,w)=>{r.draw(m.box,compose(cx,.92,z,0,0,0,w,1.84,.72),dark);for(let yy=.34;yy<1.66;yy+=.40)r.draw(m.box,compose(cx,yy,z-.39,0,0,0,w*.87,.06,.04),yy<.9?steel:steelHi,.60);};
       if(left>-5.12){const w=left+5.12;panel(-5.12+w/2,w);}if(right<5.12){const w=5.12-right;panel(right+w/2,w);}
-      r.draw(m.box,compose(gapX,1.78,z-.10,0,0,0,g*2,.12,.85),p.good);for(const sx of[-g*.76,g*.76])r.draw(m.sphere,compose(gapX+sx,1.80,z-.54,0,0,0,.08,.08,.08),p.good,.96);
+      r.draw(m.box,compose(gapX,1.78,z-.10,0,0,0,g*2,.12,.85),hazard);r.draw(m.box,compose(gapX,1.64,z-.45,0,0,0,g*1.45,.06,.04),warning);
       this.addWorldLabel([gapX,2.18,z],'ПРОХОД','good');return;
     }
     oldObstacle.call(this,o,z);
