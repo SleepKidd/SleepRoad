@@ -121,5 +121,32 @@ const missionState=Object.assign(Object.create(game),{
   mission:{kind:'moon'},collectedMoonCount:7,levelMoons:999
 });
 assert.equal(game.missionProgress.call(missionState),7);
+const completedTimed=Object.assign(Object.create(game),{
+  mission:{kind:'moon',target:3,reward:10,title:'test'},
+  collectedMoonCount:3,dodgedObstacles:0,playerCount:20,
+  missionCompleted:false,missionTimerFrozen:false,missionCompletedAtTime:0,
+  profile:{timed:true,noHit:false,title:'Timed test'},
+  levelTimeRemaining:12,time:5
+});
+assert.equal(game.syncMissionCompletion.call(completedTimed),true);
+assert.equal(completedTimed.missionCompleted,true);
+assert.equal(completedTimed.missionTimerFrozen,true);
+completedTimed.collectedMoonCount=0;
+assert.equal(game.missionComplete.call(completedTimed),true,'completed mission must stay completed after being latched');
 
-console.log('PASS: model, Level Director, 15+ obstacles, crowd pickup, income, missions, finish multiplier');
+const timedUpdate=Object.assign(Object.create(game),{
+  level:14,mission:{kind:'moon',target:1,reward:10,title:'test'},collectedMoonCount:1,dodgedObstacles:0,
+  missionCompleted:false,missionTimerFrozen:false,missionCompletedAtTime:0,
+  profile:director.profileForLevel(14),biome:director.profileForLevel(14).biome,
+  levelTimeRemaining:20,time:2,state:'running',shake:0,flash:0,
+  knockouts:[],magnetBoost:0,invulnTimer:0,jumpTimer:0,boostTimer:0,slowTimer:0,doubleTimer:0,doubleActive:false,bankedCrowd:0,tookDamage:false,challengeReward:0,
+  playerCount:20,visualCount:20,playerX:0,targetX:0,playerZ:1.6,baseSpeed:9,speed:9,travel:0,levelLength:500,
+  keys:new Set(),objects:[],crowdBatch:new systems.CrowdBatch({},{}),
+  updateKnockouts(){},setCrowdCount(){},toast(){},fail(reason){this.failedReason=reason;this.state='failed';},
+  audio:{bad(){},good(){},hit(){},tone(){}},updateMissionUI(){game.syncMissionCompletion.call(this);}
+});
+game.update.call(timedUpdate,1);
+assert.equal(timedUpdate.levelTimeRemaining,20,'timer must freeze immediately when timed mission objective is complete');
+assert.notEqual(timedUpdate.state,'failed');
+
+console.log('PASS: model, Level Director, 15+ obstacles, crowd pickup, income, timed mission latch/freeze, finish multiplier');
