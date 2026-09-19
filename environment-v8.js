@@ -97,7 +97,7 @@
     const side=x<0?-1:1,s=opts.scale??.68,ground=opts.groundY??-.205,yaw=opts.yaw??(side<0?Math.PI:0),cx=(lo[0]+hi[0])*.5,cz=(lo[2]+hi[2])*.5,c=Math.cos(yaw),sn=Math.sin(yaw),rcx=c*cx+sn*cz,rcz=-sn*cx+c*cz;
     if(opts.shadow!==false)shadow(g,x,z,.94*s/.68,1.62*s/.68,.15);
     const model=compose(x-rcx*s,ground-lo[1]*s,z-rcz*s,0,yaw,0,s,s,s);
-    const bodyTint=opts.color||DECOR_CAR_COLORS[Math.abs(index)%DECOR_CAR_COLORS.length];
+    const colorIndex=Math.floor(hash((index+1)*31.731)*DECOR_CAR_COLORS.length),bodyTint=opts.color||DECOR_CAR_COLORS[colorIndex];
     for(const part of parts){
       let color=part.name==='car_main'?bodyTint:part.color;
       if(part.emissive>0)color=color.map(v=>clamp(v*(1+part.emissive*.28)+part.emissive*.08,0,1));
