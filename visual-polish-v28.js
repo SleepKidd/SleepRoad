@@ -182,6 +182,20 @@
     }
   };
 
+  // Extra metallic contact sparks on top of the v6 hit flash/debris.
+  const oldHit=P.hitObstacle;
+  if(oldHit)P.hitObstacle=function(o,repeat=false){
+    const result=oldHit.call(this,o,repeat);
+    if(result?.damage&&this.v6Particles){
+      const hot=o?.kind==='fireline'||o?.kind==='laser'||o?.kind==='shockwave',base=hot?[1,.30,.06]:[1,.72,.28];
+      for(let i=0;i<10;i++){
+        const a=Math.random()*Math.PI*2,speed=1.8+Math.random()*4.2;
+        addParticle(this,{kind:'spark',x:this.playerX+(Math.random()-.5)*.5,y:.35+Math.random()*.55,z:this.playerZ+(Math.random()-.5)*.35,vx:Math.cos(a)*speed,vy:1.6+Math.random()*3.5,vz:Math.sin(a)*speed*.45,life:.18+Math.random()*.26,max:.44,size:.045+Math.random()*.055,color:i%3?base:STEEL_HI,gravity:7.2});
+      }
+    }
+    return result;
+  };
+
   // Every dangerous obstacle gets a grounded shadow, making it feel less like it floats.
   const oldObstacle=P.drawObstacle;
   P.drawObstacle=function(o,z){
