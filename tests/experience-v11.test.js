@@ -48,7 +48,7 @@ assert(index.includes('experience-v11.css'));
 assert(index.includes('experience-v11.js'));
 assert(index.indexOf('experience-v11.js')>index.indexOf('visual-v9.js'));
 assert(index.indexOf('experience-v11.js')<index.indexOf('boot-v4.js'));
-assert(sw.includes("const CACHE='sleep-road-v52';"));
+assert(sw.includes("const CACHE='sleep-road-v53';"));
 assert(sw.includes("'./experience-v11.css'"));
 assert(sw.includes("'./experience-v11.js'"));
 

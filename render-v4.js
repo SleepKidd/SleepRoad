@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const S=window.SleepRoadSystems,{compose,DEG,UI,COLORS,clamp,lerp,isGoodGate,gateLabel}=S,P=window.SleepRoad3D.prototype;
+  const S=window.SleepRoadSystems,{compose,DEG,UI,COLORS,clamp,lerp,isGoodGate,gateLabel}=S,P=window.SleepRoad3D.prototype,STEEL=[.58,.62,.67],STEEL_DARK=[.17,.19,.22],METAL_BLACK=[.08,.09,.10],HAZARD=[.96,.62,.08],WARNING=[.82,.12,.08];
   P.setCamera=function(){const aspect=this.w/this.h,depth=this.crowdBatch?this.crowdBatch.metrics(this.visualCount).depth:0,pullback=clamp((depth-2.55)*.92,0,12.5);if(this.state==='finish'||this.state==='complete'){const p=this.finishProgress;this.renderer.setCamera([lerp(0,6.2,p),lerp(9.2,7.1,p)+pullback*.27,lerp(16.2,14.2,p)+pullback],[0,lerp(.55,1.45,p),lerp(-18,-4,p)],aspect,48*DEG);}else{const sx=this.shake?(Math.random()-.5)*.08*this.shake:0,sy=this.shake?(Math.random()-.5)*.035*this.shake:0,mobile=this.w/this.h<.7;this.renderer.setCamera([sx,(mobile?10.15:8.95)+pullback*.42+sy,16.0+pullback],[0,.58,-17+pullback*.20],aspect,(mobile?50:46)*DEG);}};
   P.render=function(){this.setCamera();this.renderer.clear(.48,.73,.94,1);this.beginLabels();this.drawEnvironment();if(this.state==='finish'||this.state==='complete')this.drawFinishScene();else this.drawCourse();this.drawKnockouts();this.endLabels();this.updateCrowdLabel();UI.canvas.style.filter=this.flash>0?`brightness(${1+this.flash*.82}) saturate(${1+this.flash*.52})`:'none';};
   P.drawEnvironment=function(){const r=this.renderer,m=this.meshes,span=286,wrap=v=>((v%span)+span)%span;r.draw(m.box,compose(0,-.72,-122,0,0,0,80,.9,286),COLORS.grass);r.draw(m.box,compose(0,-.22,-122,0,0,0,12,.45,286),COLORS.road);r.draw(m.box,compose(-6.18,-.02,-122,0,0,0,.34,.55,286),COLORS.roadEdge);r.draw(m.box,compose(6.18,-.02,-122,0,0,0,.34,.55,286),COLORS.roadEdge);r.draw(m.box,compose(-5.77,.025,-122,0,0,0,.10,.06,286),COLORS.gold);r.draw(m.box,compose(5.77,.025,-122,0,0,0,.10,.06,286),COLORS.gold);for(let i=0;i<35;i++){const z=10-wrap(i*8.35-this.travel);r.draw(m.box,compose(0,.025,z,0,0,0,.15,.045,3.0),COLORS.roadStripe);}for(let i=0;i<24;i++){const h1=Math.abs(Math.sin((i+1)*12.9898)*43758.5453)%1,h2=Math.abs(Math.sin((i+7)*7.233)*19341.731)%1,h3=Math.abs(Math.sin((i+19)*3.117)*11231.137)%1,z=10-wrap(i*12.2+h3*5.5-this.travel*.94),side=h1>.5?1:-1,x=side*(7.9+h2*10.5),treeScale=.52+h3*.58;r.draw(m.cylinder,compose(x,.23*treeScale,z,0,0,0,.32*treeScale,1.65*treeScale,.32*treeScale),[.31,.21,.12]);r.draw(m.cone,compose(x,1.48*treeScale,z,0,0,0,1.65*treeScale,2.75*treeScale,1.65*treeScale),i%4===0?COLORS.grassDark:[.18+h3*.06,.45+h2*.08,.27]);if(i%3===0)r.draw(m.cone,compose(x+side*(1.2+h3),.24,z-1.6,0,0,0,.55,.85,.55),i%2?COLORS.island:COLORS.islandTop);}for(let i=0;i<8;i++){const side=i%2?-1:1,x=side*(19+(i%3)*5),z=-42-i*28,s=4.5+(i%3)*1.2;r.draw(m.cone,compose(x,-.25,z,0,0,0,s,s*1.45,s),i%2?COLORS.island:COLORS.islandTop);}r.draw(m.sphere,compose(-11,17,-115,0,0,0,3.2,3.2,3.2),[1,.82,.31]);for(let i=0;i<5;i++){const x=-16+i*8,z=-58-i*9,y=11+(i%2)*2;r.draw(m.sphere,compose(x,y,z,0,0,0,2.5,1.0,1.1),[.93,.97,1]);r.draw(m.sphere,compose(x+2.0,y-.1,z,0,0,0,1.8,.75,.9),[.93,.97,1]);}for(let i=0;i<15;i++){const z=8-wrap(i*18.4-this.travel*.98),side=i%2?-1:1,x=side*6.72;r.draw(m.cylinder,compose(x,.47,z,0,0,0,.10,.84,.10),COLORS.white);r.draw(m.box,compose(x,.63,z,0,0,0,.24,.22,.16),i%3?COLORS.red:COLORS.gold);}};
@@ -10,17 +10,79 @@
   P.drawPowerup=function(o,z){const r=this.renderer,m=this.meshes,bob=Math.sin(this.time*3.2+o.spin)*.18,y=1.15+bob,rot=this.time*1.8+o.spin;r.draw(m.sphere,compose(o.x,y,z,0,rot,0,.88,.88,.88),[.18,.75,1]);r.draw(m.sphere,compose(o.x,y,z,0,rot,0,.58,.58,.58),[.55,.94,1]);r.draw(m.box,compose(o.x,y,z-.58,0,rot,0,.16,.70,.12),COLORS.white);r.draw(m.box,compose(o.x,y,z-.59,0,rot,0,.62,.16,.12),COLORS.white);this.addWorldLabel([o.x,2.28,z],'ЩИТ','powerup');};
   P.drawObstacle=function(o,z){if(o.kind==='spinner')this.drawSpinner(o,z);else if(o.kind==='saw')this.drawSaw(o,z);else if(o.kind==='pusher')this.drawPusher(o,z);else if(o.kind==='spikes')this.drawSpikes(o,z);else if(o.kind==='mines')this.drawMines(o,z);else if(o.kind==='hammer')this.drawHammer(o,z);else if(o.kind==='roller')this.drawRoller(o,z);else if(o.kind==='laser')this.drawLaser(o,z);else if(o.kind==='barrier')this.drawBarrier(o,z);else if(o.kind==='crusher')this.drawCrusher(o,z);else if(o.kind==='pendulum')this.drawPendulum(o,z);else this.drawPoles(o,z);};
   P.drawSpinner=function(o,z){const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes;r.draw(m.cylinder,compose(0,.05,z,0,0,0,1.0,.08,1.0),[.18,.20,.25]);r.draw(m.cylinder,compose(0,.38,z,0,0,0,.58,.42,.58),COLORS.gray);r.draw(m.box,compose(0,.47,z,0,a,0,7.9,.24,.46),COLORS.red);r.draw(m.box,compose(0,.49,z,0,a+Math.PI/2,0,5.9,.22,.43),COLORS.orange);for(let i=-3;i<=3;i+=2)r.draw(m.box,compose(Math.cos(a)*i,.51,z-Math.sin(a)*i,0,a,0,.30,.26,.49),COLORS.white);r.draw(m.cylinder,compose(0,.60,z,0,0,0,.52,.31,.52),COLORS.white);};
-  P.drawSaw=function(o,z){const a=this.time*o.speed+o.phase,x=o.baseX+Math.sin(a)*o.range,r=this.renderer,m=this.meshes;r.draw(m.box,compose(0,.05,z,0,0,0,9.7,.09,.20),[.22,.24,.29]);for(let i=-4;i<=4;i+=2)r.draw(m.box,compose(i,.10,z,0,0,0,.70,.08,.27),COLORS.gold);r.draw(m.cylinder,compose(x,.56,z,Math.PI/2,0,this.time*5.2,1.08,.20,1.08),COLORS.red);for(let i=0;i<8;i++){const t=i*Math.PI/4+this.time*5.2;r.draw(m.cone,compose(x+Math.cos(t)*.96,.56+Math.sin(t)*.96,z,0,0,-t,.30,.50,.30),COLORS.red);}r.draw(m.cylinder,compose(x,.56,z+.12,Math.PI/2,0,0,.36,.23,.36),COLORS.purple);};
+  P.drawSaw=function(o,z){
+    const a=this.time*o.speed+o.phase,x=o.baseX+Math.sin(a)*o.range,r=this.renderer,m=this.meshes,spin=this.time*9.5;
+    // Recessed steel rail with sleepers and a motor carriage.
+    r.draw(m.box,compose(0,.055,z,0,0,0,10.0,.10,.34),STEEL_DARK);
+    r.draw(m.box,compose(0,.105,z-.11,0,0,0,9.65,.06,.07),STEEL);
+    r.draw(m.box,compose(0,.105,z+.11,0,0,0,9.65,.06,.07),STEEL);
+    for(let i=-4.5;i<=4.5;i+=1.5)r.draw(m.box,compose(i,.045,z,0,0,0,.34,.07,.56),i%3?STEEL_DARK:HAZARD);
+    r.draw(m.box,compose(x,.25,z,0,0,0,.92,.32,.72),STEEL_DARK);
+    r.draw(m.cylinder,compose(x,.55,z,Math.PI/2,0,spin,1.04,.13,1.04),STEEL);
+    r.draw(m.cylinder,compose(x,.55,z+.09,Math.PI/2,0,spin,.78,.08,.78),[.72,.75,.78]);
+    for(let i=0;i<12;i++){const t=i*Math.PI/6+spin;r.draw(m.cone,compose(x+Math.cos(t)*.98,.55+Math.sin(t)*.98,z,0,0,-t,.22,.42,.22),STEEL);}
+    r.draw(m.cylinder,compose(x,.55,z+.17,Math.PI/2,0,0,.31,.24,.31),WARNING);
+    r.draw(m.cylinder,compose(x,.55,z+.22,Math.PI/2,0,0,.13,.26,.13),STEEL_DARK);
+  };
   P.drawPusher=function(o,z){const a=this.time*o.speed+o.phase,reach=.65+(Math.sin(a)*.5+.5)*2.55,sideX=o.side*5.62,inner=o.side<0?-5.62+reach:5.62-reach,mid=(sideX+inner)/2,len=Math.abs(sideX-inner),r=this.renderer,m=this.meshes;r.draw(m.box,compose(mid,.51,z,0,0,0,len,.20,.28),COLORS.purple);r.draw(m.box,compose(inner,.59,z,0,0,0,.84,1.16,.94),COLORS.purple);for(let j=-1;j<=1;j++)r.draw(m.cone,compose(inner-o.side*.58,.59+j*.34,z,0,0,o.side<0?Math.PI/2:-Math.PI/2,.34,.61,.34),COLORS.red);};
   P.drawSpikes=function(o,z){const r=this.renderer,m=this.meshes,spikes=o.spikes||[];for(const p of spikes){r.draw(m.cone,compose(p.x,.36,z+p.z,0,0,0,.50,.82,.50),COLORS.red);r.draw(m.cylinder,compose(p.x,.035,z+p.z,0,0,0,.46,.07,.46),COLORS.roadEdge);}};
   P.drawMines=function(o,z){const r=this.renderer,m=this.meshes;for(let i=0;i<o.spikes.length;i++){const p=o.spikes[i],pulse=.12+Math.sin(this.time*5+i)*.04;r.draw(m.cylinder,compose(p.x,.10,z+p.z,0,0,0,.66,.18,.66),COLORS.navy);r.draw(m.sphere,compose(p.x,.24,z+p.z,0,0,0,.48,.28,.48),[.22,.25,.31]);r.draw(m.sphere,compose(p.x,.39,z+p.z,0,0,0,pulse,pulse,pulse),COLORS.red);}};
   P.drawPoles=function(o,z){const r=this.renderer,m=this.meshes;for(const x of o.poleXs){r.draw(m.cylinder,compose(x,.67,z,0,0,0,.50,1.32,.50),COLORS.red);r.draw(m.cylinder,compose(x,.035,z,0,0,0,.58,.07,.58),COLORS.roadEdge);r.draw(m.cylinder,compose(x,1.35,z,0,0,0,.51,.08,.51),COLORS.white);}};
   P.drawBarrier=function(o,z){const r=this.renderer,m=this.meshes;for(let i=0;i<o.poleXs.length;i++){const x=o.poleXs[i],h=.72+(i%2)*.28;r.draw(m.box,compose(x,h*.5,z,0,0,0,.92,h,.54),i%2?COLORS.orange:COLORS.red);r.draw(m.box,compose(x,h*.68,z-.29,0,0,i%2?.18:-.18,.78,.13,.08),COLORS.white);r.draw(m.cylinder,compose(x-.31,.10,z+.18,Math.PI/2,0,0,.15,.12,.15),COLORS.navy);r.draw(m.cylinder,compose(x+.31,.10,z+.18,Math.PI/2,0,0,.15,.12,.15),COLORS.navy);}};
-  P.drawHammer=function(o,z){const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,centers=[-2.7+Math.sin(a)*o.range,2.7-Math.sin(a)*o.range];for(let i=0;i<2;i++){const side=i?1:-1,anchor=side*5.35,x=centers[i],mid=(anchor+x)/2;r.draw(m.cylinder,compose(anchor,1.20,z,0,0,0,.24,2.4,.24),COLORS.purple);r.draw(m.box,compose(mid,1.65,z,0,0,Math.sin(a+i*Math.PI)*.08,Math.abs(anchor-x),.18,.22),COLORS.gray);r.draw(m.box,compose(x,1.02,z,0,0,0,1.12,1.35,.85),i?COLORS.orange:COLORS.red);r.draw(m.box,compose(x,1.02,z-.46,0,0,0,.78,.22,.08),COLORS.white);}};
-  P.drawRoller=function(o,z){const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,centers=[Math.sin(a)*3.15,-Math.sin(a*.83+1.2)*3.0];r.draw(m.box,compose(0,.035,z,0,0,0,10.2,.05,.16),COLORS.gold);for(let i=0;i<2;i++){const x=centers[i],rz=this.time*(i?4.5:-5.2);r.draw(m.cylinder,compose(x,.64,z,Math.PI/2,0,rz,.82,1.18,.82),i?COLORS.purple:COLORS.orange);r.draw(m.cylinder,compose(x,.64,z-.62,Math.PI/2,0,rz,.88,.10,.88),COLORS.white);r.draw(m.cylinder,compose(x,.64,z+.62,Math.PI/2,0,rz,.88,.10,.88),COLORS.white);}};
+  P.drawHammer=function(o,z){
+    const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,centers=[-2.7+Math.sin(a)*o.range,2.7-Math.sin(a)*o.range];
+    for(let i=0;i<2;i++){
+      const side=i?1:-1,anchor=side*5.35,x=centers[i],mid=(anchor+x)/2,armLen=Math.abs(anchor-x);
+      r.draw(m.box,compose(anchor,.10,z,0,0,0,.72,.20,.88),STEEL_DARK);
+      r.draw(m.cylinder,compose(anchor,1.35,z,0,0,0,.30,2.7,.30),STEEL_DARK);
+      r.draw(m.cylinder,compose(anchor,2.38,z,Math.PI/2,0,0,.42,.24,.42),HAZARD);
+      r.draw(m.box,compose(mid,1.78,z,0,0,Math.sin(a+i*Math.PI)*.08,armLen,.18,.26),STEEL);
+      r.draw(m.box,compose(mid,1.78,z-.15,0,0,Math.sin(a+i*Math.PI)*.08,armLen,.06,.08),STEEL_DARK);
+      r.draw(m.box,compose(x,1.00,z,0,0,0,1.22,1.46,.92),STEEL_DARK);
+      r.draw(m.box,compose(x,.98,z-.48,0,0,0,.92,.30,.10),WARNING);
+      r.draw(m.box,compose(x,.98,z-.54,0,0,0,.44,.30,.05),HAZARD);
+    }
+  };
+  P.drawRoller=function(o,z){
+    const a=this.time*o.speed+o.phase,r=this.renderer,m=this.meshes,centers=[Math.sin(a)*3.15,-Math.sin(a*.83+1.2)*3.0];
+    r.draw(m.box,compose(0,.04,z,0,0,0,10.25,.08,.22),STEEL_DARK);
+    for(let i=0;i<2;i++){
+      const x=centers[i],rz=this.time*(i?6.4:-7.0);
+      r.draw(m.cylinder,compose(x,.66,z,Math.PI/2,0,rz,.84,1.22,.84),STEEL_DARK);
+      for(let k=-2;k<=2;k++)r.draw(m.box,compose(x,.66+k*.28,z-.02,0,0,rz,.10,1.52,.12),k%2?HAZARD:STEEL);
+      r.draw(m.cylinder,compose(x,.66,z-.64,Math.PI/2,0,rz,.90,.11,.90),STEEL);
+      r.draw(m.cylinder,compose(x,.66,z+.64,Math.PI/2,0,rz,.90,.11,.90),STEEL);
+      r.draw(m.cylinder,compose(x,.66,z+.77,Math.PI/2,0,0,.22,.17,.22),WARNING);
+    }
+  };
   P.drawLaser=function(o,z){const r=this.renderer,m=this.meshes,leftEnd=o.safeX-1.05,rightStart=o.safeX+1.05;r.draw(m.box,compose(-5.25,.82,z,0,0,0,.46,1.62,.55),COLORS.purple);r.draw(m.box,compose(5.25,.82,z,0,0,0,.46,1.62,.55),COLORS.purple);r.draw(m.sphere,compose(-5.25,1.20,z-.30,0,0,0,.24,.24,.24),COLORS.red);r.draw(m.sphere,compose(5.25,1.20,z-.30,0,0,0,.24,.24,.24),COLORS.red);if(leftEnd>-5.05)r.draw(m.box,compose((-5.05+leftEnd)/2,.72,z,0,0,0,leftEnd+5.05,.12,.12),[1,.08,.12]);if(rightStart<5.05)r.draw(m.box,compose((rightStart+5.05)/2,.72,z,0,0,0,5.05-rightStart,.12,.12),[1,.08,.12]);this.addWorldLabel([o.safeX,1.85,z],'БЕЗОПАСНО','good');};
-  P.drawCrusher=function(o,z){const a=this.time*o.speed+o.phase,gapX=Math.sin(a)*2.7,leftEnd=gapX-1.35,rightStart=gapX+1.35,r=this.renderer,m=this.meshes;if(leftEnd>-5.2){const w=leftEnd+5.2;r.draw(m.box,compose(-5.2+w/2,.78,z,0,0,0,w,1.55,.76),COLORS.red);}if(rightStart<5.2){const w=5.2-rightStart;r.draw(m.box,compose(rightStart+w/2,.78,z,0,0,0,w,1.55,.76),COLORS.red);}for(const x of [-5.35,5.35])r.draw(m.cylinder,compose(x,1.03,z,0,0,0,.28,2.05,.28),COLORS.purple);this.addWorldLabel([gapX,1.92,z],'ПРОХОД','good');};
-  P.drawPendulum=function(o,z){const a=this.time*o.speed+o.phase,x=Math.sin(a)*3.65,angle=Math.atan2(x,3.45),r=this.renderer,m=this.meshes;r.draw(m.cylinder,compose(-5.15,2.25,z,0,0,0,.25,4.5,.25),COLORS.purple);r.draw(m.cylinder,compose(5.15,2.25,z,0,0,0,.25,4.5,.25),COLORS.purple);r.draw(m.box,compose(0,4.45,z,0,0,0,10.55,.28,.32),COLORS.purple);r.draw(m.cylinder,compose(x*.5,2.65,z,0,0,-angle,.12,3.65,.12),COLORS.gray);r.draw(m.sphere,compose(x,.84,z,0,0,0,1.18,1.18,1.18),COLORS.orange);r.draw(m.sphere,compose(x,.84,z-.62,0,0,0,.34,.34,.34),COLORS.red);};
+  P.drawCrusher=function(o,z){
+    const a=this.time*o.speed+o.phase,gapX=Math.sin(a)*2.7,leftEnd=gapX-1.35,rightStart=gapX+1.35,r=this.renderer,m=this.meshes;
+    for(const x of[-5.35,5.35]){
+      r.draw(m.box,compose(x,.12,z,0,0,0,.82,.24,1.15),STEEL_DARK);
+      r.draw(m.cylinder,compose(x,1.30,z,0,0,0,.28,2.55,.28),STEEL);
+      r.draw(m.cylinder,compose(x,2.42,z,Math.PI/2,0,0,.38,.20,.38),HAZARD);
+    }
+    r.draw(m.box,compose(0,2.52,z,0,0,0,10.7,.28,.52),STEEL_DARK);
+    if(leftEnd>-5.2){const w=leftEnd+5.2;r.draw(m.box,compose(-5.2+w/2,.82,z,0,0,0,w,1.62,.82),STEEL_DARK);r.draw(m.box,compose(-5.2+w/2,.82,z-.44,0,0,0,w,.16,.08),WARNING);}
+    if(rightStart<5.2){const w=5.2-rightStart;r.draw(m.box,compose(rightStart+w/2,.82,z,0,0,0,w,1.62,.82),STEEL_DARK);r.draw(m.box,compose(rightStart+w/2,.82,z-.44,0,0,0,w,.16,.08),WARNING);}
+    this.addWorldLabel([gapX,2.05,z],'ПРОХОД','good');
+  };
+  P.drawPendulum=function(o,z){
+    const a=this.time*o.speed+o.phase,x=Math.sin(a)*3.65,angle=Math.atan2(x,3.45),r=this.renderer,m=this.meshes;
+    for(const side of[-1,1]){
+      const sx=side*5.15;
+      r.draw(m.box,compose(sx,.10,z,0,0,0,.86,.20,1.18),STEEL_DARK);
+      r.draw(m.cylinder,compose(sx,2.28,z,0,0,0,.27,4.55,.27),STEEL_DARK);
+    }
+    r.draw(m.box,compose(0,4.48,z,0,0,0,10.65,.32,.40),STEEL);
+    for(let k=-4;k<=4;k+=2)r.draw(m.box,compose(k,4.49,z-.22,0,0,0,.82,.12,.07),k%4?WARNING:HAZARD);
+    r.draw(m.cylinder,compose(x*.5,2.70,z,0,0,-angle,.10,3.72,.10),STEEL);
+    r.draw(m.cylinder,compose(x*.5,2.70,z+.06,0,0,-angle,.04,3.74,.04),[.74,.77,.80]);
+    r.draw(m.sphere,compose(x,.86,z,0,0,0,1.20,1.20,1.20),STEEL_DARK);
+    r.draw(m.sphere,compose(x,.86,z-.62,0,0,0,.36,.36,.36),WARNING);
+    r.draw(m.cylinder,compose(0,4.36,z,Math.PI/2,0,0,.36,.24,.36),HAZARD);
+  };
   P.drawEnemy=function(o,z){
     if(o.boss&&window.SleepRoadGoblinBossV23?.draw(this,o,z)){
       const label=window.SleepRoadGoblinBossV23.labelPosition(this,o,z);this.addWorldLabel(label,String(o.count),'boss');return;
