@@ -130,14 +130,13 @@ for(const token of [
 assert(!src.includes('SleepRoadCarModelGLB'));
 assert(!src.includes('MODEL_TRIANGLES=696'));
 
-const decorSrc=fs.readFileSync('assets/models/supersport-car.js','utf8');
-assert.doesNotThrow(()=>new Function(decorSrc));
-for(const token of ['SuperSport_Car.blend','"runtimeVerts":734','"runtimeTris":1408','"simplification":"none"','MAMaterial.001','MAMaterial.002'])assert(decorSrc.includes(token),token);
-
 const envSrc=fs.readFileSync('environment-v8.js','utf8');
 assert.doesNotThrow(()=>new Function(envSrc));
 assert(envSrc.includes('buildDecorCarMeshes'));
-assert(envSrc.includes("else if(b.id==='city')drawDecorCar(this,x,z,i);"));
+assert(envSrc.includes('SleepRoadCarModel'));
+assert(!envSrc.includes('SleepRoadDecorCarModel'));
+assert(!envSrc.includes('SuperSport'));
+assert(envSrc.includes("else if(b.id==='city'){if(i%2===0)drawDecorCar(this,x,z,i);}"));
 
 const visualSrc=fs.readFileSync('visual-v9.js','utf8');
 assert.doesNotThrow(()=>new Function(visualSrc));
@@ -145,23 +144,26 @@ assert(visualSrc.includes('bossArm=boss?'));
 assert(visualSrc.includes('ap.arm[1]*.72'));
 
 const index=fs.readFileSync('index.html','utf8');
+assert(index.includes('countmaster-character.js'));
 assert(index.includes('pickup-model.js'));
-assert(index.includes('supersport-car.js'));
+assert(!index.includes('ruby-character-v15.js'));
+assert(!index.includes('character-ruby-v15.js'));
+assert(!index.includes('supersport-car.js'));
 assert(!index.includes('gclass-glb.js'));
-assert(index.indexOf('supersport-car.js')<index.indexOf('environment-v8.js'));
-assert(index.indexOf('pickup-model.js')<index.indexOf('experience-v14.js'));
+assert(index.indexOf('countmaster-character.js')<index.indexOf('systems-v4.js'));
+assert(index.indexOf('pickup-model.js')<index.indexOf('environment-v8.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v42';"));
+assert(sw.includes("const CACHE='sleep-road-v43';"));
+assert(sw.includes('countmaster-character.js'));
 assert(sw.includes('pickup-model.js'));
-assert(sw.includes('supersport-car.js'));
+assert(!sw.includes('ruby-character-v15.js'));
+assert(!sw.includes('character-ruby-v15.js'));
+assert(!sw.includes('supersport-car.js'));
 assert(!sw.includes('gclass-glb.js'));
-
-assert(!envSrc.includes('decodeDeltaIndices'));
-assert(!envSrc.includes('buildDecorWheelMeshes'));
 
 const v13=fs.readFileSync('experience-v13.js','utf8');
 assert.doesNotThrow(()=>new Function(v13));
-assert(v13.includes('E8.drawDecorCar(g,x,z,i'));
+assert(v13.includes('E8.drawDecorCar(g,x,z,i,{scale:.68'));
 assert(!v13.includes('1.15,.55,1.8),c,.82'));
-console.log('PASS: pickup x2 at 75%, safe SuperSport body props, living-world block replacement, boss proportions and cache wiring');
+console.log('PASS: original CountMaster people restored, full-resolution pickup cars used for roadside + hazard, x2 hazard remains 75%, boss fix and cache wiring valid');
