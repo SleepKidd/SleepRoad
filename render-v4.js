@@ -25,9 +25,20 @@
   P.drawFinishGate=function(z){const r=this.renderer,m=this.meshes;r.draw(m.box,compose(-5.1,2.3,z,0,0,0,.38,4.6,.38),COLORS.purple);r.draw(m.box,compose(5.1,2.3,z,0,0,0,.38,4.6,.38),COLORS.purple);for(let i=0;i<10;i++)r.draw(m.box,compose(-4.5+i,4.35,z,0,0,0,1,.72,.45),i%2?COLORS.white:COLORS.purple);};
   P.drawFinishScene=function(){const r=this.renderer,m=this.meshes;for(let i=0;i<8;i++){const color=i<2?COLORS.step0:i<4?COLORS.step1:i<6?COLORS.step2:COLORS.step3,z=this.playerZ-2.4-i*1.45,y=i*.45;r.draw(m.box,compose(0,y-.22,z,0,0,0,11,.45,1.5),color);this.addWorldLabel([0,y+.05,z+.10],`×${(1+(i+1)*.35).toFixed(2)}`,'step');}const target=this.finishTargetStep,progress=this.finishProgress*target,step=Math.min(target,Math.floor(progress)),frac=progress-step,rootZ=this.playerZ-1.2-progress*1.45,rootY=Math.min(target-1,step)*.45+Math.sin(Math.min(1,frac)*Math.PI)*.16;this.crowdBatch.draw(Math.max(1,Math.round(this.visualCount)),this.playerX,rootZ,COLORS.blue,this.time,{scale:.98,baseY:rootY});};
   P.drawKnockouts=function(){const r=this.renderer,m=this.meshes;for(const k of this.knockouts){const rot=(1.15-k.life)*(k.spin||4);r.draw(m.character,compose(k.x,k.y,k.z,rot,rot*.32,rot*.55,.92,.92,.92),COLORS.blue);}};
-  P.beginLabels=function(){this.labelCursor=0;};
+  P.beginLabels=function(){this.labelCursor=0;this.labelLayout=[];};
   P.getLabel=function(){if(!this.labels[this.labelCursor]){const e=document.createElement('div');e.className='world-label';UI.labels.appendChild(e);this.labels.push(e);}return this.labels[this.labelCursor++];};
-  P.addWorldLabel=function(pos,text,type){const p=this.renderer.project(pos,this.w,this.h);if(!p)return;const e=this.getLabel();e.textContent=text;e.className=`world-label ${type||''}`;e.style.display='block';e.style.left=`${p.x}px`;e.style.top=`${p.y}px`;const depth=clamp((1-p.z)*.7+.45,.55,1.4);e.style.fontSize=`${clamp(11,18*depth,27)}px`;if(type==='step'){e.style.background='rgba(42,45,83,.65)';e.style.border='0';}};
+  P.addWorldLabel=function(pos,text,type){
+    const p=this.renderer.project(pos,this.w,this.h);if(!p)return;
+    const depth=clamp((1-p.z)*.7+.45,.55,1.4),font=clamp(11,18*depth,27),labelText=String(text),width=Math.max(50,Math.min(230,labelText.length*font*.61+22)),height=font+12,pad=5;
+    const rect={l:p.x-width*.5-pad,r:p.x+width*.5+pad,t:p.y-height*.5-pad,b:p.y+height*.5+pad};
+    // Objects are rendered nearest-first, so reserve screen space for the readable labels
+    // and suppress farther labels that would overlap them. This keeps distant gate captions
+    // from turning into an unreadable pile of text.
+    const occupied=this.labelLayout||(this.labelLayout=[]);
+    if(occupied.some(q=>rect.l<q.r&&rect.r>q.l&&rect.t<q.b&&rect.b>q.t))return;
+    occupied.push(rect);
+    const e=this.getLabel();e.textContent=labelText;e.className=`world-label ${type||''}`;e.style.display='block';e.style.left=`${p.x}px`;e.style.top=`${p.y}px`;e.style.fontSize=`${font}px`;e.style.opacity=String(clamp(1-(p.z-.90)*3.2,.62,1));if(type==='step'){e.style.background='rgba(42,45,83,.65)';e.style.border='0';}else{e.style.background='';e.style.border='';}
+  };
   P.endLabels=function(){for(let i=this.labelCursor;i<this.labels.length;i++)this.labels[i].style.display='none';};
   P.updateCrowdLabel=function(){if(this.state==='menu'||this.state==='complete'||this.state==='failed'){UI.crowdCount.style.display='none';return;}UI.crowdCount.style.display='grid';let rootZ=this.playerZ,rootY=2.48;if(this.state==='finish'){const progress=this.finishProgress*this.finishTargetStep,step=Math.min(this.finishTargetStep,Math.floor(progress));rootZ=this.playerZ-1.2-progress*1.45;rootY=2.55+Math.min(this.finishTargetStep-1,step)*.45;}const p=this.renderer.project([this.playerX,rootY,rootZ],this.w,this.h);if(p){UI.crowdCount.style.left=`${p.x}px`;UI.crowdCount.style.top=`${p.y}px`;}};
 })();
