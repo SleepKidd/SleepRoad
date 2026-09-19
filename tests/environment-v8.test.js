@@ -45,7 +45,11 @@ assert(high.detail>medium.detail&&medium.detail>low.detail);
 const envSrc=fs.readFileSync('environment-v8.js','utf8');
 assert(envSrc.includes('DECOR_CAR_COLORS'));
 assert(envSrc.includes("part.name==='car_main'?bodyTint:part.color"));
-assert(envSrc.includes('opts.color||DECOR_CAR_COLORS'));
+assert(envSrc.includes('opts.color||DECOR_CAR_COLORS[Math.abs(index)%DECOR_CAR_COLORS.length]'));
+assert(!envSrc.includes('Math.floor(z*.1)'),'decorative car color must not change with position/time');
+const paletteBlock=envSrc.slice(envSrc.indexOf('const DECOR_CAR_COLORS=['),envSrc.indexOf('function shadow'));
+assert(!paletteBlock.includes('[.18,.62,.92]'),'blue decorative car color must stay excluded');
+assert(!paletteBlock.includes('[.47,.32,.82]'),'purple decorative car color must stay excluded');
 
 const quality=fs.readFileSync('quality-v6.js','utf8');
 assert(quality.includes('environmentDensity:1'));
@@ -59,4 +63,4 @@ assert(css.includes('--hud-accent'));
 assert(css.includes('.crowd-count'));
 
 for(const file of ['environment-v8.js','engine.js','quality-v6.js'])assert.doesNotThrow(()=>new Function(fs.readFileSync(file,'utf8')));
-console.log('PASS: environment v8 layered meadow, covered sides, adaptive density and syntax');
+console.log('PASS: environment v8, stable non-blue/non-purple decorative car colors, adaptive density and syntax');
