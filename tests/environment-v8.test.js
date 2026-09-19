@@ -42,6 +42,10 @@ assert(E.MEADOW_BOUNDS.terrainOuter>=50);
 assert(E.MEADOW_BOUNDS.grassLength<250);
 
 assert(high.detail>medium.detail&&medium.detail>low.detail);
+const envSrc=fs.readFileSync('environment-v8.js','utf8');
+assert(envSrc.includes('DECOR_CAR_COLORS'));
+assert(envSrc.includes("part.name==='car_main'?bodyTint:part.color"));
+assert(envSrc.includes('opts.color||DECOR_CAR_COLORS'));
 
 const quality=fs.readFileSync('quality-v6.js','utf8');
 assert(quality.includes('environmentDensity:1'));
