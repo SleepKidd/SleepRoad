@@ -154,7 +154,7 @@ assert(index.indexOf('countmaster-character.js')<index.indexOf('systems-v4.js'))
 assert(index.indexOf('pickup-model.js')<index.indexOf('environment-v8.js'));
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v43';"));
+assert(sw.includes("const CACHE='sleep-road-v44';"));
 assert(sw.includes('countmaster-character.js'));
 assert(sw.includes('pickup-model.js'));
 assert(!sw.includes('ruby-character-v15.js'));
@@ -164,6 +164,9 @@ assert(!sw.includes('gclass-glb.js'));
 
 const v13=fs.readFileSync('experience-v13.js','utf8');
 assert.doesNotThrow(()=>new Function(v13));
-assert(v13.includes('E8.drawDecorCar(g,x,z,i,{scale:.68'));
+assert(v13.includes('E8.drawDecorCar(g,x,z,i,{scale:.68,groundY:ground+.015,yaw:0'));
+assert(v13.includes('const x=4.18+(i%2)*.28'));
+assert(v13.includes('const progress=(g.travel||0)*.38+g.time*(2.4+i*.14)'));
+assert(!v13.includes('const side=i%2?-1:1,z=10-'));
 assert(!v13.includes('1.15,.55,1.8),c,.82'));
-console.log('PASS: original CountMaster people restored, full-resolution pickup cars used for roadside + hazard, x2 hazard remains 75%, boss fix and cache wiring valid');
+console.log('PASS: original people restored, detailed pickup cars face +Z and approach only in the right lane, x2 hazard remains 75%, cache wiring valid');
