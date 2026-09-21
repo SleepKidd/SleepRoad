@@ -66,6 +66,9 @@ for(let level=1;level<=500;level++){
   for(let j=1;j<major.length;j++)assert(major[j].distance-major[j-1].distance>=2.5,`level ${level} stacks major objects too tightly`);
   const finish=state.objects.filter(x=>x.type==='finish');assert.equal(finish.length,1);assert.equal(finish[0].distance,state.levelLength);
   const boss=state.objects.filter(x=>x.type==='enemy'&&x.boss);assert.equal(boss.length,1,`boss rule broken on ${level}`);
+  assert.equal(boss[0].count,D.finalBossBaseStrength(level,state.profile.sections)*3,`boss HP is not exactly x3 on ${level}`);
+  assert.equal(boss[0].bossStrengthMultiplier,3,`boss multiplier metadata missing on ${level}`);
+  assert.equal(boss[0].bossDamage,Math.max(1,Math.ceil(D.finalBossBaseStrength(level,state.profile.sections)/(70*3))),`boss damage scaling broken on ${level}`);
   for(const o of state.objects.filter(x=>x.type==='obstacle')){
     seenKinds.add(o.kind);let safe=false;
     for(const t of [0,.5,1,1.5,2.25]){state.time=t;for(const x of [-4,-3.1,-2,0,2,3.1,4]){state.playerX=x;const hits=game.obstacleHits.call(state,o,batch.formation(1));assert(Number.isInteger(hits)&&hits>=0&&hits<=1);if(hits===0){safe=true;break;}}if(safe)break;}
@@ -81,14 +84,15 @@ for(const zone of ['boost','slow'])assert(seenZones.has(zone),`missing zone ${zo
 for(const power of ['shield','magnet','double','invuln'])assert(seenPowerups.has(power),`missing powerup ${power}`);
 assert(sawTimed&&sawNoHit&&sawBonus,'special level profiles did not appear');
 for(const required of ['movingWall','fallingBlock','fireline','laser','pendulum','crusher','hammer','roller','saw','mines','bladePair','slamGate','slalom','shockwave'])assert(seenKinds.has(required),`missing ${required}`);
-for(const level of [10,20,30,40,50,60,100]){const p=D.profileForLevel(level);assert(p.bossLevel);assert(D.bossName(level));assert(D.bossStrength(level,p.sections)>0);}
+assert.equal(D.BOSS_STRENGTH_MULTIPLIER,3);
+for(const level of [10,20,30,40,50,60,100]){const p=D.profileForLevel(level);assert(p.bossLevel);assert(D.bossName(level));assert.equal(D.bossStrength(level,p.sections),D.bossBaseStrength(level,p.sections)*3);}
 assert(maxObjects<420);
 
 function bestGateCount(count,gate){return Math.max(window.SleepRoadSystems.applyGateValue(count,gate.left),window.SleepRoadSystems.applyGateValue(count,gate.right));}
 function surviveEnemy(count,enemy){
   let foes=enemy.count,ticks=0;
   if(enemy.boss){
-    while(count>0&&foes>0&&ticks<10000){ticks++;const dealt=Math.max(1,Math.floor(count/30));foes=Math.max(0,foes-dealt);if(ticks%3===0)count=Math.max(0,count-Math.max(1,Math.ceil(enemy.maxCount/70)));}
+    while(count>0&&foes>0&&ticks<10000){ticks++;const dealt=Math.max(1,Math.floor(count/30));foes=Math.max(0,foes-dealt);if(ticks%3===0)count=Math.max(0,count-(enemy.bossDamage??Math.max(1,Math.ceil(enemy.maxCount/(70*(enemy.bossStrengthMultiplier||1))))));}
     return count;
   }
   if(enemy.elite)return count-Math.floor(foes/2);

@@ -68,7 +68,9 @@
       this.objects.push(this.makeRiskGate(rng,d+4,profile.level));this.addMoons(rng,d+11,profile.sections,'arc',0,8);
       const preBossDistance=d+25,hasProtection=this.objects.some(o=>o.type==='powerup'&&(o.kind==='shield'||o.kind==='invuln')&&Math.abs((o.distance||0)-preBossDistance)<9);
       if(!hasProtection)this.objects.push({type:'powerup',kind:'shield',distance:preBossDistance,x:0,processed:false,spin:rng.range(0,TAU),safety:true,preBoss:true});
-      const bossCount=D.finalBossStrength(level,profile.sections),major=profile.bossLevel;this.objects.push({type:'enemy',distance:d+39,count:bossCount,maxCount:bossCount,boss:true,finalBoss:true,majorBoss:major,soloBoss:true,bossScale:major?3.75:3.25,elite:true,name:D.bossName(level),processed:false,phase:rng.range(0,TAU)});d+=68;
+      const bossCount=D.finalBossStrength(level,profile.sections),bossBaseCount=D.finalBossBaseStrength(level,profile.sections),major=profile.bossLevel;
+      const bossDamage=Math.max(1,Math.ceil(bossBaseCount/(70*D.BOSS_STRENGTH_MULTIPLIER)));
+      this.objects.push({type:'enemy',distance:d+39,count:bossCount,maxCount:bossCount,boss:true,finalBoss:true,majorBoss:major,soloBoss:true,bossScale:major?3.75:3.25,bossStrengthMultiplier:D.BOSS_STRENGTH_MULTIPLIER,bossDamage,elite:true,name:D.bossName(level),processed:false,phase:rng.range(0,TAU)});d+=68;
     }
     this.levelLength=d+52;this.objects.push({type:'finish',distance:this.levelLength,processed:false,bossFinish:profile.finalBoss});this.objects.sort((a,b)=>a.distance-b.distance);
   };
@@ -102,7 +104,7 @@ if(kind==='elite'){gate();this.addMoons(rng,d+7,i);const count=Math.max(10,Math.
     const e=this.battleEnemy;if(!e){this.state='running';this.speed=this.baseSpeed;return;}this.battleTimer+=dt;const cadence=e.boss?.055:e.elite?.05:.045;
     while(this.battleTimer>=cadence&&this.playerCount>0&&e.count>0){
       this.battleTimer-=cadence;e.battleTicks=(e.battleTicks||0)+1;
-      if(e.boss){const playerDamage=Math.max(1,Math.floor(this.playerCount/30));e.count=Math.max(0,e.count-playerDamage);if(e.battleTicks%3===0){const enemyDamage=Math.max(1,Math.ceil(e.maxCount/70));this.applyProtectedDamage(enemyDamage,'battle');}}
+      if(e.boss){const playerDamage=Math.max(1,Math.floor(this.playerCount/30));e.count=Math.max(0,e.count-playerDamage);if(e.battleTicks%3===0){const enemyDamage=e.bossDamage??Math.max(1,Math.ceil(e.maxCount/(70*(e.bossStrengthMultiplier||1))));this.applyProtectedDamage(enemyDamage,'battle');}}
       else if(e.elite){e.count--;if(e.battleTicks%2===0)this.applyProtectedDamage(1,'battle');}
       else{this.applyProtectedDamage(1,'battle');e.count--;}
       if((this.playerCount+e.count)%5===0)this.audio.battle();

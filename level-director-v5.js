@@ -88,14 +88,21 @@
     return `OMEGA ${1+Math.floor((level-51)/10)}`;
   }
 
-  function bossStrength(level,section){
-    // Linear HP already scales indefinitely with level. The old extra endless multiplier
-    // could outgrow the shorter run-up economy and create mathematically unwinnable bosses.
+  const BOSS_STRENGTH_MULTIPLIER=3;
+  function bossBaseStrength(level,section){
+    // Keep the proven linear balance curve as the baseline, then apply one explicit
+    // multiplier so boss strength cannot be accidentally multiplied twice elsewhere.
     return Math.round(42+level*1.55+section*2.1);
   }
-  function finalBossStrength(level,section){
-    const profile=profileForLevel(level),full=bossStrength(level,section);
+  function bossStrength(level,section){
+    return bossBaseStrength(level,section)*BOSS_STRENGTH_MULTIPLIER;
+  }
+  function finalBossBaseStrength(level,section){
+    const profile=profileForLevel(level),full=bossBaseStrength(level,section);
     return profile.bossLevel?full:Math.max(28,Math.round(full*.55));
+  }
+  function finalBossStrength(level,section){
+    return finalBossBaseStrength(level,section)*BOSS_STRENGTH_MULTIPLIER;
   }
 
   function gateValues(level,rng,risk=false){
@@ -115,5 +122,5 @@
 
   function obstaclePool(profile){return profile.endless?[...new Set(BIOMES.flatMap(b=>b.obstaclePool))]:profile.biome.obstaclePool.slice();}
 
-  window.SleepRoadLevelDirector={BIOMES,ENCOUNTERS,biomeForLevel,profileForLevel,encounterFor,bossName,bossStrength,finalBossStrength,gateValues,obstaclePool,clamp};
+  window.SleepRoadLevelDirector={BIOMES,ENCOUNTERS,BOSS_STRENGTH_MULTIPLIER,biomeForLevel,profileForLevel,encounterFor,bossName,bossBaseStrength,bossStrength,finalBossBaseStrength,finalBossStrength,gateValues,obstaclePool,clamp};
 })();

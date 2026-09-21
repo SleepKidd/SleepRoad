@@ -7,12 +7,15 @@ global.window=global;
 vm.runInThisContext(fs.readFileSync('level-director-v5.js','utf8'),{filename:'level-director-v5.js'});
 const D=global.SleepRoadLevelDirector;
 assert(D);
+assert.equal(D.BOSS_STRENGTH_MULTIPLIER,3,'boss strength multiplier must be exactly x3');
 
 for(let level=1;level<=200;level++){
   const p=D.profileForLevel(level);
   assert.equal(p.finalBoss,true,'level '+level+' must end with a boss');
-  const hp=D.finalBossStrength(level,p.sections);
-  assert(Number.isInteger(hp)&&hp>=28,'boss HP must be positive at level '+level);
+  const baseHp=D.finalBossBaseStrength(level,p.sections),hp=D.finalBossStrength(level,p.sections);
+  assert(Number.isInteger(hp)&&hp>=84,'boss HP must be positive at level '+level);
+  assert.equal(hp,baseHp*3,'final boss HP must be exactly x3 at level '+level);
+  assert.equal(D.bossStrength(level,p.sections),D.bossBaseStrength(level,p.sections)*3,'full boss strength must be exactly x3');
   if(p.bossLevel)assert.equal(hp,D.bossStrength(level,p.sections),'major boss must use full strength');
   else assert(hp<D.bossStrength(level,p.sections),'regular final boss must be softer than major boss');
 }
@@ -23,6 +26,10 @@ for(const token of [
   "soloBoss:true",
   "bossScale:major?3.75:3.25",
   "D.finalBossStrength",
+  "D.finalBossBaseStrength",
+  "bossStrengthMultiplier:D.BOSS_STRENGTH_MULTIPLIER",
+  "bossDamage",
+  "bossBaseCount/(70*D.BOSS_STRENGTH_MULTIPLIER)",
   "bossFinish:profile.finalBoss",
   "majorBoss:major"
 ])assert(runtime.includes(token),token);
