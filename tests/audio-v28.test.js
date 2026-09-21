@@ -57,9 +57,11 @@ assert.equal(V.BOSS_VIEW_MIN_Z,-88);
 assert.equal(V.BOSS_VIEW_MAX_Z,12);
 assert.equal(V.CAR_VIEW_MIN_Z,-92);
 assert.equal(V.CAR_VIEW_MAX_Z,19);
-assert(V.BOSS_TRACK_GAIN>0&&V.BOSS_TRACK_GAIN<.5);
-assert(V.CAR_TRACK_GAIN>0&&V.CAR_TRACK_GAIN<1);
-assert(V.JUMP_TRACK_GAIN>0&&V.JUMP_TRACK_GAIN<1);
+assert.equal(V.BOSS_TRACK_GAIN,2.4);
+assert.equal(V.CAR_TRACK_GAIN,2.8);
+assert.equal(V.JUMP_TRACK_GAIN,2.8);
+assert.equal(V.SPECIAL_OUTPUT_GAIN,.98);
+assert.equal(V.SPECIAL_LIMITER_THRESHOLD,-2.5);
 
 const bossGame=new Game();
 bossGame.state='running';
@@ -92,6 +94,7 @@ jumpGame.state='battle';assert(!V.jumpIsActive(jumpGame),'jump audio must stop o
 
 const a=new AudioEngine();
 a._externalBossActive=false;a._externalCarActive=false;a._externalJumpActive=false;a.musicStep(.1);assert.equal(a.musicCalls,1);
+assert.equal(a._specialAudioOutput(),a.master,'unsupported limiter path must safely fall back to master');
 a._externalBossActive=true;a.musicStep(.1);assert.equal(a.musicCalls,1,'synth music must be ducked while boss music is active');
 a._externalBossActive=false;a._externalCarActive=true;a.musicStep(.1);assert.equal(a.musicCalls,1,'synth music must be ducked while car speech is active');
 a._externalCarActive=false;a._externalJumpActive=true;a.musicStep(.1);assert.equal(a.musicCalls,1,'synth music must be ducked while jump speech is active');
@@ -123,7 +126,7 @@ assert(jumpStat.size>6000,'jump audio asset is unexpectedly small');
 assert(jumpHead==='ID3'||jumpHead.charCodeAt(0)===255,'jump audio asset does not look like MP3 data');
 
 const sw=fs.readFileSync('sw.js','utf8');
-assert(sw.includes("const CACHE='sleep-road-v59';"));
+assert(sw.includes("const CACHE='sleep-road-v65';"));
 assert(sw.includes("'./assets/audio/boss-battle-v28.mp3'"));
 assert(sw.includes("'./assets/audio/car-near-v29.mp3'"));
 assert(sw.includes("'./assets/audio/jump-loop-v30.mp3'"));

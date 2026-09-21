@@ -6,9 +6,12 @@
   const BOSS_TRACK='./assets/audio/boss-battle-v28.mp3';
   const CAR_TRACK='./assets/audio/car-near-v29.mp3';
   const JUMP_TRACK='./assets/audio/jump-loop-v30.mp3';
-  const BOSS_VIEW_MIN_Z=-88,BOSS_VIEW_MAX_Z=12,BOSS_TRACK_GAIN=.34;
-  const CAR_VIEW_MIN_Z=-92,CAR_VIEW_MAX_Z=19,CAR_TRACK_GAIN=.58;
-  const JUMP_TRACK_GAIN=.56;
+  // Near-full-scale special-audio bus: boss/car/jump are intentionally much louder
+  // than the normal game mix, but a compressor prevents ugly digital clipping.
+  const BOSS_VIEW_MIN_Z=-88,BOSS_VIEW_MAX_Z=12,BOSS_TRACK_GAIN=2.4;
+  const CAR_VIEW_MIN_Z=-92,CAR_VIEW_MAX_Z=19,CAR_TRACK_GAIN=2.8;
+  const JUMP_TRACK_GAIN=2.8;
+  const SPECIAL_OUTPUT_GAIN=.98,SPECIAL_LIMITER_THRESHOLD=-2.5;
   const CAR_FADE_IN=.06,CAR_FADE_OUT=.16,JUMP_FADE_IN=.035,JUMP_FADE_OUT=.10;
   const oldEnsure=A.ensure,oldMusicStep=A.musicStep;
 
@@ -52,6 +55,25 @@
     return ok;
   };
 
+  A._specialAudioOutput=function(){
+    if(this._specialAudioBus)return this._specialAudioBus;
+    if(!this.ac)return this.master;
+    const destination=this.ac.destination;
+    if(!destination||typeof this.ac.createDynamicsCompressor!=='function'||typeof this.ac.createGain!=='function')return this.master;
+    const limiter=this.ac.createDynamicsCompressor(),out=this.ac.createGain();
+    limiter.threshold.value=SPECIAL_LIMITER_THRESHOLD;
+    limiter.knee.value=0;
+    limiter.ratio.value=20;
+    limiter.attack.value=.002;
+    limiter.release.value=.10;
+    out.gain.value=SPECIAL_OUTPUT_GAIN;
+    limiter.connect(out);out.connect(destination);
+    this._specialAudioLimiter=limiter;
+    this._specialAudioOutputGain=out;
+    this._specialAudioBus=limiter;
+    return limiter;
+  };
+
   A._startBossTrack=function(){
     if(!this.enabled||!this.ensure()||!this._bossTrackBuffer)return false;
     if(this._bossTrackSource)return true;
@@ -59,7 +81,7 @@
     src.buffer=this._bossTrackBuffer;src.loop=true;
     gain.gain.setValueAtTime(.0001,t);
     gain.gain.exponentialRampToValueAtTime(BOSS_TRACK_GAIN,t+.42);
-    src.connect(gain);gain.connect(this.master);
+    src.connect(gain);gain.connect(this._specialAudioOutput());
     src.onended=()=>{if(this._bossTrackSource===src){this._bossTrackSource=null;this._bossTrackGain=null;}};
     src.start(t);
     this._bossTrackSource=src;this._bossTrackGain=gain;
@@ -99,7 +121,7 @@
     src.buffer=this._carTrackBuffer;src.loop=true;
     gain.gain.setValueAtTime(.0001,t);
     gain.gain.exponentialRampToValueAtTime(CAR_TRACK_GAIN,t+CAR_FADE_IN);
-    src.connect(gain);gain.connect(this.master);
+    src.connect(gain);gain.connect(this._specialAudioOutput());
     src.onended=()=>{if(this._carTrackSource===src){this._carTrackSource=null;this._carTrackGain=null;}};
     src.start(t);
     this._carTrackSource=src;this._carTrackGain=gain;
@@ -160,7 +182,7 @@
     src.buffer=this._jumpTrackBuffer;src.loop=true;
     gain.gain.setValueAtTime(.0001,t);
     gain.gain.exponentialRampToValueAtTime(JUMP_TRACK_GAIN,t+JUMP_FADE_IN);
-    src.connect(gain);gain.connect(this.master);
+    src.connect(gain);gain.connect(this._specialAudioOutput());
     src.onended=()=>{if(this._jumpTrackSource===src){this._jumpTrackSource=null;this._jumpTrackGain=null;}};
     src.start(t);
     this._jumpTrackSource=src;this._jumpTrackGain=gain;
@@ -258,6 +280,7 @@
     BOSS_TRACK,CAR_TRACK,JUMP_TRACK,
     BOSS_VIEW_MIN_Z,BOSS_VIEW_MAX_Z,CAR_VIEW_MIN_Z,CAR_VIEW_MAX_Z,
     TRACK_GAIN:BOSS_TRACK_GAIN,BOSS_TRACK_GAIN,CAR_TRACK_GAIN,JUMP_TRACK_GAIN,
+    SPECIAL_OUTPUT_GAIN,SPECIAL_LIMITER_THRESHOLD,
     bossIsVisible,bossIsNear:bossIsVisible,carIsVisible,jumpIsActive
   };
 })();
